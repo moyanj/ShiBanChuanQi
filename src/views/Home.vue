@@ -97,7 +97,7 @@
                     </el-button>
                 </el-col>
                 <el-col :span="4">
-                    <el-button text @click="data.page_type = 'character'">
+                    <el-button text @click="data.page_type = 'about'">
                         <el-image :src="icons.info" class="icon"/>
                         <span>&nbsp;关于</span>
                     </el-button>

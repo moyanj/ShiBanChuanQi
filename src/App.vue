@@ -3,6 +3,7 @@
   import Home from './views/Home.vue';
   import Fight from './views/Fight.vue';
   import Plot from './views/Plot.vue';
+  import About from './views/About.vue';
   import { icons } from './js/utils';
 
   // 导入状态管理库
@@ -84,9 +85,12 @@
   <!-- 根据数据存储中的 page_type 显示不同页面 -->
   <Home v-if="dataStore.page_type == 'main'" />
   <div v-else>
-    <el-button @click="dataStore.page_type = 'main'"><el-image :src="icons.left" style="width: 25px;height: 25px;"/></el-button>
+    <el-button @click="dataStore.page_type = 'main'" class="back"><el-image :src="icons.left" style="width: 25px;height: 25px;"/></el-button>
 
     <Plot v-if="dataStore.page_type == 'plot'" />
+    <Fight v-else-if="dataStore.page_type == 'fight'" />
+    <About v-else-if="dataStore.page_type == 'about'" />
+    
     <div v-else align="center">
       <!-- 设置404变量 -->
       
@@ -101,4 +105,13 @@
 
 </template>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.back{
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  width: 30px;
+  height: 30px;
+}
+
+</style>
