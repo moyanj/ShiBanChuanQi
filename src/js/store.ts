@@ -5,7 +5,7 @@ interface DataStoreState {
   page_type: string;
 }
 
-interface SaveStoreState {
+export interface SaveStoreState {
   user_name: string;
   user_level: number;
   user_avatar: string;

@@ -1,0 +1,4 @@
+字体：
+    MiSans : 小米
+图标：
+    src/assets/icon/character.svg： https://www.figma.com/@Leonid

@@ -5,13 +5,14 @@
   import Plot from './views/Plot.vue'
 
   // 导入状态管理库
-  import { useDataStore } from './js/store';
+  import { useDataStore, useSaveStore } from './js/store';
 
   // 导入 Element Plus 的消息框组件
   import { ElMessageBox, ElButton } from 'element-plus'
 
   // 初始化数据存储
   const dataStore = useDataStore();
+  const saveStore = useSaveStore();
 
   // 监听键盘
   document.onkeydown = function (e) {
@@ -46,10 +47,20 @@
             alert(dataStore[cmds[1]]);
             break;
 
+          case "set_save":
+            saveStore.$patch({
+              [cmds[1]]: cmds[2]
+            });
+            break;
+
+          case "get_save":
+            alert(saveStore[cmds[1]]);
+
           case "exit":
             dataStore.console_show = false;
             window.close();
             break;
+
           default:
             // 当命令未知时提示用户
             alert("未知命令");
