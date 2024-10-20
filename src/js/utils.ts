@@ -3,13 +3,17 @@ import icon_character from "../assets/icon/character.svg";
 import icon_info from "../assets/icon/info.svg";
 import icon_backpack from "../assets/icon/backpack.svg";
 import icon_setting from "../assets/icon/setting.svg";
+import icon_door from "../assets/icon/door.svg";
+import icon_tachometer from "../assets/icon/tachometer.svg";
 
 export const icons = {
     left: icon_left,
     character: icon_character,
     info: icon_info,
     backpack: icon_backpack,
-    setting: icon_setting
+    setting: icon_setting,
+    door: icon_door,
+    tachometer: icon_tachometer
 }
 
 export function randomNum(minNum: number, maxNum?: number): number {

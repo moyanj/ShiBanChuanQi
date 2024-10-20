@@ -73,26 +73,26 @@
 
                 <el-col :span="4">
                     <el-button text @click="data.page_type = 'wish'">
-                        <el-image :src="icons.character" class="icon"/>
+                        <el-image :src="icons.tachometer" class="icon"/>
                         <span>&nbsp;抽卡</span>
                     </el-button>
                 </el-col>
                 
                 <el-col :span="4">
                     <el-button text @click="data.page_type = 'copy'">
-                        <el-image :src="icons.character" class="icon"/>
+                        <el-image :src="icons.door" class="icon"/>
                         <span>&nbsp;秘境</span>
                     </el-button>
                 </el-col>
                 <el-col :span="4">
                     <el-button text @click="data.page_type = 'bag'">
-                        <el-image :src="icons.character" class="icon"/>
+                        <el-image :src="icons.backpack" class="icon"/>
                         <span>&nbsp;背包</span>
                     </el-button>
                 </el-col>
                 <el-col :span="4">
                     <el-button text @click="data.page_type = 'setting'">
-                        <el-image :src="icons.character" class="icon"/>
+                        <el-image :src="icons.setting" class="icon"/>
                         <span>&nbsp;设置</span>
                     </el-button>
                 </el-col>
