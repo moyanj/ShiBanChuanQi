@@ -6,9 +6,13 @@ import { randomNum } from "../js/utils"
 
 const save = useSaveStore()
 const isHover = ref(false)
-var avatar_src = ref("/avatars/" + randomNum(1,10) + ".png")
+
+if (save.user_avatar == "") {
+    save.user_avatar = "/avatars/" + randomNum(1,10) + ".png"
+}
+
 function get_avatar() {
-    avatar_src.value = "/avatars/" + randomNum(1,10) + ".png"
+   save.user_avatar = "/avatars/" + randomNum(1,10) + ".png"
 }
 
 function change_name() {
@@ -44,13 +48,15 @@ const handleMouseLeave = () => {
             @mouseleave="handleMouseLeave">
         <el-row>
             <el-col :span="4" @click="get_avatar">
-                <el-avatar :size="40"><img v-bind:src="avatar_src" id="avatar" ></el-avatar> <!-- 头像 -->
+                <el-avatar :size="40"><img v-bind:src="save.user_avatar" id="avatar" ></el-avatar> <!-- 头像 -->
             </el-col>
             <el-col :span="20">
                 <a v-show="isHover" class="user-name" @click="change_name">{{ save.user_name }}</a>
             </el-col>
         </el-row>
     </el-card>
+
+    <h1>十班传奇</h1>
 </template>
 
 <style lang="scss" scoped>
