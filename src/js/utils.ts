@@ -1,9 +1,15 @@
-import icon_left from "../assets/icon/left.svg"
-import icon_character from "../assets/icon/character.svg"
+import icon_left from "../assets/icon/left.svg";
+import icon_character from "../assets/icon/character.svg";
+import icon_info from "../assets/icon/info.svg";
+import icon_backpack from "../assets/icon/backpack.svg";
+import icon_setting from "../assets/icon/setting.svg";
 
 export const icons = {
     left: icon_left,
-    character: icon_character
+    character: icon_character,
+    info: icon_info,
+    backpack: icon_backpack,
+    setting: icon_setting
 }
 
 export function randomNum(minNum: number, maxNum?: number): number {
