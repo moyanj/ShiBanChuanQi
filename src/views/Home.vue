@@ -70,6 +70,38 @@
                         <span>&nbsp;角色</span>
                     </el-button>
                 </el-col>
+
+                <el-col :span="4">
+                    <el-button text @click="data.page_type = 'wish'">
+                        <el-image :src="icon_character" class="icon"/>
+                        <span>&nbsp;抽卡</span>
+                    </el-button>
+                </el-col>
+                
+                <el-col :span="4">
+                    <el-button text @click="data.page_type = 'copy'">
+                        <el-image :src="icon_character" class="icon"/>
+                        <span>&nbsp;秘境</span>
+                    </el-button>
+                </el-col>
+                <el-col :span="4">
+                    <el-button text @click="data.page_type = 'bag'">
+                        <el-image :src="icon_character" class="icon"/>
+                        <span>&nbsp;背包</span>
+                    </el-button>
+                </el-col>
+                <el-col :span="4">
+                    <el-button text @click="data.page_type = 'setting'">
+                        <el-image :src="icon_character" class="icon"/>
+                        <span>&nbsp;设置</span>
+                    </el-button>
+                </el-col>
+                <el-col :span="4">
+                    <el-button text @click="data.page_type = 'character'">
+                        <el-image :src="icon_character" class="icon"/>
+                        <span>&nbsp;关于</span>
+                    </el-button>
+                </el-col>
             </el-row>
         </el-card>
     </div>
@@ -111,7 +143,7 @@
         position: fixed;
         right: 10px;
         top: 10px;
-        width: 50vw;
+        width: 35vw;
         height: 32px;
         --el-card-padding: 0px;
         padding-top: 5px;

@@ -81,11 +81,9 @@
 
     <!-- 根据数据存储中的 page_type 显示不同页面 -->
     <Home v-if="dataStore.page_type == 'main'" />
-    <Fight v-else-if="dataStore.page_type == 'fight'" />
-    <Plot v-else-if="dataStore.page_type == 'plot'" />
     <!-- 404 -->
     <div v-else align="center">
-      <h1>404</h1>
+      <h1>666, 隐藏界面被你玩出来了</h1>
       <el-button @click="dataStore.page_type = 'main'" size="large">返回主页</el-button>
     </div>
 
