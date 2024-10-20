@@ -8,7 +8,7 @@
   import { useDataStore } from './js/store';
 
   // 导入 Element Plus 的消息框组件
-  import { ElMessageBox, ElButton, ElCntainer } from 'element-plus'
+  import { ElMessageBox, ElButton } from 'element-plus'
 
   // 初始化数据存储
   const dataStore = useDataStore();

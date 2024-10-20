@@ -1,0 +1,19 @@
+export function randomNum(minNum: number, maxNum?: number): number {
+    // 检查 minNum 是否为正数
+    if (minNum < 0) {
+        throw new Error('minNum must be a non-negative number');
+    }
+
+    // 如果只传入一个参数，生成从 1 到 minNum 的随机数
+    if (maxNum === undefined) {
+        return Math.floor(Math.random() * minNum) + 1;
+    }
+
+    // 检查 maxNum 是否大于 minNum
+    if (maxNum < minNum) {
+        throw new Error('maxNum must be greater than or equal to minNum');
+    }
+
+    // 生成从 minNum 到 maxNum 的随机数
+    return Math.floor(Math.random() * (maxNum - minNum + 1)) + minNum;
+}
