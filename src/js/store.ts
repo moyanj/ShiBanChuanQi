@@ -3,6 +3,8 @@ import { defineStore } from 'pinia';
 // 定义 state 类型
 interface DataStoreState {
   page_type: string;
+  is_electron: boolean;
+  build_info: Array<any> | null;
 }
 
 export interface SaveStoreState {
@@ -17,6 +19,8 @@ export const useDataStore = defineStore('data_store', {
   },
   state: (): DataStoreState => ({
     page_type: 'main',
+    is_electron: false,
+    build_info: null,
   }),
 });
 

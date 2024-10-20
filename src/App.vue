@@ -12,11 +12,21 @@
   // 导入 Element Plus 的消息框组件
   import { ElMessageBox, ElButton, ElImage } from 'element-plus';
   import { ref } from 'vue';
+import { da } from 'element-plus/es/locales.mjs';
 
   // 初始化数据存储
   const dataStore = useDataStore();
   const saveStore = useSaveStore();
-
+  fetch('build_info.json')
+    .then(response => response.json())
+    .then(data => {
+      // 将数据存储到数据存储中
+      dataStore.is_electron = true;
+      dataStore.build_info = data;
+    })
+    .catch(error => {
+      dataStore.is_electron = false;
+    });
   // 监听键盘
   document.onkeydown = function (e) {
     // 当按下 Alt+T 且控制台未显示时
@@ -90,7 +100,7 @@
     <Plot v-if="dataStore.page_type == 'plot'" />
     <Fight v-else-if="dataStore.page_type == 'fight'" />
     <About v-else-if="dataStore.page_type == 'about'" />
-    
+
     <div v-else align="center">
       <!-- 设置404变量 -->
       
