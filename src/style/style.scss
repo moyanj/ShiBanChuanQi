@@ -1,0 +1,52 @@
+@import "./color.scss";
+
+@font-face {
+    font-family: "MiSans";
+    src: url("../assets/MiSans-Normal.woff2");
+}
+
+body {
+    margin: 15px 15px;
+    overflow: hidden;
+    background-color: $black;
+    font-family: "MiSans", "Helvetica Neue", Helvetica, Arial, "PingFang SC", "Hiragino Sans GB", "Heiti SC", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+span {
+    color: $white;
+}
+
+h1 {
+    font-size: 2rem;
+}
+
+h2 {
+    font-size: 1.6rem;
+}
+
+h3 {
+    font-size: 1.2rem;
+}
+
+h4 {
+    font-size: 1rem;
+}
+
+h5 {
+    font-size: 0.8rem;
+}
+
+h6 {
+    font-size: 0.6rem;
+}
+
+p, span {
+    font-size: 0.8rem;
+}
