@@ -84,7 +84,7 @@
   <!-- 根据数据存储中的 page_type 显示不同页面 -->
   <Home v-if="dataStore.page_type == 'main'" />
   <div v-else>
-    <el-button @click="dataStore.page_type = 'main'"><el-image :src="icons.left"/></el-button>
+    <el-button @click="dataStore.page_type = 'main'"><el-image :src="icons.left" style="width: 25px;height: 25px;"/></el-button>
 
     <Plot v-if="dataStore.page_type == 'plot'" />
     <div v-else align="center">

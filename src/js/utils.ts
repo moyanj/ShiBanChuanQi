@@ -5,6 +5,13 @@ import icon_backpack from "../assets/icon/backpack.svg";
 import icon_setting from "../assets/icon/setting.svg";
 import icon_door from "../assets/icon/door.svg";
 import icon_tachometer from "../assets/icon/tachometer.svg";
+import icon_element_fire from "../assets/icon/element-fire.png";
+import icon_element_water from "../assets/icon/element-water.png";
+import icon_element_thunder from "../assets/icon/element-thunder.png";
+import icon_element_grass from "../assets/icon/element-grass.png";
+import icon_element_physics from "../assets/icon/element-physics.png";
+import icon_element_liangzi from "../assets/icon/element-liangzi.png";
+import icon_element_nihility from "../assets/icon/element-nihility.png";
 
 export const icons = {
     left: icon_left,
@@ -13,7 +20,16 @@ export const icons = {
     backpack: icon_backpack,
     setting: icon_setting,
     door: icon_door,
-    tachometer: icon_tachometer
+    tachometer: icon_tachometer,
+    element: {
+        fire: icon_element_fire,
+        water: icon_element_water,
+        thunder: icon_element_thunder,
+        grass: icon_element_grass,
+        physics: icon_element_physics,
+        liangzi: icon_element_liangzi,
+        nihility: icon_element_nihility
+    }
 }
 
 export function randomNum(minNum: number, maxNum?: number): number {
