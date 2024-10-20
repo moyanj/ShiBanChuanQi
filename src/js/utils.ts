@@ -1,3 +1,11 @@
+import icon_left from "../assets/icon/left.svg"
+import icon_character from "../assets/icon/character.svg"
+
+export const icons = {
+    left: icon_left,
+    character: icon_character
+}
+
 export function randomNum(minNum: number, maxNum?: number): number {
     // 检查 minNum 是否为正数
     if (minNum < 0) {

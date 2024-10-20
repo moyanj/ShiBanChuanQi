@@ -2,8 +2,8 @@
     import { ref } from 'vue'
     import { ElCol, ElRow, ElCard, ElAvatar, ElMessageBox, ElMessage, ElButton, ElImage } from 'element-plus'
     import { useSaveStore, SaveStoreState, useDataStore } from '../js/store'
-    import { randomNum } from '../js/utils'
-    import icon_character from "../assets/icon/character.svg"
+    import { randomNum, icons } from '../js/utils'
+
     const save: SaveStoreState = useSaveStore()
     const data = useDataStore()
     const isHover = ref(false)
@@ -66,39 +66,39 @@
             <el-row>
                 <el-col :span="4">
                     <el-button text @click="data.page_type = 'character'">
-                        <el-image :src="icon_character" class="icon"/>
+                        <el-image :src="icons.character" class="icon"/>
                         <span>&nbsp;角色</span>
                     </el-button>
                 </el-col>
 
                 <el-col :span="4">
                     <el-button text @click="data.page_type = 'wish'">
-                        <el-image :src="icon_character" class="icon"/>
+                        <el-image :src="icons.character" class="icon"/>
                         <span>&nbsp;抽卡</span>
                     </el-button>
                 </el-col>
                 
                 <el-col :span="4">
                     <el-button text @click="data.page_type = 'copy'">
-                        <el-image :src="icon_character" class="icon"/>
+                        <el-image :src="icons.character" class="icon"/>
                         <span>&nbsp;秘境</span>
                     </el-button>
                 </el-col>
                 <el-col :span="4">
                     <el-button text @click="data.page_type = 'bag'">
-                        <el-image :src="icon_character" class="icon"/>
+                        <el-image :src="icons.character" class="icon"/>
                         <span>&nbsp;背包</span>
                     </el-button>
                 </el-col>
                 <el-col :span="4">
                     <el-button text @click="data.page_type = 'setting'">
-                        <el-image :src="icon_character" class="icon"/>
+                        <el-image :src="icons.character" class="icon"/>
                         <span>&nbsp;设置</span>
                     </el-button>
                 </el-col>
                 <el-col :span="4">
                     <el-button text @click="data.page_type = 'character'">
-                        <el-image :src="icon_character" class="icon"/>
+                        <el-image :src="icons.character" class="icon"/>
                         <span>&nbsp;关于</span>
                     </el-button>
                 </el-col>
