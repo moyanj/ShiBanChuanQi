@@ -10,6 +10,8 @@ function createWindow() {
   //  因为我们加载的是Vue 构建后的dist 目录，所以我们需要改一下， load
   //  的文件地址。
   win.loadFile("html/index.html");
+  // 关闭菜单栏
+  win.setMenu(null);
 }
 
 app.whenReady().then(() => {
