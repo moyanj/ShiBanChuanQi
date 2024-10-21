@@ -147,6 +147,7 @@
     left: 10px;
     width: 30px;
     height: 30px;
+    z-index: 999;
   }
 
 </style>
