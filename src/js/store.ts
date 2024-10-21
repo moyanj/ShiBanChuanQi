@@ -1,10 +1,19 @@
 import { defineStore } from 'pinia';
 
+interface BuildInfoState {
+  version: string;
+  electron_version: string;
+  time: string;
+  platform: string;
+  arch: string;
+  timestamp: number;
+}
+
 // 定义 state 类型
-interface DataStoreState {
+export interface DataStoreState {
   page_type: string;
   is_electron: boolean;
-  build_info: Array<any> | null;
+  build_info: BuildInfoState | null;
 }
 
 export interface SaveStoreState {

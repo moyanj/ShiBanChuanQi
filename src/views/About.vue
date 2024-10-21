@@ -1,49 +1,37 @@
 <script setup lang="ts">
-  import { ref } from 'vue'
+    import { ElRow, ElCol } from 'element-plus'
+    import { useDataStore, DataStoreState } from '../js/store';
+    import { getExplore } from '../js/utils';
+    const data: DataStoreState = useDataStore();
+    
+
 </script>
 
 <template>
-  <div class="about">
-    <div class="about-content">
-      <div class="about-content-title">
-        <div class="about-content-title-text">关于</div>
-      </div>
-      <div class="about-content-text">
-        <div class="about-content-text-item">
-          <div class="about-content-text-item-title">版本</div>
-        </div>
-      </div>
-    </div>
-  </div>
+    <el-row>
+        <el-col :span="12">
+            <div class="grid-content container">
+                <h1>十班传奇</h1>
+                <br>
+                <p v-if="data.is_electron">Electron版本：{{ data.build_info.electron_version }}</p>
+                <p v-if="data.is_electron">编译时间：{{ data.build_info.time }}</p>
+                <p> 浏览器版本：{{ getExplore() }}</p>
+
+            </div>
+        </el-col>
+        <el-col :span="12">
+            <div class="grid-content container">About</div>
+        </el-col>
+    </el-row>
+
 </template>
 
 <style lang="scss" scoped>
-  .about{
-    width: 100%;
-    height: 100%;
-    background-color: #f5f5f5;
-  }
-  .about-content{
-    width: 100%;
-    height: 100%;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: flex-start;
-    overflow: auto;
-    .about-content-title{
-        width: 100%;
-        height: 50px;
+    .container {
         display: flex;
-        justify-content: center;
+        flex-direction: column;
         align-items: center;
-        .about-content-title-text{
-            font-size: 30px;
-            font-weight: bold;
-        }
+        justify-content: center;
+        min-height: 100vh;
     }
-
-
-  }
 </style>

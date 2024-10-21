@@ -1,5 +1,7 @@
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
+// 从package.json获取版本号
+const version = require('./package.json').version;
 
 // https://vitejs.dev/config/ 
 export default defineConfig({
@@ -18,6 +20,24 @@ export default defineConfig({
     outDir: 'html',
     chunkSizeWarningLimit: 500,
     rollupOptions: {
+      plugins: [
+        {
+          name: 'make_build_info.json',
+          generateBundle() {
+            const build_info = {
+              version: version,
+              timestamp: Date.now(),
+              time: new Date().toLocaleString(),
+              type: 'vite'
+            }
+            this.emitFile({
+              type: 'asset',
+              fileName: 'build_info.json',
+              source: JSON.stringify(build_info, null, 2)
+            });
+          }
+        }
+      ],
       output: {
         manualChunks(id) {
           // 分割 utils.ts 为单独的 chunk

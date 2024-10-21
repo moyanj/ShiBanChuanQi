@@ -73,13 +73,13 @@
 
                 <el-col :span="4">
                     <el-button text @click="data.page_type = 'wish'">
-                        <el-image :src="icons.tachometer" class="icon"/>
+                        <el-image :src="icons.wish" class="icon"/>
                         <span>&nbsp;抽卡</span>
                     </el-button>
                 </el-col>
                 
                 <el-col :span="4">
-                    <el-button text @click="data.page_type = 'copy'">
+                    <el-button text @click="data.page_type = 'MiJing'">
                         <el-image :src="icons.door" class="icon"/>
                         <span>&nbsp;秘境</span>
                     </el-button>

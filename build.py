@@ -22,7 +22,7 @@ parser.add_argument("--no-compile-html", action="store_true", help="not build ht
 args = parser.parse_args()
 
 project_name = 'ShiBanChuanQi'
-version = "1.0.0b"
+version = json.load(open("package.json"))["version"]
 electron_version = args.electron_version
 
 if args.target == "all":
@@ -38,8 +38,17 @@ if args.target == "all":
         ["22.3.27", "win32", 'arm64', "windows7"]       # Windows arm64(兼容版)
     ]
 else:
+    if args.target.split("-")[0] == "windows7" or args.target.split("-")[0] == "windows":
+        name = "win32"
+    else:
+        name = args.target.split("-")[0]
+
+    if args.target.split("-")[0] == "windows7":
+        ele_ver = "22.3.27"
+    else:
+        ele_ver = electron_version
     targets = [
-        [electron_version] + args.target.split("-") + [args.target.split("-")[0]]
+        [ele_ver, name, args.target.split("-")[1], args.target.split("-")[0]]
     ]
 
 url = "https://npmmirror.com/mirrors/electron/{version}/electron-v{version}-{system}-{arch}.zip"
@@ -50,7 +59,7 @@ package_json = {
   "main": "main.js"
 }
 
-
+shutil.rmtree("build", ignore_errors=True)
 os.makedirs("build", exist_ok=True)
 os.makedirs(".cache", exist_ok=True)
 if args.no_compile_html:
@@ -89,6 +98,7 @@ for target in targets:
         f.close()
 
 for target in targets:
+        print(f"Target: {'-'.join(target)}")
         print("Building {} {} App...".format(target[3], target[2]))
         build_dir = f"build/{target[3]}-{target[2]}"
         shutil.rmtree(build_dir, ignore_errors=True)
@@ -110,7 +120,8 @@ for target in targets:
             "timestamp": time.time() * 1000,
             "platform": target[3],
             "arch": target[2],
-            "time": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+            "time": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
+            "type": "electron"
         }
         with open(os.path.join(build_dir, "resources", "app", "html", "build_info.json"), "w") as f:
             json.dump(build_info, f)
