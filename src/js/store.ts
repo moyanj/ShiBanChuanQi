@@ -39,7 +39,7 @@ export const useSaveStore = defineStore('save', {
   persist: {
     type: 'storage',
     name: 'save',
-    encryption: true,
+    // encryption: true,
   },
   state: (): SaveStoreState => ({
     user_name: '玩家',

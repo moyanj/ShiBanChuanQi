@@ -13,10 +13,10 @@
             <div class="grid-content container">
                 <h1>十班传奇</h1>
                 <br>
-                <p>版本：{{ data.build_info.version }}</p>
+                <p v-if="data.build_info != null">版本：{{ data.build_info.version }}</p>
                 <p v-if="data.is_electron">Electron版本：{{ data.build_info.electron_version }}</p>
 
-                <p>编译时间：{{ data.build_info.time }}</p>
+                <p  v-if="data.build_info != null">编译时间：{{ data.build_info.time }}</p>
                 <p> 浏览器版本：{{ getExplore() }}</p>
 
             </div>
