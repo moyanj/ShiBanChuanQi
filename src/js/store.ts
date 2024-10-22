@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import { ThingsManager } from './things';
 
 interface BuildInfoState {
   version: string;
@@ -20,6 +21,7 @@ export interface SaveStoreState {
   user_name: string;
   user_level: number;
   user_avatar: string;
+  things: ThingsManager;
 }
 
 export const useDataStore = defineStore('data_store', {
@@ -43,5 +45,6 @@ export const useSaveStore = defineStore('save', {
     user_name: '玩家',
     user_level: 1,
     user_avatar: '',
+    things: new ThingsManager(),
   }),
 });

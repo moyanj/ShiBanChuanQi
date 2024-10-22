@@ -87,11 +87,15 @@
 
           case "get_save":
             alert(saveStore[cmds[1]]);
+            break;
 
           case "exit":
             dataStore.console_show = false;
             window.close();
             break;
+
+          case "devtools":
+            window.openDevTools()
 
           default:
             // 当命令未知时提示用户
