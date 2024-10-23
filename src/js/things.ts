@@ -1,23 +1,9 @@
-export enum ThingsID {
-    MeiDuQi,
-}
-export var things = {
-    [ThingsID.MeiDuQi]: {
-        name: '美杜奇',
-        desc: '梅杜莎是游戏里的一个角色，她拥有超能力，可以控制自己周围的物体。',
-        // 内部名称
-        id: "MeiDuQi",
-    }   
-}
-
 export class Thing {
-    id: ThingsID;
     name: string;
     desc: string;
-    constructor(id: ThingsID) {
-        this.id = id;
-        this.name = things[id].name;
-        this.desc = things[id].desc;
+    constructor() {
+        this.name = "测试物品";
+        this.desc = "这是一个测试物品”";
     }
 }
 
@@ -27,13 +13,31 @@ export class ThingsManager {
         this.things = {};
     }
     add(thing: Thing) {
-        if (this.things[thing.id] == undefined) {
-            this.things[thing.id] = 0;
+        if (this.things[thing.name] == undefined) {
+            this.things[thing.name] = 0;
         }
-        this.things[thing.id] += 1;
+        this.things[thing.name] += 1;
     }
-    get(id: ThingsID) {
+    get(id: string) {
         return this.things[id];
     }
+    get_all() {
+        return this.things;
+    }
+    remove(id: string) {
+        this.things[id] -= 1;
+    }
+}
+
+class MeiDuQi extends Thing {
+    constructor() {
+        super();
+        this.name = "梅杜莎棋";
+        this.desc = "梅杜莎棋，是梅杜莎的棋子，可以控制梅杜莎进行攻击、技能、爆发技等操作。";
+    }
+}
+
+export var things = {
+    "MeiDuQi": MeiDuQi
 }
 

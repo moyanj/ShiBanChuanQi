@@ -112,3 +112,7 @@ export class Fairy extends Character {
         return this.atk * 5 * other;
     }
 }
+
+export var characters = {
+    Fairy: Fairy
+}

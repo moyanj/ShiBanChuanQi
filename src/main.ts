@@ -5,7 +5,7 @@ import { createPlugin } from 'vue3-persist-storages'
 import 'element-plus/dist/index.css'
 import 'element-plus/theme-chalk/dark/css-vars.css'
 import './style/style.scss'
-import { ThingsID, Thing, ThingsManager } from './js/things'
+import { things } from './js/things'
 import App from './App.vue'
 
 const app = createApp(App);
@@ -18,3 +18,5 @@ p.use(createPlugin({
 
 app.use(p)
 app.mount('#app');
+let v = Reflect.ownKeys(things)
+console.log(v)
