@@ -71,7 +71,7 @@ class Builer:
             return [Target(system, arch, self.default_version, name)]
 
         return [
-            # Target("linux", "x64", self.default_version, "linux"),  # Linux x64
+            Target("linux", "x64", self.default_version, "linux"),  # Linux x64
             Target("linux", "arm64", self.default_version, "linux"),  # Linux arm64
             Target("linux", "armv7l", self.default_version, "linux"),  # Linux armv7l
             Target("win32", "x64", self.default_version, "win"),  # Windows x64
@@ -132,6 +132,7 @@ class Builer:
             "arch": target.arch,
             "time": time.strftime("%Y/%m/%d %H:%M:%S", time.localtime()),
             "type": "electron",
+            "version":self.info.version
         }
         return json.dumps(data)
 
