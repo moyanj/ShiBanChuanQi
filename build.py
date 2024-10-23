@@ -144,7 +144,7 @@ for target in targets:
             "timestamp": time.time() * 1000,
             "platform": target[3],
             "arch": target[2],
-            "time": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
+            "time": time.strftime("%Y/%m/%d %H:%M:%S", time.localtime()),
             "type": "electron"
         }
         with open(os.path.join(build_dir, "resources", "app", "html", "build_info.json"), "w") as f:
