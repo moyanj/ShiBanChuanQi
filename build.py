@@ -51,7 +51,25 @@ else:
         [ele_ver, name, args.target.split("-")[1], args.target.split("-")[0]]
     ]
 
-url = "https://npmmirror.com/mirrors/electron/{version}/electron-v{version}-{system}-{arch}.zip"
+def download(r):
+    # 获取文件大小
+    total_size = int(r.headers.get("content-length"))
+
+    f = open(".cache/electron-{}-{}.zip".format(target[3], target[2]), "wb")
+
+    with tqdm.tqdm(total=total_size, unit="B", unit_scale=True) as pbar:
+        for chunk in r.iter_content(chunk_size=1024):
+            if chunk:
+                f.write(chunk)
+                pbar.update(len(chunk))
+
+    f.close()
+    r.close()
+
+urls = [
+    "https://npmmirror.com/mirrors/electron/{version}/electron-v{version}-{system}-{arch}.zip",
+    "https://github.com/electron/electron/releases/download/v{version}/electron-v{version}-{system}-{arch}.zip"
+]
 
 package_json = {
   "name": project_name,
@@ -80,22 +98,28 @@ for target in targets:
             continue
 
         print("Downloading {} {} SDK ...".format(target[3], target[2]))
-        url_str = url.format(version=target[0], system=target[1], arch=target[2])
-        print(url_str)
-        r = requests.get(url_str, stream=True, timeout=5)
-
-        # 获取文件大小
-        total_size = int(r.headers.get("content-length"))
-
-        f = open(".cache/electron-{}-{}.zip".format(target[3], target[2]), "wb")
-
-        with tqdm.tqdm(total=total_size, unit="B", unit_scale=True) as pbar:
-            for chunk in r.iter_content(chunk_size=1024):
-                if chunk:
-                    f.write(chunk)
-                    pbar.update(len(chunk))
-
-        f.close()
+        done = False
+        for url in urls:
+            url_str = url.format(version=target[0], system=target[1], arch=target[2])
+            print("Trying...:", url_str)
+            try:
+                r = requests.get(url_str, stream=True, timeout=5, )
+                print(r.status_code)
+                r.raise_for_status()
+                
+                
+                if r.status_code != 200:
+                    raise Exception("Error downloading for", url_str)
+                download(r)
+                r.close()
+                done = True
+                break
+            except:
+                print("Error downloading for", url_str)
+                continue
+        if not done:
+            print("All downloads failed, aborting...")
+            exit(1)
 
 for target in targets:
         print(f"Target: {'-'.join(target)}")
