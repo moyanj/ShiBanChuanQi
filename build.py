@@ -17,7 +17,7 @@ except ImportError:
 
 parser = argparse.ArgumentParser()
 parser.add_argument("target", help="system name", default="all")
-parser.add_argument("--electron-version", help="electron version", default="33.0.1")
+parser.add_argument("--electron-version", help="electron version", default="33.0.2")
 parser.add_argument("--no-compile-html", action="store_true", help="not build html")
 args = parser.parse_args()
 
