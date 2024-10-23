@@ -13,10 +13,11 @@ export class ThingsManager {
         this.things = {};
     }
     add(thing: Thing) {
-        if (this.things[thing.name] == undefined) {
-            this.things[thing.name] = 0;
+        let name = Object.getPrototypeOf(thing).constructor.name;
+        if (this.things[name] == undefined) {
+            this.things[name] = 0;
         }
-        this.things[thing.name] += 1;
+        this.things[name] += 1;
     }
     get(id: string) {
         return this.things[id];
@@ -29,7 +30,7 @@ export class ThingsManager {
     }
 }
 
-class MeiDuQi extends Thing {
+export class MeiDuQi extends Thing {
     constructor() {
         super();
         this.name = "梅杜莎棋";
@@ -37,7 +38,7 @@ class MeiDuQi extends Thing {
     }
 }
 
-export var things = {
+export const ThingList = {
     "MeiDuQi": MeiDuQi
 }
 

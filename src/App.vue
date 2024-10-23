@@ -9,7 +9,7 @@
   import Character from './views/Character.vue';
   import Wish from './views/Wish.vue';
   import { icons } from './js/utils';
-
+  import { ThingList } from './js/things';
   // 导入状态管理库
   import { useDataStore, useSaveStore } from './js/store';
 
@@ -88,6 +88,15 @@
           case "get_save":
             alert(saveStore[cmds[1]]);
             break;
+
+          case "add_thing":
+            let thing = ThingList[cmds[1]];
+            if (thing == undefined) {
+              alert("物品不存在");
+              break;
+            }
+            saveStore.things.add(new thing());
+            break
 
           case "exit":
             dataStore.console_show = false;
