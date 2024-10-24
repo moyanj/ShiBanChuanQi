@@ -15,6 +15,7 @@ export interface DataStoreState {
   page_type: string;
   is_electron: boolean;
   build_info: BuildInfoState | null;
+  console_show: boolean;
 }
 
 export interface SaveStoreState {
@@ -32,6 +33,7 @@ export const useDataStore = defineStore('data_store', {
     page_type: 'main',
     is_electron: false,
     build_info: null,
+    console_show: false,
   }),
 });
 
