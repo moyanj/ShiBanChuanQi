@@ -114,10 +114,13 @@ class Builer:
         file_path = f".cache/ele-{target}.zip"
         if os.path.exists(file_path):
             print(f"{target} SDK already exists, checking integrity...")
-            if not self.check_file(target):
-                print(f"{target} SDK integrity check failed, redownloading...")
+            if not self.args.no_check:
+                if not self.check_file(target):
+                    print(f"{target} SDK integrity check failed, redownloading...")
+                else:
+                    print(f"{target} SDK integrity check passed, skipping download.")
+                    return
             else:
-                print(f"{target} SDK integrity check passed, skipping download.")
                 return
 
         print(f"Downloading {target} SDK ...")
@@ -130,11 +133,12 @@ class Builer:
                     if r.status_code == 200:  # 请求成功
                         self.download_file(target, r)
                         # 进行校验
-                        if not self.check_file(target):
-                            print(
-                                f"{target} SDK integrity check failed, redownloading..."
-                            )
-                            break  # 重新开始下载循环
+                        if not self.args.no_check:
+                            if not self.check_file(target):
+                                print(
+                                    f"{target} SDK integrity check failed, redownloading..."
+                                )
+                                break  # 重新开始下载循环
                         print(f"{target} SDK downloaded successfully.")
                         return
                     else:
