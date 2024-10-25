@@ -232,7 +232,11 @@ class Builer:
         for root, dirs, files in os.walk("html"):
             for file in files:
                 all_files.append(os.path.join(root, file))
-
+                
+        for root, dirs, file in os.walk("electron"):
+            for file in files:
+                all_files.append(file)
+                
         for file in tqdm.tqdm(all_files):
             os.makedirs(
                 os.path.dirname(
@@ -244,9 +248,7 @@ class Builer:
                 file, os.path.join("build", str(target), "resources", "app", file)
             )
 
-        shutil.copy(
-            "main.js", os.path.join("build", str(target), "resources", "app", "main.js")
-        )
+        
 
     def after_build(self, target):
         build_dir = os.path.join("build", str(target))

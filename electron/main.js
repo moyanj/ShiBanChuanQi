@@ -1,10 +1,13 @@
 const { app, BrowserWindow } = require("electron");
-const path = require("path");
+const path = require("node:path");
 
 function createWindow() {
   const win = new BrowserWindow({
-    width: 1360,
-    height: 600,
+    width: 1366,
+    height: 720,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js')
+    }
   });
     // 注意：
   //  因为我们加载的是Vue 构建后的dist 目录，所以我们需要改一下， load
