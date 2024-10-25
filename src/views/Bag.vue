@@ -1,6 +1,6 @@
 <script lang="ts" setup>
     import { watch, ref } from 'vue';
-    import { ElTable, ElCard, ElTableColumn } from 'element-plus';
+    import { ElTable, ElButton, ElTableColumn } from 'element-plus';
     import { useSaveStore, SaveStoreState } from '../js/store';
     import { ThingList } from '../js/things';
     const save: SaveStoreState = useSaveStore();
@@ -11,29 +11,49 @@
         for (let id in things) {
 
             let thing = ThingList[id];
+            if (!thing) {
+                continue;
+            }
             thing = new thing();
+            let count = save.things.get(id);
+            if (count == 0) {
+                continue;
+            }
             data.push({
+                id: id,
                 name: thing.name,
                 desc: thing.desc,
-                count: save.things.get(id),
+                count: count,
             });
 
         }
-        console.log(data);
         return data;
     }
 
+    function remove(row: any) {
+        let id = row.id;
+        if (id) {
+            save.things.remove(id);
+        }
+    }
     // 转换为el-table的格式
     const table_data = ref(update_data());
-
+    watch(save.things, () => {
+        table_data.value = update_data();
+    });
 
 </script>
 
 <template>
-    <el-table :data="table_data" max-width="800px" class="table">
+    <el-table :data="table_data" max-width="800px" class="table" empty-text="暂无物品">
         <el-table-column prop="name" label="物品名" width="100px"></el-table-column>
         <el-table-column prop="desc" label="描述"></el-table-column>
         <el-table-column prop="count" label="数量"></el-table-column>
+        <el-table-column label="操作">
+            <template #default="scope">
+                <el-button @click="remove(scope.row)" text> 删除</el-button>
+            </template>
+        </el-table-column>
     </el-table>
 </template>
 
@@ -50,6 +70,6 @@
     .table {
         margin-top: 10vh;
     }
-    
+
 
 </style>

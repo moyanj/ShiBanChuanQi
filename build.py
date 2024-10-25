@@ -67,7 +67,7 @@ class Builer:
     def make_target(self):
         if self.args.target != "all":  # 指定目标
             name, arch = self.args.target.split("-")
-            system = self.cname.get(name.name)
+            system = self.cname.get(name, name)
             return [Target(system, arch, self.default_version, name)]
 
         return [
