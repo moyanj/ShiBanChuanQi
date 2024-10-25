@@ -112,6 +112,11 @@
             dataStore.$reset()
             saveStore.$reset();
             break;
+
+          case "devtool":
+            window.openDevTools();
+            break;
+            
           default:
             // 当命令未知时提示用户
             alert("未知命令");

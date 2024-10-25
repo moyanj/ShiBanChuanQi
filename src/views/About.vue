@@ -3,7 +3,7 @@
     import { useDataStore, DataStoreState } from '../js/store';
     import { getExplore } from '../js/utils';
     const data: DataStoreState = useDataStore();
-
+    const electron = window.electron;
 </script>
 
 <template>
@@ -14,7 +14,7 @@
                 <br>
                 <p v-if="data.build_info != null">版本：{{ data.build_info.version }}</p>
                 <p v-if="data.is_electron">Electron版本：{{ data.build_info.electron_version }}</p>
-
+                <p v-if="data.is_electron">NodeJS版本：{{ electron.version.node }}</p>
                 <p  v-if="data.build_info != null">编译时间：{{ data.build_info.time }}</p>
                 <p> 浏览器版本：{{ getExplore() }}</p>
 
