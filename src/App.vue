@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
   // 导入页面组件
   import Home from './views/Home.vue';
   import Fight from './views/Fight.vue';
@@ -95,17 +95,18 @@
               alert("物品不存在");
               break;
             }
-            saveStore.things.add(new thing());
+            let count:number = 1;
+            if ( cmds[2] ) {
+              count = parseInt(cmds[2]);
+            }
+            
+            saveStore.things.add(new thing(), count);
             break
 
           case "exit":
             dataStore.console_show = false;
             window.close();
             break;
-
-          case "devtools":
-            window.openDevTools()
-
           default:
             // 当命令未知时提示用户
             alert("未知命令");

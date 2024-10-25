@@ -12,12 +12,12 @@ export class ThingsManager {
     constructor() {
         this.things = {};
     }
-    add(thing: Thing) {
+    add(thing: Thing, n:number=1) {
         let name = Object.getPrototypeOf(thing).constructor.name;
         if (this.things[name] == undefined) {
             this.things[name] = 0;
         }
-        this.things[name] += 1;
+        this.things[name] += n;
     }
     get(id: string) {
         return this.things[id];
