@@ -23,6 +23,7 @@ export interface SaveStoreState {
   user_level: number;
   user_avatar: string;
   things: ThingsManager;
+  n_wish: number;
 }
 
 export const useDataStore = defineStore('data_store', {
@@ -48,5 +49,6 @@ export const useSaveStore = defineStore('save', {
     user_level: 1,
     user_avatar: '',
     things: new ThingsManager(),
+    n_wish: 0,
   }),
 });

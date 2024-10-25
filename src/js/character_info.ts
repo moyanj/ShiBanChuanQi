@@ -116,3 +116,7 @@ export class Fairy extends Character {
 export var characters = {
     Fairy: Fairy
 }
+
+export const wish_list = [
+    "Fairy",
+]

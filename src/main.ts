@@ -18,3 +18,5 @@ p.use(createPlugin({
 app.use(p)
 app.mount('#app');
 
+
+console.log(`流萤天下第一！！！！`)

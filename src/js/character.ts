@@ -1,13 +1,13 @@
 import { Character } from "./character_info";
 
 export enum CharacterType  {
-    Fire, // 火
-    Water, // 水
-    Thunder, // 雷
-    Grass, // 草
-    LiangZi, // 量子
-    Nihility, // 虚无
-    Physics // 物理
+    Fire = "火", // 火
+    Water = "水", // 水
+    Thunder = "雷", // 雷
+    Grass = "草", // 草
+    LiangZi = "量子", // 量子
+    Nihility = "虚无", // 虚无
+    Physics = "物理", // 物理
 }
 
 export class FightEnv {
@@ -42,3 +42,4 @@ export class FightEnv {
         return max
     }
 }
+
