@@ -39,18 +39,16 @@ export default defineConfig({
         }
       ],
       output: {
-        
+        chunkFileNames: "assets/lib-[name].js",
+        entryFileNames: "assets/main.js",
         manualChunks(id) {
-          // 分割 utils.ts 为单独的 chunk
-          if (id.includes('utils.ts')) {
-            return 'utils';
-          }
-          // 分割指定的库文件
-          if (['vue', 'pinia', 'vue3-persist-storages', 'element-plus'].some(lib => id.includes(lib))) {
-            return 'lib';
+          if (['element-plus'].some(lib => id.includes(lib))) {
+            return 'element-plus';
           }
         }
+
       }
     }
   }
-});
+}
+);
