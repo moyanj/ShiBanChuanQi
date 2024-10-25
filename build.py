@@ -29,6 +29,7 @@ class Target:
         self.url_list.extend(
             [
                 "https://npmmirror.com/mirrors/electron/{version}/electron-v{version}-{system}-{arch}.zip",
+                "https://ghproxy.cn/https://github.com/electron/electron/releases/download/v{version}/electron-v{version}-{system}-{arch}.zip",
                 "https://github.com/electron/electron/releases/download/v{version}/electron-v{version}-{system}-{arch}.zip",
             ]
         )
@@ -54,6 +55,9 @@ class ProjectInfo:
 
 
 class Builer:
+    MAX_RETRIES = 3  # 最大重试次数
+    RETRY_DELAY = 2  # 重试间隔（秒）
+    
     def __init__(self, args):
         self.args = args
         self.default_version = self.args.electron_version
@@ -63,6 +67,7 @@ class Builer:
         }
         self.targets = self.make_target()
         self.info = ProjectInfo()
+        
 
     def make_target(self):
         if self.args.target != "all":  # 指定目标
@@ -84,21 +89,22 @@ class Builer:
 
     def download_file(self, target: Target, r: requests.Response):
         # 获取文件大小
-        total_size = int(r.headers.get("content-length"))
+        total_size = int(r.headers.get("content-length", 0))
+        
+        # 创建缓存目录（如果不存在）
+        os.makedirs('.cache', exist_ok=True)
 
-        f = open(f".cache/ele-{target}.zip", "wb")
-        with tqdm.tqdm(total=total_size, unit="B", unit_scale=True) as pbar:  # 进度条
+        file_path = f".cache/ele-{target}.zip"
+        with open(file_path, "wb") as f, tqdm.tqdm(total=total_size, unit="B", unit_scale=True) as pbar:
             for chunk in r.iter_content(chunk_size=1024):
                 if chunk:
                     f.write(chunk)
                     pbar.update(len(chunk))
 
-        f.close()
-        r.close()
-
     def download(self):
         for target in self.targets:
-            if os.path.exists(f".cache/ele-{target}.zip"):
+            file_path = f".cache/ele-{target}.zip"
+            if os.path.exists(file_path):
                 print(f"{target} SDK already exists, skipping...")
                 continue
             
@@ -106,14 +112,24 @@ class Builer:
             
             for url in target.make_url():
                 print(url)
-                r = requests.get(url, stream=True, timeout=5)
-                print(r.status_code)
-                if r.status_code == 200:  # 请求成功
-                    self.download_file(target, r)
-                    break
-                else:
-                    print("Error downloading for", url)
-                    r.close()
+                for attempt in range(self.MAX_RETRIES):
+                    try:
+                        r = requests.get(url, stream=True, timeout=5)
+                        print(r.status_code)
+                        if r.status_code == 200:  # 请求成功
+                            self.download_file(target, r)
+                            break
+                        else:
+                            print(f"Error downloading from {url}, status code: {r.status_code}")
+                    except requests.RequestException as e:
+                        print(f"Request failed: {e}")
+                    finally:
+                        r.close()
+
+                    # 如果请求失败，等待一段时间后重试
+                    if attempt < self.MAX_RETRIES - 1:
+                        print(f"Retrying in {self.RETRY_DELAY} seconds...")
+                        time.sleep(self.RETRY_DELAY)
 
     def build_html(self):
         print("Building HTML...")

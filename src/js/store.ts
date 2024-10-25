@@ -50,7 +50,7 @@ export const useSaveStore = defineStore('save', {
   state: (): SaveStoreState => ({
     user_name: '玩家',
     user_level: 1,
-    user_avatar: '',
+    user_avatar: 'avatars/1.png',
     things: new ThingsManager(),
     n_wish: 0,
     characters: new CharacterManager(),

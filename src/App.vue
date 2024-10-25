@@ -101,11 +101,16 @@
             }
             
             saveStore.things.add(new thing(), count);
-            break
+            break;
 
           case "exit":
             dataStore.console_show = false;
             window.close();
+            break;
+
+          case "reset":
+            dataStore.$reset()
+            saveStore.$reset();
             break;
           default:
             // 当命令未知时提示用户
