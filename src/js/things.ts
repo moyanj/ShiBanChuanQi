@@ -25,8 +25,9 @@ export class ThingsManager {
     get_all() {
         return this.things;
     }
-    remove(id: string) {
-        this.things[id] -= 1;
+    remove(id: string, n:number=1) {
+        console.log(n);
+        this.things[id] -= n;
     }
 }
 

@@ -1,9 +1,16 @@
 <script lang="ts" setup>
     import { watch, ref } from 'vue';
-    import { ElTable, ElButton, ElTableColumn } from 'element-plus';
+    import { ElTable, ElButton, ElTableColumn, ElDialog, ElForm, ElFormItem, ElSlider } from 'element-plus';
     import { useSaveStore, SaveStoreState } from '../js/store';
     import { ThingList } from '../js/things';
+
     const save: SaveStoreState = useSaveStore();
+    var deleteDialog_show = ref(false);
+    var delete_args = ref({
+        n: 1,
+        max: 1,
+        arg: null
+    });
 
     function update_data() {
         let data = [];
@@ -30,14 +37,20 @@
         return data;
     }
 
-    function remove(row: any) {
-        let id = row.id;
+    function remove(data) {
+        console.log(data.n);
+        let id = data.arg.row.id;
+
         if (id) {
-            save.things.remove(id);
+            save.things.remove(id, data.n);
         }
+        data.n = 1;
+        deleteDialog_show.value = false
     }
+
     // 转换为el-table的格式
     const table_data = ref(update_data());
+    
     watch(save.things, () => {
         table_data.value = update_data();
     });
@@ -51,10 +64,21 @@
         <el-table-column prop="count" label="数量"></el-table-column>
         <el-table-column label="操作">
             <template #default="scope">
-                <el-button @click="remove(scope.row)" text> 删除</el-button>
+                <el-button @click="delete_args.arg = scope;deleteDialog_show = true" text> 删除</el-button>
             </template>
         </el-table-column>
     </el-table>
+
+    <el-dialog v-model="deleteDialog_show" title="删除物品">
+        <el-form>
+            <el-form-item label="物品名称">
+                <el-slider v-model="delete_args.n" :min="1" :max="delete_args.arg.row.count" show-input />
+            </el-form-item>
+            <el-form-item>
+                <el-button type="primary" @click="remove(delete_args)">确定</el-button>
+            </el-form-item>
+        </el-form>
+    </el-dialog>
 </template>
 
 <style scoped lang="scss">
