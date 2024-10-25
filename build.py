@@ -233,11 +233,9 @@ class Builer:
             for file in files:
                 all_files.append(os.path.join(root, file))
                 
-        for root, dirs, file in os.walk("electron"):
-            for file in files:
-                all_files.append(file)
-                
+        
         for file in tqdm.tqdm(all_files):
+            
             os.makedirs(
                 os.path.dirname(
                     os.path.join("build", str(target), "resources", "app", file)
@@ -247,6 +245,11 @@ class Builer:
             shutil.copy(
                 file, os.path.join("build", str(target), "resources", "app", file)
             )
+            
+        for root, dirs, files in os.walk("electron"):
+            for file in files:
+                shutil.copy(os.path.join(root, file),os.path.join("build", str(target), "resources", "app", file))
+        
 
         
 

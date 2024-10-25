@@ -19,6 +19,9 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
+
+    "typeRoots": ["./src/types"],
+    
     
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue"]
