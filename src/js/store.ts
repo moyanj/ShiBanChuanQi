@@ -26,6 +26,7 @@ export interface SaveStoreState {
   things: ThingsManager;
   n_wish: number;
   characters: CharacterManager;
+  wish_number: number;
 }
 
 export const useDataStore = defineStore('data_store', {
@@ -53,5 +54,6 @@ export const useSaveStore = defineStore('save', {
     things: new ThingsManager(),
     n_wish: 0,
     characters: new CharacterManager(),
+    wish_number: 0,
   }),
 });

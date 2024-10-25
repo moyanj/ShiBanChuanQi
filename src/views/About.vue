@@ -4,7 +4,6 @@
     import { getExplore } from '../js/utils';
     const data: DataStoreState = useDataStore();
 
-
 </script>
 
 <template>

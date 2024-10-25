@@ -29,6 +29,7 @@
         saveStore.things.remove("XinHuo", 180);
 
         saveStore.n_wish++;
+        saveStore.wish_number++;
 
         let n: number = random.random();
         console.log("随机结果", n);
@@ -81,6 +82,10 @@
         <el-row>
             <el-button type="primary" @click="wish">点击抽卡</el-button>
         </el-row>
+        
+            <p>据上一次出货的抽数：{{ saveStore.n_wish }}</p>
+            <p>总抽数：{{ saveStore.wish_number }}</p>
+        
     </div>
 </template>
 
