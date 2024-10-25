@@ -12,7 +12,7 @@ export class ThingsManager {
     constructor() {
         this.things = {};
     }
-    add(thing: Thing, n:number=1) {
+    add(thing: Thing, n: number = 1) {
         let name = Object.getPrototypeOf(thing).constructor.name;
         if (this.things[name] == undefined) {
             this.things[name] = 0;
@@ -25,21 +25,21 @@ export class ThingsManager {
     get_all() {
         return this.things;
     }
-    remove(id: string, n:number=1) {
-        console.log(n);
+    remove(id: string, n: number = 1) {
         this.things[id] -= n;
     }
 }
 
-export class MeiDuQi extends Thing {
+export class XinHuo extends Thing {
     constructor() {
         super();
-        this.name = "梅杜莎棋";
-        this.desc = "梅杜莎棋，是梅杜莎的棋子，可以控制梅杜莎进行攻击、技能、爆发技等操作。";
+        this.name = "星火";
+        this.desc = "来自星星的一颗火星";
     }
 }
 
 export const ThingList = {
-    "MeiDuQi": MeiDuQi
+    "XinHuo": XinHuo
 }
+
 

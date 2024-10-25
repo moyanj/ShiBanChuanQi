@@ -124,3 +124,73 @@ export function getExplore(): string {
 
     return 'Unknown';
 }
+
+export class MersenneTwister {
+    private index: number;
+    private mt: number[];
+
+    constructor(seed: number=-1) {
+        if (seed < 0) {
+            seed = new Date().getTime();
+        }
+        this.index = 624;
+        this.mt = new Array(624);
+        this.mt[0] = seed >>> 0; // Ensure unsigned
+
+        for (let i = 1; i < 624; i++) {
+            this.mt[i] = (1812433253 * (this.mt[i - 1] ^ (this.mt[i - 1] >>> 30)) + i) >>> 0;
+        }
+    }
+
+    // 提取随机数
+    private extractNumber(): number {
+        if (this.index >= 624) {
+            this.twist();
+        }
+
+        let y = this.mt[this.index];
+        y ^= (y >>> 11);
+        y ^= (y << 7) & 0x9D2C5680;
+        y ^= (y << 15) & 0xEFC60000;
+        y ^= (y >>> 18);
+
+        this.index++;
+        return y >>> 0; // Ensure unsigned
+    }
+
+    // 返回 0 到 1 之间的随机数
+    public random(): number {
+        return this.extractNumber() / 0xFFFFFFFF;
+    }
+
+    // 返回指定数量的随机数
+    public randomArray(count: number): number[] {
+        const randomNumbers: number[] = [];
+        for (let i = 0; i < count; i++) {
+            randomNumbers.push(this.random());
+        }
+        return randomNumbers;
+    }
+
+    // 扭曲操作
+    private twist(): void {
+        for (let i = 0; i < 624; i++) {
+            const y = (this.mt[i] & 0x80000000) | (this.mt[(i + 1) % 624] & 0x7FFFFFFF);
+            this.mt[i] = this.mt[(i + 397) % 624] ^ (y >>> 1);
+            if (y % 2 !== 0) {
+                this.mt[i] ^= 0x9908B0DF;
+            }
+        }
+        this.index = 0; // Reset index
+    }
+
+    // 设置新种子
+    public setSeed(seed: number): void {
+        this.index = 624;
+        this.mt[0] = seed >>> 0; // Ensure unsigned
+
+        for (let i = 1; i < 624; i++) {
+            this.mt[i] = (1812433253 * (this.mt[i - 1] ^ (this.mt[i - 1] >>> 30)) + i) >>> 0;
+        }
+    }
+}
