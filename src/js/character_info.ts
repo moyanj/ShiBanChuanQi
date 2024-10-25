@@ -19,9 +19,9 @@ export class Character {
     atk: number;
     def_: number;
     speed: number;
-    env: FightEnv;
+    env: FightEnv | null;
 
-    constructor(env: FightEnv) {
+    constructor(env: FightEnv | null = null) {
         this.name = "Test"; // 角色名
         this.desc = "这是一个测试角色";
 
@@ -84,7 +84,7 @@ export class Character {
 }
 
 export class Fairy extends Character {
-    constructor(env) {
+    constructor(env=null) {
         super(env);
         this.name = "Fairy";
         this.desc = "Ⅲ型总序式集成泛用人工智能";

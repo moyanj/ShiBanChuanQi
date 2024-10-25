@@ -115,11 +115,9 @@ export class MersenneTwister {
         }
         this.index = 624;
         this.mt = new Array(624);
-        this.mt[0] = seed >>> 0; // Ensure unsigned
+        // this.mt[0] = seed >>> 0; // Ensure unsigned
 
-        for (let i = 1; i < 624; i++) {
-            this.mt[i] = (1812433253 * (this.mt[i - 1] ^ (this.mt[i - 1] >>> 30)) + i) >>> 0;
-        }
+        this.setSeed(seed);
     }
 
     // 提取随机数

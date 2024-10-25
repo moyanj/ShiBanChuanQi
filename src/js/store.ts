@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { ThingsManager } from './things';
+import { CharacterManager } from './character';
 
 interface BuildInfoState {
   version: string;
@@ -24,6 +25,7 @@ export interface SaveStoreState {
   user_avatar: string;
   things: ThingsManager;
   n_wish: number;
+  characters: CharacterManager;
 }
 
 export const useDataStore = defineStore('data_store', {
@@ -50,5 +52,6 @@ export const useSaveStore = defineStore('save', {
     user_avatar: '',
     things: new ThingsManager(),
     n_wish: 0,
+    characters: new CharacterManager(),
   }),
 });

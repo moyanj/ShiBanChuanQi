@@ -43,3 +43,32 @@ export class FightEnv {
     }
 }
 
+export class CharacterManager {
+    characters: Array<Character>;
+    constructor() {
+        this.characters = []
+    }
+
+    add(character: Character) {
+        this.characters.push(character)
+    }
+
+    remove(character_name: string) {
+        for (let i = 0; i < this.characters.length; i++) {
+            if (this.characters[i].name == character_name) {
+                this.characters.splice(i, 1)
+                return
+            }
+        }
+    }
+
+    is_in(character_name: string) {
+        for (let i = 0; i < this.characters.length; i++) {
+            if (this.characters[i].name == character_name) {
+                return true
+            }
+        }
+        return false
+    }
+}
+

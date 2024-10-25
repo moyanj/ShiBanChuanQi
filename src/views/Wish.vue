@@ -3,8 +3,8 @@
     import { useSaveStore } from "../js/store";
     import { wish_list } from "../js/character_info";
     import { MersenneTwister } from "../js/utils";
-    //import { ThingList } from "../js/things";
-    // import { characters } from "../js/character_info";
+    import { ThingList } from "../js/things";
+    import { characters } from "../js/character_info";
 
     const saveStore = useSaveStore();
     const random = new MersenneTwister();
@@ -27,6 +27,17 @@
             // 随机从wish_list里面拿
             let wish_item = random.random_choice(wish_list);
             console.log(wish_item);
+            if (wish_item in characters) {
+                if (!saveStore.characters.is_in(wish_item)) {
+                    alert("恭喜你，获得了" + wish_item);
+                    saveStore.characters.add(new characters[wish_item]());
+                } else {
+                    alert("恭喜你，获得了" + wish_item + "，但是你已经拥有了，无法再次获得");
+                }
+            } else if (wish_item in ThingList) {
+                alert("恭喜你，获得了" + wish_item);
+                saveStore.things.add(new ThingList[wish_item]());
+            }
             alert(wish_item);
             saveStore.n_wish = 0;
 
