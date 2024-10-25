@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-    import { ElButton, ElRow } from "element-plus";
+    import { ElButton, ElRow, ElMessage } from "element-plus";
     import { useSaveStore } from "../js/store";
     import { wish_list } from "../js/character_info";
     import { MersenneTwister } from "../js/utils";
@@ -20,7 +20,10 @@
 
     function wish() {
         if (saveStore.things.get("XinHuo") < 180) {
-            alert("星火不足，无法进行抽卡");
+            ElMessage({
+                message: "星火不足，无法抽奖",
+                type: "error",
+            });
             return;
         }
         saveStore.things.remove("XinHuo", 180);
@@ -35,22 +38,39 @@
             console.log(wish_item);
             if (wish_item in characters) {
                 if (!saveStore.characters.is_in(wish_item)) {
-                    alert("恭喜你，获得了" + wish_item);
+                    ElMessage({
+                        message: "恭喜你，获得了" + wish_item,
+                        type: "success",
+                    });
                     saveStore.characters.add(new characters[wish_item]());
                 } else {
-                    alert("恭喜你，获得了" + wish_item + "，但是你已经拥有了，无法再次获得");
+                    ElMessage({
+                        message: "恭喜你，获得了" + wish_item + "，但是你已经拥有了，无法再次获得",
+                        type: "success",
+                    });
                 }
             } else if (wish_item in ThingList) {
-                alert("恭喜你，获得了" + wish_item);
+                ElMessage({
+                    message: "恭喜你，获得了" + wish_item,
+                    type: "success",
+                });
                 saveStore.things.add(new ThingList[wish_item]());
             } else {
-                alert("恭喜你，获得了" + wish_item + "，但是这个物品不存在，无法获得");
+
+                ElMessage({
+                    message: "恭喜你，获得了" + wish_item + "，但是这个物品不存在，无法获得",
+                    type: "success",
+                });
             }
             saveStore.n_wish = 0;
 
         } else {
             console.log("未抽到");
-            // alert("未抽到");
+            ElMessage({
+                message: "你什么也没抽到",
+                type: "success",
+                duration: 1500,
+            });
         }
     }
 
