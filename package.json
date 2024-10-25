@@ -11,16 +11,15 @@
   "dependencies": {
     "element-plus": "^2.8.6",
     "pinia": "^2.2.4",
-    "vue": "^3.5.10",
+    "vue": "^3.5.12",
     "vue3-persist-storages": "^1.0.3"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.1.4",
-    "electron": "^33.0.1",
-    "sass": "^1.80.3",
+    "sass": "^1.80.4",
     "sass-loader": "^16.0.2",
-    "typescript": "^5.5.3",
-    "vite": "^5.4.8",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10",
     "vue-tsc": "^2.1.6"
   }
 }

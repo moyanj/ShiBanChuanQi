@@ -19,6 +19,12 @@
 
 
     function wish() {
+        if (saveStore.things.get("XinHuo") < 180) {
+            alert("星火不足，无法进行抽卡");
+            return;
+        }
+        saveStore.things.remove("XinHuo", 180);
+
         saveStore.n_wish++;
 
         let n: number = random.random();
@@ -37,8 +43,9 @@
             } else if (wish_item in ThingList) {
                 alert("恭喜你，获得了" + wish_item);
                 saveStore.things.add(new ThingList[wish_item]());
+            } else {
+                alert("恭喜你，获得了" + wish_item + "，但是这个物品不存在，无法获得");
             }
-            alert(wish_item);
             saveStore.n_wish = 0;
 
         } else {

@@ -7,7 +7,7 @@ const version = require('./package.json').version;
 export default defineConfig({
   base: './',
   plugins: [
-    vue(),
+    vue()
   ],
   css: {
     preprocessorOptions: {
@@ -18,7 +18,7 @@ export default defineConfig({
   },
   build: {
     outDir: 'html',
-    chunkSizeWarningLimit: 500,
+    chunkSizeWarningLimit: 1024,
     rollupOptions: {
       plugins: [
         {
@@ -39,6 +39,7 @@ export default defineConfig({
         }
       ],
       output: {
+        
         manualChunks(id) {
           // 分割 utils.ts 为单独的 chunk
           if (id.includes('utils.ts')) {
