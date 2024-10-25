@@ -2,18 +2,19 @@
     import { ref } from 'vue'
     import { ElCol, ElRow, ElCard, ElAvatar, ElMessageBox, ElMessage, ElButton, ElImage } from 'element-plus'
     import { useSaveStore, SaveStoreState, useDataStore } from '../js/store'
-    import { randomNum, icons } from '../js/utils'
+    import { MersenneTwister, icons } from '../js/utils'
 
-    const save: SaveStoreState = useSaveStore()
-    const data = useDataStore()
-    const isHover = ref(false)
+    const save: SaveStoreState = useSaveStore();
+    const data = useDataStore();
+    const random = new MersenneTwister();
+    const isHover = ref(false);
 
     if (save.user_avatar === "") {
-        save.user_avatar = `avatars/${randomNum(1, 10)}.png`
+        save.user_avatar = `avatars/${random.randint(1,10)}.png`;
     }
 
     function get_avatar() {
-        save.user_avatar = `avatars/${randomNum(1, 10)}.png`
+        save.user_avatar = `avatars/${random.randint(1, 10)}.png`;
     }
 
     function change_name() {

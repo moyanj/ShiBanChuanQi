@@ -25,7 +25,7 @@
         console.log("随机结果", n);
         if (n <= f(saveStore.n_wish)) {
             // 随机从wish_list里面拿
-            let wish_item = wish_list[Math.floor(random.random() * wish_list.length)];
+            let wish_item = random.random_choice(wish_list);
             console.log(wish_item);
             alert(wish_item);
             saveStore.n_wish = 0;
