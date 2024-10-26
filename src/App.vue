@@ -67,10 +67,13 @@ let sound = new Howl({
 });*/
   audios.add("background_music", 'audio/background/main.mp3', { loop: true })
   audios.play("background_music")
-
+  
   if (!dataStore.is_electron) {
     if (!dataStore.is_dev) {
-      ElMessageBox.alert("点击确定开始加载页面");
+      ElMessageBox.alert("当前为网页版，推荐使用electron版游戏体验更佳", '警告', {
+        confirmButtonText: '确定',
+        type: 'warning',
+      })
     }
 
   }
