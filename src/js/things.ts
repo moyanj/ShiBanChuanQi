@@ -16,10 +16,17 @@ export class ThingsManager {
         let name = Object.getPrototypeOf(thing).constructor.name;
         if (this.things[name] == undefined) {
             this.things[name] = 0;
+        } else if (this.things[name] == null) {
+            this.things[name] = 0;
         }
         this.things[name] += n;
     }
     get(id: string) {
+        if (this.things[id] == undefined) {
+            this.things[id] = 0;
+        } else if (this.things[id] == null) {
+            this.things[id] = 0;
+        }
         return this.things[id];
     }
     get_all() {

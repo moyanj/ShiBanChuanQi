@@ -1,14 +1,15 @@
 <script lang="ts" setup>
     import { ElButton, ElRow, ElMessage } from "element-plus";
     import { useSaveStore } from "../js/store";
-    import { wish_list } from "../js/character_info";
     import { MersenneTwister } from "../js/utils";
     import { ThingList } from "../js/things";
     import { characters } from "../js/character_info";
 
     const saveStore = useSaveStore();
     const random = new MersenneTwister();
-
+    const wish_list = []
+    wish_list.push(...Object.keys(characters))
+    
     function f(x: number): number {
         const value = 0.0001 + (Math.exp(x / 25) / 100);
         const r = (value / 4); // 计算结果
@@ -82,10 +83,10 @@
         <el-row>
             <el-button type="primary" @click="wish">点击抽卡</el-button>
         </el-row>
-        
-            <p>据上一次出货的抽数：{{ saveStore.n_wish }}</p>
-            <p>总抽数：{{ saveStore.wish_number }}</p>
-        
+
+        <p>据上一次出货的抽数：{{ saveStore.n_wish }}</p>
+        <p>总抽数：{{ saveStore.wish_number }}</p>
+
     </div>
 </template>
 

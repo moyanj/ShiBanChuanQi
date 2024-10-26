@@ -113,10 +113,68 @@ export class Fairy extends Character {
     }
 }
 
-export var characters = {
-    Fairy: Fairy
+export class FanShiFu extends Character {
+    constructor(env=null) {
+        super(env)
+        this.name = "范师傅"
+    }
 }
 
-export const wish_list = [
-    "Fairy",
-]
+export class ShuiLiFang extends Character {
+    constructor(env=null) {
+        super(env)
+        this.name = "水立方"
+    }
+}
+export class ChenGe extends Character {
+    constructor(env=null) {
+        super(env)
+        this.name = "辰哥"
+    }
+}
+
+export class ZongTong extends Character {
+    constructor(env=null) {
+        super(env)
+        this.name = "总统"
+    }
+}
+
+export class HaoJing extends Character {
+    constructor(env=null) {
+        super(env)
+        this.name = "昊京"
+    }
+}
+
+export class XiaoNiao extends Character {
+    constructor(env=null) {
+        super(env)
+        this.name = "小鸟"
+    }
+}
+
+export class NiuYaoZi extends Character {
+    constructor(env=null) {
+        super(env)
+        this.name = "牛尧资"
+    }
+}
+
+export class DongYin extends Character {
+    constructor(env=null) {
+        super(env)
+        this.name = "东银"
+    }
+}
+
+export var characters = {
+    "Fairy": Fairy,
+    "FanShiFu": FanShiFu,
+    "ShuiLiFang": ShuiLiFang,
+    "ZongTong": ZongTong,
+    "ChenGe": ChenGe,
+    "HaoJing": HaoJing,
+    "NiuYaoZi": NiuYaoZi,
+    "DongYin":DongYin
+}
