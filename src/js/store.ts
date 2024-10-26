@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ThingsManager } from './things';
 import { CharacterManager } from './character';
+import { AudioPlayer } from './utils';
 
 interface BuildInfoState {
   version: string;
@@ -59,3 +60,5 @@ export const useSaveStore = defineStore('save', {
     wish_number: 0,
   }),
 });
+
+export const audios = new AudioPlayer()

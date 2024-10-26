@@ -11,7 +11,7 @@
   import { icons } from './js/utils';
   import { ThingList } from './js/things';
   // 导入状态管理库
-  import { useDataStore, useSaveStore } from './js/store';
+  import { useDataStore, useSaveStore, audios } from './js/store';
 
   // 导入 Element Plus 的消息框组件
   import { ElMessageBox, ElButton, ElImage } from 'element-plus';
@@ -22,15 +22,8 @@
   const dataStore = useDataStore();
   const saveStore = useSaveStore();
 
-  Howler.autoUnlock = true;
-  new Howl({
-    src: ['audio/background/main.mp3'],
-    loop: true,
-    autoplay: true,
-    onplayerror: () => {
-      ElMessageBox.alert("点我以加载节目");
-    }
-  });
+
+
 
 
   fetch('build_info.json')
@@ -58,11 +51,26 @@
       }
 
     });
+    /*
+  let sound = new Howl({
+    src: ['audio/background/main.mp3'],
+    loop: true,
+    autoplay: true,
+  });*/
+  audios.add("background_music", 'audio/background/main.mp3', {loop:true})
+  audios.play("background_music")
+
+  if (!dataStore.is_electron) {
+    if (!dataStore.is_dev) {
+      ElMessageBox.alert("点击确定开始加载页面");
+    }
+    
+  }
 
   // 监听键盘
   document.onkeydown = function (e) {
     // 当按下 Alt+T 且控制台未显示时
-    if (e.code == "KeyT" && e.altKey && !dataStore.console_show) {
+    if (e.code == "KeyC" && e.altKey && !dataStore.console_show) {
       // 显示控制台
       dataStore.console_show = true;
 

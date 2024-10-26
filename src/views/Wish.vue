@@ -100,7 +100,7 @@
         <el-row>
             <el-button type="primary" @click="wish(1)">点击抽卡</el-button>
             <el-button type="primary" @click="wish(10)">点击抽卡(十连)</el-button>
-            <el-button type="primary" @click="wish(1000)" v-if='dataStore.is_dev'>点击抽卡(五百连)</el-button>
+            <el-button type="primary" @click="wish(2500)" v-if='dataStore.is_dev'>点击抽卡(五百连)</el-button>
         </el-row>
 
         <p>据上一次出货的抽数：{{ saveStore.n_wish }}</p>

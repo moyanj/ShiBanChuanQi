@@ -6,7 +6,7 @@ contextBridge.exposeInMainWorld('electron', {
 
   // 接收来自主进程的消息
   receive: (channel, func) => {
-      ipcRenderer.on(channel, (event, ...args) => func(...args));
+      ipcRenderer.on(channel, (event, ...args) => func(event, ...args));
   },
   version: process.versions,
   argv: () => process.argv,

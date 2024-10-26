@@ -13,6 +13,8 @@ import icon_element_physics from "../assets/icon/element-physics.png";
 import icon_element_liangzi from "../assets/icon/element-liangzi.png";
 import icon_element_nihility from "../assets/icon/element-nihility.png";
 
+import { Howl, HowlOptions } from "howler";
+
 export const icons = {
     left: icon_left,
     character: icon_character,
@@ -109,7 +111,7 @@ export class MersenneTwister {
     private index: number;
     private mt: number[];
 
-    constructor(seed: number=-1) {
+    constructor(seed: number = -1) {
         if (seed < 0) {
             seed = new Date().getTime();
         }
@@ -179,4 +181,60 @@ export class MersenneTwister {
             this.mt[i] = (1812433253 * (this.mt[i - 1] ^ (this.mt[i - 1] >>> 30)) + i) >>> 0;
         }
     }
+}
+
+type AudioObj = {
+    [property: string]: Howl
+}
+
+export class AudioPlayer {
+    objs: AudioObj;
+    constructor() {
+        this.objs = {};
+    }
+    public add(name: string, src: string, other?) {
+        if (name in this.objs) {
+            return null;
+        }
+        let obj = new Howl({
+            src: [src], ...other
+        })
+        this.objs[name] = obj;
+        return obj;
+    }
+    public get(name:string) {
+        if (name in this.objs) {
+            return this.objs[name];
+        }
+        return null;
+    }
+    public play(name: string) {
+        let obj = this.get(name)
+        if (obj) {
+            obj.play();
+            return true;
+        }
+        return null;
+    }
+    public stop(name: string) {
+        let obj = this.get(name)
+        if (obj) {
+            obj.stop();
+            return true;
+        }
+        return null;
+    }
+    
+    public loop(name:string, s:boolean|null = null) {
+        let obj = this.get(name)
+        if (obj) {
+            if (s === null) {
+                return obj.loop()
+            } else {
+                obj.loop(s)
+            }
+        }
+        return null;
+    }
+
 }
