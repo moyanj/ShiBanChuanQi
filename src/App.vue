@@ -21,10 +21,10 @@
   // 初始化数据存储
   const dataStore = useDataStore();
   const saveStore = useSaveStore();
-  
+
   Howler.autoUnlock = true;
   new Howl({
-    src: ['audio/backgrund/main.mp3'],
+    src: ['audio/background/main.mp3'],
     loop: true,
     autoplay: true,
     onplayerror: () => {
