@@ -238,3 +238,16 @@ export class AudioPlayer {
     }
 
 }
+
+export function isLandscape() {
+    // 判断横竖屏
+    let width = document.documentElement.clientWidth;
+    let height = document.documentElement.clientHeight;
+    // alert(width+"宽高"+height)
+    if (width > height) {
+        return true;
+    } else {
+        return false;
+    }
+    
+  }
