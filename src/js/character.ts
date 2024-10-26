@@ -55,7 +55,8 @@ export class CharacterManager {
 
     remove(character_name: string) {
         for (let i = 0; i < this.characters.length; i++) {
-            if (this.characters[i].name == character_name) {
+            let name = Object.getPrototypeOf(this.characters[i]).constructor.name;
+            if (name == character_name) {
                 this.characters.splice(i, 1)
                 return
             }
@@ -64,11 +65,13 @@ export class CharacterManager {
 
     is_in(character_name: string) {
         for (let i = 0; i < this.characters.length; i++) {
-            if (this.characters[i].name == character_name) {
+            let name = Object.getPrototypeOf(this.characters[i]).constructor.name;
+            if (name == character_name) {
                 return true
             }
         }
         return false
     }
 }
+var a = {"user_name":"玩家","user_level":1,"user_avatar":"avatars/8.png","things":{"things":{"XinHuo":179863560}},"n_wish":6,"characters":{"characters":[]},"wish_number":1390}
 

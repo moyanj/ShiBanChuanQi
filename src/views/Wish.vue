@@ -13,14 +13,13 @@
     function f(x: number): number {
         const value = 0.0001 + (Math.exp(x / 25) / 100);
         const r = (value / 4); // 计算结果
-        console.log("函数结果：", r);
-        console.log("抽数", x);
+
         return r;
     }
 
 
-    function wish(n:number = 1) {
-        const cost = 180*n; // 十连抽消耗的星火
+    function wish(n: number = 1) {
+        const cost = 180 * n; // 十连抽消耗的星火
         if (saveStore.things.get("XinHuo") < cost) {
             ElMessage({
                 message: "星火不足，无法抽奖",
@@ -50,19 +49,22 @@
         // 处理结果
         results.forEach(item => {
             if (item) {
-                
+
                 if (item in characters) {
                     if (!saveStore.characters.is_in(item)) {
+                        let c = new characters[item]();
                         ElMessage({
-                            message: `恭喜你，获得了${item}`,
+                            message: `恭喜你，获得了${c.name}`,
                             type: "success",
                         });
-                        saveStore.characters.add(new characters[item]());
+                        saveStore.characters.add(c);
                     } else {
+                        let c = new characters[item]();
                         ElMessage({
-                            message: `恭喜你，获得了${item}，但是你已经拥有了，无法再次获得`,
+                            message: `恭喜你，获得了${c.name}，但是你已经拥有了，无法再次获得`,
                             type: "info",
                         });
+                        saveStore.things.add(new ThingList["XinHuo"](), 180)
                     }
                 } else if (item in ThingList) {
                     ElMessage({
@@ -77,17 +79,16 @@
                     });
                 }
             } else {
-                ElMessage({
-                    message: "你什么也没抽到",
-                    type: "info",
-                    duration: 1500,
-                });
+                if (n == 1) {
+                    ElMessage({
+                        message: "你什么也没抽到",
+                        type: "info",
+                        duration: 1000,
+                    });
+                }
+                
             }
         });
-
-        
-
-
     }
 
 </script>
@@ -97,6 +98,7 @@
         <el-row>
             <el-button type="primary" @click="wish(1)">点击抽卡</el-button>
             <el-button type="primary" @click="wish(10)">点击抽卡(十连)</el-button>
+            <el-button type="primary" @click="wish(1000)" v-if='import.meta.env.MODE == "development"'>点击抽卡(五百连)</el-button>
         </el-row>
 
         <p>据上一次出货的抽数：{{ saveStore.n_wish }}</p>
