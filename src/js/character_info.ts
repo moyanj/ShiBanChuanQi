@@ -2,6 +2,7 @@ import { CharacterType, FightEnv } from "./character";
 
 export class Character {
     name: string;
+    inside_name: string;
     desc: string;
 
     general_name: string;
@@ -23,6 +24,7 @@ export class Character {
 
     constructor(env: FightEnv | null = null) {
         this.name = "Test"; // 角色名
+        this.inside_name = "Test";
         this.desc = "这是一个测试角色";
 
         this.skill_name = "技能";
@@ -87,6 +89,7 @@ export class Fairy extends Character {
     constructor(env=null) {
         super(env);
         this.name = "Fairy";
+        this.inside_name = "Fairy";
         this.desc = "Ⅲ型总序式集成泛用人工智能";
 
         this.general_name = "嘴贱";
@@ -117,6 +120,7 @@ export class FanShiFu extends Character {
     constructor(env=null) {
         super(env)
         this.name = "范师傅"
+        this.inside_name = "FanShiFu"
     }
 }
 
@@ -124,12 +128,14 @@ export class ShuiLiFang extends Character {
     constructor(env=null) {
         super(env)
         this.name = "水立方"
+        this.inside_name = "ShuiLiFang"
     }
 }
 export class ChenGe extends Character {
     constructor(env=null) {
         super(env)
         this.name = "辰哥"
+        this.inside_name = "ChenGe"
     }
 }
 
@@ -137,6 +143,7 @@ export class ZongTong extends Character {
     constructor(env=null) {
         super(env)
         this.name = "总统"
+        this.inside_name = "ZongTong"
     }
 }
 
@@ -144,6 +151,7 @@ export class HaoJing extends Character {
     constructor(env=null) {
         super(env)
         this.name = "昊京"
+        this.inside_name = "HaoJing"
     }
 }
 
@@ -151,6 +159,7 @@ export class XiaoNiao extends Character {
     constructor(env=null) {
         super(env)
         this.name = "小鸟"
+        this.inside_name = "XiaoNiao"
     }
 }
 
@@ -158,6 +167,7 @@ export class NiuYaoZi extends Character {
     constructor(env=null) {
         super(env)
         this.name = "牛尧资"
+        this.inside_name = "NiuYaoZi"
     }
 }
 
@@ -165,6 +175,7 @@ export class DongYin extends Character {
     constructor(env=null) {
         super(env)
         this.name = "东银"
+        this.inside_name = "DongYin"
     }
 }
 

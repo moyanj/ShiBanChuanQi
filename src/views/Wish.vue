@@ -51,8 +51,8 @@
         // 处理结果
         results.forEach(item => {
             if (item) {
-
                 if (item in characters) {
+                    
                     if (!saveStore.characters.is_in(item)) {
                         let c = new characters[item]();
                         ElMessage({
