@@ -183,60 +183,196 @@ export class MersenneTwister {
     }
 }
 
-type AudioObj = {
-    [property: string]: Howl
+interface AudioObj {
+    [key: string]: Howl;
+}
+
+interface AddOptions {
+    [key: string]: any;
 }
 
 export class AudioPlayer {
-    objs: AudioObj;
+    private objs: AudioObj;
+
     constructor() {
         this.objs = {};
     }
-    public add(name: string, src: string, other?) {
+
+    /**
+     * 添加一个新的音频对象。
+     * @param name - 音频对象的名称。
+     * @param src - 音频文件的路径。
+     * @param other - 其他配置选项。
+     * @returns 新创建的音频对象，如果名称已存在则返回 null。
+     */
+    public add(name: string, src: string, other?: AddOptions): Howl | null {
         if (name in this.objs) {
+            console.warn(`Audio object with name "${name}" already exists.`);
             return null;
         }
-        let obj = new Howl({
-            src: [src], ...other
-        })
+        const obj = new Howl({
+            src: [src],
+            ...other
+        });
         this.objs[name] = obj;
         return obj;
     }
-    public get(name:string) {
+
+    /**
+     * 获取指定名称的音频对象。
+     * @param name - 音频对象的名称。
+     * @returns 音频对象，如果不存在则返回 null。
+     */
+    public get(name: string): Howl | null {
         if (name in this.objs) {
             return this.objs[name];
         }
+        console.warn(`Audio object with name "${name}" does not exist.`);
         return null;
     }
-    public play(name: string) {
-        let obj = this.get(name)
+
+    /**
+     * 播放指定名称的音频。
+     * @param name - 音频对象的名称。
+     * @returns 如果播放成功返回 true，否则返回 false。
+     */
+    public play(name: string): boolean {
+        const obj = this.get(name);
         if (obj) {
             obj.play();
             return true;
         }
-        return null;
+        return false;
     }
-    public stop(name: string) {
-        let obj = this.get(name)
+
+    /**
+     * 停止播放指定名称的音频。
+     * @param name - 音频对象的名称。
+     * @returns 如果停止成功返回 true，否则返回 false。
+     */
+    public stop(name: string): boolean {
+        const obj = this.get(name);
         if (obj) {
             obj.stop();
             return true;
         }
-        return null;
+        return false;
     }
-    
-    public loop(name:string, s:boolean|null = null) {
-        let obj = this.get(name)
+
+    /**
+     * 暂停播放指定名称的音频。
+     * @param name - 音频对象的名称。
+     * @returns 如果暂停成功返回 true，否则返回 false。
+     */
+    public pause(name: string): boolean {
+        const obj = this.get(name);
+        if (obj) {
+            obj.pause();
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 设置或获取指定名称的音频是否循环播放。
+     * @param name - 音频对象的名称。
+     * @param s - 是否循环播放。如果为 null，则返回当前的循环状态。
+     * @returns 如果设置成功返回 true，如果获取成功返回当前的循环状态，否则返回 null。
+     */
+    public loop(name: string, s: boolean | null = null): boolean | null {
+        const obj = this.get(name);
         if (obj) {
             if (s === null) {
-                return obj.loop()
+                return obj.loop();
             } else {
-                obj.loop(s)
+                obj.loop(s);
+                return true;
             }
         }
         return null;
     }
 
+    /**
+     * 设置指定名称的音频的音量。
+     * @param name - 音频对象的名称。
+     * @param volume - 音量值，范围从 0 到 1。
+     * @returns 如果设置成功返回 true，否则返回 false。
+     */
+    public setVolume(name: string, volume: number): boolean {
+        const obj = this.get(name);
+        if (obj) {
+            obj.volume(volume);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 获取指定名称的音频的当前播放时间。
+     * @param name - 音频对象的名称。
+     * @returns 当前播放时间，如果音频对象不存在则返回 null。
+     */
+    public getCurrentTime(name: string): number | null {
+        const obj = this.get(name);
+        if (obj) {
+            return obj.seek();
+        }
+        return null;
+    }
+
+    /**
+     * 设置指定名称的音频的当前播放时间。
+     * @param name - 音频对象的名称。
+     * @param time - 播放时间，单位为秒。
+     * @returns 如果设置成功返回 true，否则返回 false。
+     */
+    public setCurrentTime(name: string, time: number): boolean {
+        const obj = this.get(name);
+        if (obj) {
+            obj.seek(time);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 获取指定名称的音频的总时长。
+     * @param name - 音频对象的名称。
+     * @returns 总时长，如果音频对象不存在则返回 null。
+     */
+    public getDuration(name: string): number | null {
+        const obj = this.get(name);
+        if (obj) {
+            return obj.duration();
+        }
+        return null;
+    }
+
+    /**
+     * 删除指定名称的音频对象。
+     * @param name - 音频对象的名称。
+     * @returns 如果删除成功返回 true，否则返回 false。
+     */
+    public remove(name: string): boolean {
+        if (name in this.objs) {
+            this.objs[name].unload();
+            delete this.objs[name];
+            return true;
+        }
+        console.warn(`Audio object with name "${name}" does not exist.`);
+        return false;
+    }
+    public stopAll() {
+        for (const name in this.objs) {
+            this.stop(name);
+        }
+    }
+    public removeAll() {
+        for (const name in this.objs) {
+            this.remove(name);
+        }
+    }
+    
 }
 
 export function isLandscape() {
