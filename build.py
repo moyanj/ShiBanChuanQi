@@ -184,6 +184,7 @@ class Builer:
         return is_valid
 
     def download_sha256sum(self):
+        print("Downloading SHA256SUMS...")
         url_temp = (
             "https://cdn.npmmirror.com/binaries/electron/{version}/SHASUMS256.txt"
         )
@@ -195,9 +196,18 @@ class Builer:
 
         for v in versions:
             self.sha256sum[v] = {}
-            url = url_temp.format(version=v)
-            r = requests.get(url)
-            for i in r.text.split("\n"):
+            if os.path.exists(f".cache/SHASUMS256_{v}.txt"):
+                print(f"{v} SHA256SUMS already exists, skipping...")
+                with open(f".cache/SHASUMS256_{v}.txt") as f:
+                    text = f.read()
+            else:
+                print(f"Downloading {v} SHA256SUMS...")
+                url = url_temp.format(version=v)
+                r = requests.get(url)
+                text = r.text
+                with open(f".cache/SHASUMS256_{v}.txt", "w") as f:
+                    f.write(text)
+            for i in text.split("\n"):
                 i_list = i.split(" *")
                 self.sha256sum[v][i_list[1]] = i_list[0]
 
