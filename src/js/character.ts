@@ -50,6 +50,13 @@ export class CharacterManager {
     }
 
     add(character: Character) {
+        // 判断是否重复
+        for (let i = 0; i < this.characters.length; i++) {
+            let name = Object.getPrototypeOf(this.characters[i]).constructor.name;
+            if (name == character.name) {
+                return
+            }
+        }
         this.characters.push(character)
     }
 
@@ -65,6 +72,7 @@ export class CharacterManager {
 
     is_in(character_name: string) {
         for (let i = 0; i < this.characters.length; i++) {
+            console.log(this.characters[i])
             let name = Object.getPrototypeOf(this.characters[i]).constructor.name;
             if (name == character_name) {
                 return true

@@ -13,8 +13,8 @@
     "element-plus": "^2.8.6",
     "howler": "^2.2.4",
     "pinia": "^2.2.4",
-    "vue": "^3.5.12",
-    "vue3-persist-storages": "^1.0.3"
+    "pinia-plugin-persistedstate": "^4.1.2",
+    "vue": "^3.5.12"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.1.4",

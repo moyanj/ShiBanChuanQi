@@ -32,9 +32,7 @@ export interface SaveStoreState {
 }
 
 export const useDataStore = defineStore('data_store', {
-  persist: {
-    type: 'storage',
-  },
+  persist: true,
   state: (): DataStoreState => ({
     page_type: 'main',
     is_electron: false,
@@ -45,11 +43,7 @@ export const useDataStore = defineStore('data_store', {
 });
 
 export const useSaveStore = defineStore('save', {
-  persist: {
-    type: 'storage',
-    name: 'save',
-    // encryption: true,
-  },
+  persist: true,
   state: (): SaveStoreState => ({
     user_name: '玩家',
     user_level: 1,
