@@ -17,6 +17,7 @@ export interface DataStoreState {
   is_electron: boolean;
   build_info: BuildInfoState | null;
   console_show: boolean;
+  is_dev: boolean;
 }
 
 export interface SaveStoreState {
@@ -38,6 +39,7 @@ export const useDataStore = defineStore('data_store', {
     is_electron: false,
     build_info: null,
     console_show: false,
+    is_dev: import.meta.env.MODE == "development"
   }),
 });
 

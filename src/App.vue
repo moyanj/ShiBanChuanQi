@@ -33,7 +33,7 @@
       dataStore.build_info = data;
     })
     .catch(error => {
-      if (import.meta.env.MODE == "development") {
+      if (dataStore.is_dev) {
         console.log(error);
       } else {
         ElMessageBox.alert("配置文件加载错误，请重新下载游戏", '错误', {
