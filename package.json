@@ -1,7 +1,7 @@
 {
-  "name": "shibanchuanqi",
+  "name": "十班传奇",
   "private": true,
-  "version": "1.0.0alpha",
+  "version": "1.0.1alpha",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,7 +9,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@types/howler": "^2.2.12",
     "element-plus": "^2.8.6",
+    "howler": "^2.2.4",
     "pinia": "^2.2.4",
     "vue": "^3.5.12",
     "vue3-persist-storages": "^1.0.3"

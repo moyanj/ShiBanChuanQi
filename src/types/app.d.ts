@@ -2,6 +2,9 @@
 declare global {
     interface Window {
       openDevTools: Function;
+      webkitAudioContext: object;
+      mozAudioContext: object;
+      msAudioContext: object;
       electron: {
         version: {
           electron: string;

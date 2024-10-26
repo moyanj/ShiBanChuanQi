@@ -16,9 +16,21 @@
   // 导入 Element Plus 的消息框组件
   import { ElMessageBox, ElButton, ElImage } from 'element-plus';
 
+  import { Howl, Howler } from 'howler';
+
   // 初始化数据存储
   const dataStore = useDataStore();
   const saveStore = useSaveStore();
+  Howler.autoUnlock = true;
+  var sound = new Howl({
+    src: ['audio/backgrund/main.mp3'],
+    loop: true,
+    autoplay: true,
+    onplayerror: () => {
+      ElMessageBox.alert("点我以加载节目");
+    }
+  });
+
 
   fetch('build_info.json')
     .then(response => response.json())
@@ -39,7 +51,7 @@
         ElMessageBox.alert("配置文件加载错误，请重新下载游戏", '错误', {
           confirmButtonText: '确定',
           type: 'error',
-        }).then(()=> {
+        }).then(() => {
           window.close();
         });
       }
@@ -95,11 +107,11 @@
               alert("物品不存在");
               break;
             }
-            let count:number = 1;
-            if ( cmds[2] ) {
+            let count: number = 1;
+            if (cmds[2]) {
               count = parseInt(cmds[2]);
             }
-            
+
             saveStore.things.add(new thing(), count);
             break;
 
@@ -116,7 +128,7 @@
           case "devtool":
             window.openDevTools();
             break;
-            
+
           default:
             // 当命令未知时提示用户
             alert("未知命令");
@@ -134,7 +146,6 @@
 </script>
 
 <template>
-
   <!-- 根据数据存储中的 page_type 显示不同页面 -->
   <Home v-if="dataStore.page_type == 'main'" />
   <div v-else>
