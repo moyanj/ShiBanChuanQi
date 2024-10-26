@@ -16,13 +16,21 @@
   // 导入 Element Plus 的消息框组件
   import { ElMessageBox, ElButton, ElImage } from 'element-plus';
 
-  import { Howl, Howler } from 'howler';
+  import { KeepAlive, onMounted } from 'vue';
 
   // 初始化数据存储
   const dataStore = useDataStore();
   const saveStore = useSaveStore();
 
 
+
+  onMounted(() => {
+    audios.add("click_sound", 'audio/click.mp3')
+    window.addEventListener("click", () => {
+      console.log("click");
+      audios.play("click_sound");
+    });
+  })
 
 
 
@@ -51,26 +59,26 @@
       }
 
     });
-    /*
-  let sound = new Howl({
-    src: ['audio/background/main.mp3'],
-    loop: true,
-    autoplay: true,
-  });*/
-  audios.add("background_music", 'audio/background/main.mp3', {loop:true})
+  /*
+let sound = new Howl({
+  src: ['audio/background/main.mp3'],
+  loop: true,
+  autoplay: true,
+});*/
+  audios.add("background_music", 'audio/background/main.mp3', { loop: true })
   audios.play("background_music")
 
   if (!dataStore.is_electron) {
     if (!dataStore.is_dev) {
       ElMessageBox.alert("点击确定开始加载页面");
     }
-    
+
   }
 
   // 监听键盘
   document.onkeydown = function (e) {
     // 当按下 Alt+T 且控制台未显示时
-    if (e.code == "KeyC" && e.altKey && !dataStore.console_show) {
+    if (e.code == "KeyT" && e.altKey && !dataStore.console_show) {
       // 显示控制台
       dataStore.console_show = true;
 
@@ -160,24 +168,25 @@
   <div v-else>
     <el-button @click="dataStore.page_type = 'main'" class="back"><el-image :src="icons.left"
         style="width: 25px;height: 25px;" /></el-button>
+    <keep-alive :max="7">
+      <Plot v-if="dataStore.page_type == 'plot'" />
+      <Fight v-else-if="dataStore.page_type == 'fight'" />
+      <About v-else-if="dataStore.page_type == 'about'" />
+      <Setting v-else-if="dataStore.page_type == 'setting'" />
+      <Bag v-else-if="dataStore.page_type == 'bag'" />
+      <Character v-else-if="dataStore.page_type == 'character'" />
+      <Wish v-else-if="dataStore.page_type == 'wish'" />
 
-    <Plot v-if="dataStore.page_type == 'plot'" />
-    <Fight v-else-if="dataStore.page_type == 'fight'" />
-    <About v-else-if="dataStore.page_type == 'about'" />
-    <Setting v-else-if="dataStore.page_type == 'setting'" />
-    <Bag v-else-if="dataStore.page_type == 'bag'" />
-    <Character v-else-if="dataStore.page_type == 'character'" />
-    <Wish v-else-if="dataStore.page_type == 'wish'" />
 
+      <div v-else align="center">
+        <!-- 设置404变量 -->
 
-    <div v-else align="center">
-      <!-- 设置404变量 -->
+        <h1>666, 隐藏界面被你玩出来了</h1>
 
-      <h1>666, 隐藏界面被你玩出来了</h1>
+        <el-button @click="dataStore.page_type = 'main'">返回</el-button>
 
-      <el-button @click="dataStore.page_type = 'main'">返回</el-button>
-
-    </div>
+      </div>
+    </keep-alive>
   </div>
   <!-- 404 -->
 
