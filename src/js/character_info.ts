@@ -155,14 +155,6 @@ export class HaoJing extends Character {
     }
 }
 
-export class XiaoNiao extends Character {
-    constructor(env=null) {
-        super(env)
-        this.name = "小鸟"
-        this.inside_name = "XiaoNiao"
-    }
-}
-
 export class NiuYaoZi extends Character {
     constructor(env=null) {
         super(env)
@@ -179,6 +171,54 @@ export class DongYin extends Character {
     }
 }
 
+export class FeiNiao extends Character {
+    constructor(env=null) {
+        super(env)
+        this.name = "飞鸟"
+        this.inside_name = "FeiNiao"
+    }
+}
+
+export class ZhiLang extends Character {
+    constructor(env=null) {
+        super(env)
+        this.name = "智郎"
+        this.inside_name = "ZhiLang"
+    }
+}
+
+export class ZhiYuan extends Character {
+    constructor(env=null) {
+        super(env)
+        this.name = "致远"
+        this.inside_name = "ZhiYuan"
+    }
+}
+
+export class ZhaoLin extends Character {
+    constructor(env=null) {
+        super(env)
+        this.name = "赵霖"
+        this.inside_name = "ZhaoLin"
+    }
+}
+
+export class JiMing extends Character {
+    constructor(env=null) {
+        super(env)
+        this.name = "记铭"
+        this.inside_name = "JiMing"
+    }
+}
+
+export class XuanGe extends Character {
+    constructor(env=null) {
+        super(env)
+        this.name = "宣哥"
+        this.inside_name = "XuanGe"
+    }
+}
+
 export var characters = {
     "Fairy": Fairy,
     "FanShiFu": FanShiFu,
@@ -187,5 +227,11 @@ export var characters = {
     "ChenGe": ChenGe,
     "HaoJing": HaoJing,
     "NiuYaoZi": NiuYaoZi,
-    "DongYin":DongYin
+    "DongYin":DongYin,
+    "FeiNiao": FeiNiao,
+    "ZhiLang": ZhiLang,
+    "ZhaoLin": ZhaoLin,
+    "ZhiYuan": ZhiYuan,
+    "JiMing": JiMing,
+    "XuanGe": XuanGe,
 }
