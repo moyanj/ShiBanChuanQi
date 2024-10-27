@@ -1,5 +1,6 @@
 <script lang="ts" setup>
-    import { ElButton, ElRow, ElMessage } from "element-plus";
+    import { ElRow, ElMessage } from "element-plus";
+    import sbutton from "../components/sbutton.vue";
     import { useSaveStore, useDataStore, audios } from "../js/store";
     import { MersenneTwister } from "../js/utils";
     import { ThingList } from "../js/things";
@@ -98,9 +99,9 @@
 <template>
     <div class="container">
         <el-row>
-            <el-button type="primary" @click="wish(1)">点击抽卡</el-button>
-            <el-button type="primary" @click="wish(10)">点击抽卡(十连)</el-button>
-            <el-button type="primary" @click="wish(2500)" v-if='dataStore.is_dev'>点击抽卡(五百连)</el-button>
+            <sbutton type="primary" @click="wish(1)">点击抽卡</sbutton>
+            <sbutton type="primary" @click="wish(10)">点击抽卡(十连)</sbutton>
+            <sbutton type="primary" @click="wish(2500)" v-if='dataStore.is_dev'>点击抽卡(五百连)</sbutton>
         </el-row>
 
         <p>据上一次出货的抽数：{{ saveStore.n_wish }}</p>

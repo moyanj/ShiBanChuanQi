@@ -1,6 +1,7 @@
 <script setup lang="ts">
     import { ref } from 'vue'
-    import { ElCol, ElRow, ElCard, ElAvatar, ElMessageBox, ElMessage, ElButton, ElImage } from 'element-plus'
+    import { ElCol, ElRow, ElCard, ElAvatar, ElMessageBox, ElMessage, ElImage } from 'element-plus'
+    import sbutton from '../components/sbutton.vue';
     import { useSaveStore, SaveStoreState, useDataStore } from '../js/store'
     import { MersenneTwister, icons } from '../js/utils'
 
@@ -48,8 +49,9 @@
 <template>
     <div class="container">
         <h1 id="title">十班传奇</h1>
+        <br>
         <div>
-            <el-button type="primary" size="large" class="start" @click="onclick_start">开始战斗</el-button> 
+            <sbutton type="primary" size="large" class="start" @click="onclick_start">开始战斗</sbutton> 
         </div>
         <!-- 用户信息 -->
         <el-card class="user-info" @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave">
@@ -66,42 +68,42 @@
         <el-card class="toolbar">
             <el-row>
                 <el-col :span="4">
-                    <el-button text @click="data.page_type = 'character'">
+                    <sbutton text @click="data.page_type = 'character'">
                         <el-image :src="icons.character" class="icon"/>
                         <span>&nbsp;角色</span>
-                    </el-button>
+                    </sbutton>
                 </el-col>
 
                 <el-col :span="4">
-                    <el-button text @click="data.page_type = 'wish'">
+                    <sbutton text @click="data.page_type = 'wish'">
                         <el-image :src="icons.wish" class="icon"/>
                         <span>&nbsp;抽卡</span>
-                    </el-button>
+                    </sbutton>
                 </el-col>
                 
                 <el-col :span="4">
-                    <el-button text @click="data.page_type = 'MiJing'">
+                    <sbutton text @click="data.page_type = 'MiJing'">
                         <el-image :src="icons.door" class="icon"/>
                         <span>&nbsp;秘境</span>
-                    </el-button>
+                    </sbutton>
                 </el-col>
                 <el-col :span="4">
-                    <el-button text @click="data.page_type = 'bag'">
+                    <sbutton text @click="data.page_type = 'bag'">
                         <el-image :src="icons.backpack" class="icon"/>
                         <span>&nbsp;背包</span>
-                    </el-button>
+                    </sbutton>
                 </el-col>
                 <el-col :span="4">
-                    <el-button text @click="data.page_type = 'setting'">
+                    <sbutton text @click="data.page_type = 'setting'">
                         <el-image :src="icons.setting" class="icon"/>
                         <span>&nbsp;设置</span>
-                    </el-button>
+                    </sbutton>
                 </el-col>
                 <el-col :span="4">
-                    <el-button text @click="data.page_type = 'about'">
+                    <sbutton text @click="data.page_type = 'about'">
                         <el-image :src="icons.info" class="icon"/>
                         <span>&nbsp;关于</span>
-                    </el-button>
+                    </sbutton>
                 </el-col>
             </el-row>
         </el-card>
@@ -119,7 +121,9 @@
 
     #title {
         margin: 20px;
-        font-size: 4rem;
+        font-size: 6rem;
+        font-weight: bold;
+        font-family: 'SuXinShi'
     }
 
     .user-info {

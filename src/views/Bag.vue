@@ -1,6 +1,7 @@
 <script lang="ts" setup>
     import { watch, ref } from 'vue';
-    import { ElTable, ElButton, ElTableColumn, ElDialog, ElForm, ElFormItem, ElSlider } from 'element-plus';
+    import { ElTable, ElTableColumn, ElDialog, ElForm, ElFormItem, ElSlider } from 'element-plus';
+    import sbutton from '../components/sbutton.vue';
     import { useSaveStore, SaveStoreState } from '../js/store';
     import { ThingList } from '../js/things';
 
@@ -64,18 +65,18 @@
         <el-table-column prop="count" label="数量"></el-table-column>
         <el-table-column label="操作">
             <template #default="scope">
-                <el-button @click="delete_args.arg = scope;deleteDialog_show = true" text> 删除</el-button>
+                <sbutton @click="delete_args.arg = scope;deleteDialog_show = true" text> 删除</sbutton>
             </template>
         </el-table-column>
     </el-table>
 
     <el-dialog v-model="deleteDialog_show" title="删除物品">
         <el-form>
-            <el-form-item label="物品名称">
+            <el-form-item label="数量：">
                 <el-slider v-model="delete_args.n" :min="1" :max="delete_args.arg.row.count" show-input />
             </el-form-item>
             <el-form-item>
-                <el-button type="primary" @click="remove(delete_args)">确定</el-button>
+                <sbutton type="primary" @click="remove(delete_args)">确定</sbutton>
             </el-form-item>
         </el-form>
     </el-dialog>
