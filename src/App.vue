@@ -23,8 +23,6 @@
   const dataStore = useDataStore();
   const saveStore = useSaveStore();
 
-  
-  
   if (isLandscape() === false) {
     ElMessageBox.alert("请切换至横屏，以获得更好的体验", '警告', {
       confirmButtonText: '确定',
@@ -61,14 +59,12 @@
       }
 
     });
-  /*
-let sound = new Howl({
-  src: ['audio/background/main.mp3'],
-  loop: true,
-  autoplay: true,
-});*/
-  audios.add("background_music", 'audio/background/main.mp3', { loop: true })
-  audios.play("background_music")
+
+  audios.add("background_music", 'audio/background/main.mp3', { loop: true });
+  if (!dataStore.is_dev) {
+    audios.play("background_music");
+  }
+  
   
   if (!dataStore.is_electron) {
     if (!dataStore.is_dev) {
@@ -77,7 +73,6 @@ let sound = new Howl({
         type: 'warning',
       })
     }
-
   }
 
   // 监听键盘
