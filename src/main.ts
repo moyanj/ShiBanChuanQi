@@ -6,6 +6,8 @@ import 'element-plus/dist/index.css';
 import 'element-plus/theme-chalk/dark/css-vars.css';
 import './style/style.scss';
 import App from './App.vue';
+import { Story } from './js/plot';
+
 
 const app = createApp(App);
 const p: Pinia = createPinia();
