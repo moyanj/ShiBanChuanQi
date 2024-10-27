@@ -64,3 +64,11 @@ export class Story{
     }
 }
 
+export function load(name: string): Story {
+    let xhr = new XMLHttpRequest();
+    xhr.open("GET", "story/" + name + ".txt", false);
+    xhr.overrideMimeType("text/plain; charset=utf-8");
+    xhr.send();
+    return new Story(xhr.responseText);
+}
+

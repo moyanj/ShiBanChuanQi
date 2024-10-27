@@ -6,7 +6,7 @@ import 'element-plus/dist/index.css';
 import 'element-plus/theme-chalk/dark/css-vars.css';
 import './style/style.scss';
 import App from './App.vue';
-import { Story } from './js/plot';
+import { load } from './js/plot';
 
 
 const app = createApp(App);
@@ -19,3 +19,4 @@ app.mount('#app');
 
 
 console.log(`流萤天下第一！！！！`)
+console.log(load("test"))
