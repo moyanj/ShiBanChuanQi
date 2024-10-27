@@ -14,6 +14,7 @@ import icon_element_liangzi from "../assets/icon/element-liangzi.png";
 import icon_element_nihility from "../assets/icon/element-nihility.png";
 
 import { Howl, HowlOptions } from "howler";
+import { th } from "element-plus/es/locales.mjs";
 
 export const icons = {
     left: icon_left,
@@ -32,6 +33,15 @@ export const icons = {
         liangzi: icon_element_liangzi,
         nihility: icon_element_nihility
     }
+}
+
+export const audios = {
+    background: 'audio/background/main.mp3',
+    click: 'audio/click.mp3',
+    // 主题曲1
+    theme1: 'audio/theme/HerosQuest.mp3',
+    // 主题曲2
+    theme2: 'audio/theme/HerosQuest2.mp3',
 }
 
 interface UserAgentInfo {
@@ -207,7 +217,6 @@ export class AudioPlayer {
      */
     public add(name: string, src: string, other?: AddOptions): Howl | null {
         if (name in this.objs) {
-            console.warn(`Audio object with name "${name}" already exists.`);
             return null;
         }
         const obj = new Howl({
@@ -227,7 +236,6 @@ export class AudioPlayer {
         if (name in this.objs) {
             return this.objs[name];
         }
-        console.warn(`Audio object with name "${name}" does not exist.`);
         return null;
     }
 
@@ -359,7 +367,6 @@ export class AudioPlayer {
             delete this.objs[name];
             return true;
         }
-        console.warn(`Audio object with name "${name}" does not exist.`);
         return false;
     }
     public stopAll() {
