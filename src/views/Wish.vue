@@ -1,6 +1,6 @@
 <script lang="ts" setup>
     import { ElButton, ElRow, ElMessage } from "element-plus";
-    import { useSaveStore, useDataStore } from "../js/store";
+    import { useSaveStore, useDataStore, audios } from "../js/store";
     import { MersenneTwister } from "../js/utils";
     import { ThingList } from "../js/things";
     import { characters } from "../js/character_info";

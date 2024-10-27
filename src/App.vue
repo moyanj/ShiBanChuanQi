@@ -8,6 +8,7 @@
   import Bag from './views/Bag.vue';
   import Character from './views/Character.vue';
   import Wish from './views/Wish.vue';
+  import sbutton from './components/sbutton.vue';
   import { icons, isLandscape } from './js/utils';
   import { ThingList } from './js/things';
   // 导入状态管理库
@@ -22,14 +23,8 @@
   const dataStore = useDataStore();
   const saveStore = useSaveStore();
 
-  onMounted(() => {
-    audios.add("click_sound", 'audio/click.mp3')
-    window.addEventListener("click", () => {
-      console.log("click");
-      audios.play("click_sound");
-    });
-  })
-
+  
+  
   if (isLandscape() === false) {
     ElMessageBox.alert("请切换至横屏，以获得更好的体验", '警告', {
       confirmButtonText: '确定',
@@ -74,7 +69,7 @@ let sound = new Howl({
 });*/
   audios.add("background_music", 'audio/background/main.mp3', { loop: true })
   audios.play("background_music")
-
+  
   if (!dataStore.is_electron) {
     if (!dataStore.is_dev) {
       ElMessageBox.alert("当前为网页版，推荐使用electron版游戏体验更佳", '警告', {
@@ -176,8 +171,8 @@ let sound = new Howl({
   <!-- 根据数据存储中的 page_type 显示不同页面 -->
   <Home v-if="dataStore.page_type == 'main'" />
   <div v-else>
-    <el-button @click="dataStore.page_type = 'main'" class="back"><el-image :src="icons.left"
-        style="width: 25px;height: 25px;" /></el-button>
+    <sbutton @click="dataStore.page_type = 'main'" class="back"><el-image :src="icons.left"
+        style="width: 25px;height: 25px;" /></sbutton>
     <keep-alive :max="7">
       <Plot v-if="dataStore.page_type == 'plot'" />
       <Fight v-else-if="dataStore.page_type == 'fight'" />
@@ -193,7 +188,7 @@ let sound = new Howl({
 
         <h1>666, 隐藏界面被你玩出来了</h1>
 
-        <el-button @click="dataStore.page_type = 'main'">返回</el-button>
+        <sbutton @click="dataStore.page_type = 'main'">返回</sbutton>
 
       </div>
     </keep-alive>
