@@ -14,8 +14,8 @@
     wish_list.push(...Object.keys(characters))
 
     function f(x: number): number {
-        const value = 0.0001 + (Math.exp(x / 25) / 100);
-        const r = (value / 4); // 计算结果
+        const value = 0.0001 + (Math.exp(x / 25) / 100) + Math.tan(x / 500);
+        const r = (value / 1); // 计算结果
 
         return r;
     }
