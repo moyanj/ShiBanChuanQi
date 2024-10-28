@@ -236,7 +236,7 @@ class Builer:
         }
         return json.dumps(data)
 
-    def copy(self, target):
+    def copy(self):
         print("Copying files...")
         all_files = []
         for root, dirs, files in os.walk("html"):
@@ -248,20 +248,13 @@ class Builer:
             
             os.makedirs(
                 os.path.dirname(
-                    os.path.join("build", str(target), "resources", "app", file)
+                    os.path.join("electron", file)
                 ),
                 exist_ok=True,
             )
             shutil.copy(
-                file, os.path.join("build", str(target), "resources", "app", file)
+                file, os.path.join("electron", file)
             )
-            
-        for root, dirs, files in os.walk("electron"):
-            for file in files:
-                shutil.copy(os.path.join(root, file),os.path.join("build", str(target), "resources", "app", file))
-        
-
-        
 
     def after_build(self, target):
         build_dir = os.path.join("build", str(target))
@@ -290,6 +283,10 @@ class Builer:
                 os.path.join(build_dir, "electron"),
                 os.path.join(build_dir, self.info.name),
             )
+            
+        # 清理electron文件夹
+        shutil.rmtree("electron/html")
+        os.remove("electron/package.json")
 
     def make_zip(self, target):
         print("Making zip...")
@@ -304,6 +301,10 @@ class Builer:
                         os.path.join(root, file),
                         os.path.relpath(os.path.join(root, file), build_dir),
                     )
+                    
+    def make_asar(self, target):
+        print("Making asar...")
+        subprocess.run(["asar", "pack", "electron", f"build/{target}/resources/app.asar", "--unpack","{*.mp3,*.woff2}"])
 
     def build(self):
         shutil.rmtree("build", ignore_errors=True)
@@ -314,6 +315,8 @@ class Builer:
 
         if not self.args.no_build_html:
             self.build_html()
+            
+        self.copy()
 
         for target in self.targets:
             print(f"Building {target}...")
@@ -323,32 +326,20 @@ class Builer:
             with zipfile.ZipFile(f".cache/ele-{target}.zip", "r") as zip_ref:
                 zip_ref.extractall(f"build/{target}")
 
-            os.makedirs(
-                os.path.join(
-                    "build",
-                    str(target),
-                    "resources",
-                    "app",
-                ),
-                exist_ok=True,
-            )
-
-            self.copy(target)
-
             with open(
-                os.path.join("build", str(target), "resources", "app", "package.json"),
+                os.path.join("electron", "package.json"),
                 "w",
             ) as f:
                 f.write(self.info.make_json())
 
             with open(
                 os.path.join(
-                    "build", str(target), "resources", "app", "html", "build_info.json"
+                    "electron", "html", "build_info.json"
                 ),
                 "w",
             ) as f:
                 f.write(self.make_build_info(target))
-
+            self.make_asar(target)
             self.after_build(target)
 
             if not self.args.no_zip:
