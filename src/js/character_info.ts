@@ -119,106 +119,121 @@ export class Fairy extends Character {
 export class FanShiFu extends Character {
     constructor(env=null) {
         super(env)
-        this.name = "范师傅"
-        this.inside_name = "FanShiFu"
+        this.name = "范师傅";
+        this.inside_name = "FanShiFu";
+        this.type = CharacterType.Thunder;
     }
 }
 
 export class ShuiLiFang extends Character {
     constructor(env=null) {
         super(env)
-        this.name = "水立方"
-        this.inside_name = "ShuiLiFang"
+        this.name = "水立方";
+        this.inside_name = "ShuiLiFang";
+        this.type = CharacterType.Water;
     }
 }
 export class ChenGe extends Character {
     constructor(env=null) {
         super(env)
-        this.name = "辰哥"
-        this.inside_name = "ChenGe"
+        this.name = "辰哥";
+        this.inside_name = "ChenGe";
     }
 }
 
 export class ZongTong extends Character {
     constructor(env=null) {
         super(env)
-        this.name = "总统"
-        this.inside_name = "ZongTong"
+        this.name = "总统";
+        this.inside_name = "ZongTong";
+        this.type = CharacterType.Fire;
     }
 }
 
 export class HaoJing extends Character {
     constructor(env=null) {
         super(env)
-        this.name = "昊京"
-        this.inside_name = "HaoJing"
+        this.name = "昊京";
+        this.inside_name = "HaoJing";
     }
 }
 
 export class NiuYaoZi extends Character {
     constructor(env=null) {
         super(env)
-        this.name = "牛尧资"
-        this.inside_name = "NiuYaoZi"
+        this.name = "牛尧资";
+        this.inside_name = "NiuYaoZi";
     }
 }
 
 export class DongYin extends Character {
     constructor(env=null) {
         super(env)
-        this.name = "东银"
-        this.inside_name = "DongYin"
+        this.name = "东瀛";
+        this.inside_name = "DongYin";
+        this.type = CharacterType.LiangZi;
     }
 }
 
 export class FeiNiao extends Character {
     constructor(env=null) {
         super(env)
-        this.name = "飞鸟"
-        this.inside_name = "FeiNiao"
+        this.name = "飞鸟";
+        this.inside_name = "FeiNiao";
+        this.type = CharacterType.Fire;
     }
 }
 
 export class ZhiLang extends Character {
     constructor(env=null) {
         super(env)
-        this.name = "智郎"
-        this.inside_name = "ZhiLang"
+        this.name = "智郎";
+        this.inside_name = "ZhiLang";
+        this.type = CharacterType.Physics;
     }
 }
 
 export class ZhiYuan extends Character {
     constructor(env=null) {
         super(env)
-        this.name = "致远"
-        this.inside_name = "ZhiYuan"
+        this.name = "致远";
+        this.inside_name = "ZhiYuan";
     }
 }
 
 export class ZhaoLin extends Character {
     constructor(env=null) {
         super(env)
-        this.name = "赵霖"
-        this.inside_name = "ZhaoLin"
+        this.name = "赵霖";
+        this.inside_name = "ZhaoLin";
+        this.type = CharacterType.Nihility;
     }
 }
 
 export class JiMing extends Character {
     constructor(env=null) {
         super(env)
-        this.name = "记铭"
-        this.inside_name = "JiMing"
+        this.name = "记铭";
+        this.inside_name = "JiMing";
     }
 }
 
 export class XuanGe extends Character {
     constructor(env=null) {
         super(env)
-        this.name = "宣哥"
-        this.inside_name = "XuanGe"
+        this.name = "宣哥";
+        this.inside_name = "XuanGe";
     }
 }
 
+export class LaoDeng extends Character {
+    constructor(env=null) {
+        super(env)
+        this.name = "老登";
+        this.inside_name = "LaoDeng";
+        this.type = CharacterType.Grass;
+    }
+}
 export var characters = {
     "Fairy": Fairy,
     "FanShiFu": FanShiFu,
@@ -234,4 +249,5 @@ export var characters = {
     "ZhiYuan": ZhiYuan,
     "JiMing": JiMing,
     "XuanGe": XuanGe,
+    "LaoDeng": LaoDeng,
 }
