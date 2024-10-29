@@ -304,7 +304,7 @@ class Builer:
                     
     def make_asar(self, target):
         print("Making asar...")
-        subprocess.run(["asar", "pack", "electron", f"build/{target}/resources/app.asar", "--unpack","{*.mp3,*.woff2}"])
+        subprocess.run(["asar", "pack", "electron", f"build/{target}/resources/app.asar", "--unpack","{*.mp3,*.woff2,*.mp4}"])
 
     def build(self):
         shutil.rmtree("build", ignore_errors=True)
