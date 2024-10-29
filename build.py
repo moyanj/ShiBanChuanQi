@@ -284,6 +284,7 @@ class Builer:
                 os.path.join(build_dir, self.info.name),
             )
             
+    def clean(self):
         # 清理electron文件夹
         shutil.rmtree("electron/html")
         os.remove("electron/package.json")
@@ -344,6 +345,7 @@ class Builer:
 
             if not self.args.no_zip:
                 self.make_zip(target)
+        self.clean()
 
 
 if __name__ == "__main__":
