@@ -138,6 +138,7 @@ export class ChenGe extends Character {
         super(env)
         this.name = "辰哥";
         this.inside_name = "ChenGe";
+        this.type = CharacterType.Nihility;
     }
 }
 
@@ -155,6 +156,7 @@ export class HaoJing extends Character {
         super(env)
         this.name = "昊京";
         this.inside_name = "HaoJing";
+        this.type = CharacterType.Grass
     }
 }
 
@@ -163,6 +165,7 @@ export class NiuYaoZi extends Character {
         super(env)
         this.name = "牛尧资";
         this.inside_name = "NiuYaoZi";
+        this.type = CharacterType.Water;
     }
 }
 
@@ -198,6 +201,7 @@ export class ZhiYuan extends Character {
         super(env)
         this.name = "致远";
         this.inside_name = "ZhiYuan";
+        this.type = CharacterType.Physics;
     }
 }
 
@@ -215,6 +219,7 @@ export class JiMing extends Character {
         super(env)
         this.name = "记铭";
         this.inside_name = "JiMing";
+        this.type = CharacterType.Water;
     }
 }
 
@@ -234,6 +239,83 @@ export class LaoDeng extends Character {
         this.type = CharacterType.Grass;
     }
 }
+
+export class JiBo extends Character {
+    constructor(env=null) {
+        super(env)
+        this.name = "计博";
+        this.inside_name = "JiBo";
+        this.type = CharacterType.LiangZi;
+    }
+}
+
+export class DongCheDi extends Character {
+    constructor(env=null) {
+        super(env)
+        this.name = "懂车帝";
+        this.inside_name = "DongCheDi";
+    }
+}
+
+export class Fan extends Character {
+    constructor(env=null) {
+        super(env)
+        this.name = "凡";
+        this.inside_name = "Fan";
+        this.type = CharacterType.Physics;
+    }
+}
+
+export class LiXi extends Character {
+    constructor(env=null) {
+        super(env)
+        this.name = "李熙";
+        this.inside_name = "LiXi";
+        this.type = CharacterType.Fire;
+    }
+}
+
+export class DiaoMin extends Character {
+    constructor(env=null) {
+        super(env)
+        this.name = "刁民";
+        this.inside_name = "DiaoMin";
+    }
+}
+
+export class ZouJieTou extends Character {
+    constructor(env=null) {
+        super(env)
+        this.name = "邹杰偷";
+        this.inside_name = "ZouJieTou";
+    }
+}
+
+export class WuYu extends Character {
+    constructor(env=null) {
+        super(env)
+        this.name = "乌鱼";
+        this.inside_name = "WuYu";
+    }
+}
+
+export class Song extends Character {
+    constructor(env=null) {
+        super(env)
+        this.name = "松";
+        this.inside_name = "Song";
+        this.type = CharacterType.LiangZi;
+    }
+}
+
+export class PeiBa extends Character {
+    constructor(env=null) {
+        super(env)
+        this.name = "佩八";
+        this.inside_name = "PeiBa";
+    }
+}
+
 export var characters = {
     "Fairy": Fairy,
     "FanShiFu": FanShiFu,
@@ -250,4 +332,13 @@ export var characters = {
     "JiMing": JiMing,
     "XuanGe": XuanGe,
     "LaoDeng": LaoDeng,
+    "JiBo": JiBo,
+    "DongCheDi": DongCheDi,
+    "Fan": Fan,
+    "LiXi": LiXi,
+    "DiaoMin": DiaoMin,
+    "ZouJieTou": ZouJieTou,
+    "WuYu": WuYu,
+    "Song": Song,
+    "PeiBa": PeiBa
 }
