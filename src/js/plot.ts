@@ -6,11 +6,11 @@ import sha256 from "crypto-js/sha256"
 interface StoryData{
     role?: string; // 角色名
     content?: string | null; // 内容
-    actions?: Array<StoryAction>;
+    actions?: StoryAction;
 }
 
 interface StoryAction{
-    type: string;
+    func: Function;
     args?: Array<string>;
 }
 
@@ -19,7 +19,15 @@ interface StoryMap{
 }
 
 const actions = {
-
+    "setbg": () => {
+        console.log("setbg");
+    },
+    "playcg": () => {
+        console.log("playcg");
+    },
+    "fight": () => {
+        console.log("fight");
+    }
 }
 
 export class Story{
@@ -68,16 +76,18 @@ export class Story{
         return {
             content: content,
             role: line[1],
-            actions: []
         }
     }
 
     private parser_action(line: Array<string>): StoryData{
+        let type = line[1];
+        let args = line.slice(2);
+        let func = actions[type];
         return {
-            actions: [{
-                type: line[1],
-                args: line.slice(2)
-            }]
+            actions: {
+                func: func,
+                args: args
+            }
         }
     }
 }
