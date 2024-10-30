@@ -1,28 +1,24 @@
 <script setup lang="ts">
-    import { onMounted, ref } from 'vue';
+    import { ref } from 'vue';
     import { ElRow, ElCol, ElScrollbar, ElCard, ElDialog } from 'element-plus'
     import { useDataStore, DataStoreState } from '../js/store';
     import { getExplore } from '../js/utils';
-    import videojs from 'video.js';
+    import svideo from '../components/svideo.vue';
     import 'video.js/dist/video-js.css';
 
     const data: DataStoreState = useDataStore();
     const electron = window.electron;
-    const player = ref(null)
-    const show_cg = ref(false)
-
-    const play = () => {
-        // 显示播放元素
-        show_cg.value = true;
-
-        player.value = videojs('cg', {
-            controls: false,
-            autoplay: false,
-            preload: 'auto',
-        })
-
-        player.value.play();
+    const player = {
+        autoplay: false,
+        controls: true,
+        muted: false,
+        fluid: true
     }
+    const show_cg = ref(false)
+    function play() {
+        show_cg.value = true;
+    }
+
 </script>
 
 <template>
@@ -66,10 +62,10 @@
         </el-col>
     </el-row>
 
-    <el-dialog v-model="show_cg">
-        <video id="cg">
+    <el-dialog v-model="show_cg" destroy-on-close>
+        <svideo :options="player">
             <source src="/video/firefly.mp4" type="video/mp4">
-        </video>
+        </svideo>
     </el-dialog>
 
 </template>
@@ -89,8 +85,9 @@
     }
 
     #cg {
-        z-index: 999999;
-        width: 100%;
-        height: 100%;
+        width: 64vw;
+        height: 36vh;
     }
+
+    
 </style>
