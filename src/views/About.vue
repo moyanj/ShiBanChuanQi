@@ -8,13 +8,14 @@
 
     const data: DataStoreState = useDataStore();
     const electron = window.electron;
+
     const player = {
         autoplay: false,
         controls: true,
         muted: false,
         fluid: true
     }
-    const show_cg = ref(false)
+    const show_cg = ref(false);
     function play() {
         show_cg.value = true;
     }

@@ -42,13 +42,17 @@ export default defineConfig({
         chunkFileNames: "assets/lib-[name].js",
         entryFileNames: "assets/main.js",
         manualChunks(id) {
-          if (['element-plus'].some(lib => id.includes(lib))) {
-            return 'element-plus';
+          if (['pinia', 'video.js', 'crypto-js', 'howler'].some(lib => id.includes(lib))) {
+            return 'vendor';
           }
-        }
+        
+          if (['element-plus', 'lodash-es', 'vue'].some(lib => id.includes(lib))) {
+            return 'big';
+          }
 
       }
     }
   }
+}
 }
 );

@@ -12,11 +12,11 @@ import { load } from './js/plot';
 const app = createApp(App);
 const p: Pinia = createPinia();
 
-p.use(createPersistedState())
+p.use(createPersistedState());
 
-app.use(p)
+app.use(p);
 app.mount('#app');
 
 
-console.log(`流萤天下第一！！！！`)
-console.log(load("test"))
+console.log(`流萤天下第一！！！！`);
+console.log(load("test"));

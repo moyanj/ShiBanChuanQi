@@ -21,32 +21,32 @@ export class FightEnv {
     constructor(enemy: Array<Character>, my: Array<Character>) {
         this.enemy_characters = enemy;
         this.my_characters = my;
-        this.now_character = this.get_now_character()
+        this.now_character = this.get_now_character();
     }
 
     get_now_character() {
-        var max:Character = this.my_characters[0] // 默认为第一个
+        var max:Character = this.my_characters[0]; // 默认为第一个
 
         // 找出我方和敌方中速度最快的
         for(let i = 0; i < this.enemy_characters.length + this.my_characters.length; i++) {
             if(i < this.my_characters.length) {
                 if(this.my_characters[i].speed > max.speed) {
-                    max = this.my_characters[i]
+                    max = this.my_characters[i];
                 }
             } else {
                 if(this.enemy_characters[i - this.my_characters.length].speed > max.speed) {
-                    max = this.enemy_characters[i - this.my_characters.length]
+                    max = this.enemy_characters[i - this.my_characters.length];
                 }
             }
         }
-        return max
+        return max;
     }
 }
 
 export class CharacterManager {
     characters: Array<Character>;
     constructor() {
-        this.characters = []
+        this.characters = [];
     }
 
     add(character: Character) {
@@ -55,20 +55,20 @@ export class CharacterManager {
         for (let i = 0; i < this.characters.length; i++) {
             let now_name = this.characters[i].inside_name;
             
-            console.log(name, )
+            console.log(name, );
             if (name == now_name) {
-                return
+                return;
             }
         }
-        this.characters.push(character)
+        this.characters.push(character);
     }
 
     remove(character_name: string) {
         
         for (let i = 0; i < this.characters.length; i++) {
             if (this.characters[i].inside_name == character_name) {
-                this.characters.splice(i, 1)
-                return
+                this.characters.splice(i, 1);
+                return;
             }
         }
     }
@@ -77,10 +77,10 @@ export class CharacterManager {
         for (let i = 0; i < this.characters.length; i++) {
 
             if (this.characters[i].inside_name == character_name) {
-                return true
+                return true;
             }
         }
-        return false
+        return false;
     }
 }
 var a = {"user_name":"玩家","user_level":1,"user_avatar":"avatars/8.png","things":{"things":{"XinHuo":179863560}},"n_wish":6,"characters":{"characters":[]},"wish_number":1390}
