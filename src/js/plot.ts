@@ -1,5 +1,6 @@
 import template from "lodash-es/template";
 import { useDataStore,useSaveStore } from "./store";
+import sha256 from "crypto-js/sha256"
 
 // 剧情数据类
 interface StoryData{
@@ -13,8 +14,16 @@ interface StoryAction{
     args?: Array<string>;
 }
 
+interface StoryMap{
+    [key: string]: StoryData;
+}
+
+const actions = {
+
+}
+
 export class Story{
-    data: Array<StoryData|null> = [];
+    data: StoryMap = {};
     raw: string;
     data_store = useDataStore();
     save_store = useSaveStore();
@@ -25,17 +34,24 @@ export class Story{
     }
     public parser(){
         let lines = this.raw.split("\n");
-
+        let n = 1;
         for(let line of lines){
             line = line.trim();
             if(line.length == 0) continue;
             if(line[0] == "#") continue;
+
             let line_list:Array<string> = line.split(" ");
             if (line_list[0] == "chat") {
-                this.data.push(this.parser_chat(line_list));
+                let ret = this.parser_chat(line_list);
+                let id = sha256(line + n).toString().slice(0, 8);
+                this.data[id] = ret;
+
             } else if (line_list[0] == "action") {
-                this.data.push(this.parser_action(line_list));
+                let ret = this.parser_action(line_list);
+                let id = sha256(line + n).toString().slice(0, 8);
+                this.data[id] = ret;
             }
+            n += 1;
         }
     }
     private parser_chat(line: Array<string>): StoryData{
@@ -45,7 +61,9 @@ export class Story{
         });
         let content = content_func({
             "data": this.data_store,
-            "save": this.save_store
+            "save": this.save_store,
+            "story": this,
+            "time": new Date(),
         });
         return {
             content: content,
