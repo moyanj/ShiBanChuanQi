@@ -12,7 +12,7 @@
   import { icons, isLandscape } from './js/utils';
   import { ThingList } from './js/things';
   // 导入状态管理库
-  import { useDataStore, useSaveStore, audios } from './js/store';
+  import { useDataStore, useSaveStore, APM } from './js/store';
 
   // 导入 Element Plus 的消息框组件
   import { ElMessageBox, ElButton, ElImage } from 'element-plus';
@@ -60,9 +60,9 @@
 
     });
 
-  audios.add("background_music", 'audio/background/main.mp3', { loop: true });
+  APM.add("background_music", 'audio/background/main.mp3', { loop: true });
   if (!dataStore.is_dev) {
-    audios.play("background_music");
+    APM.play("background_music");
   }
   
   

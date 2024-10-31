@@ -19,13 +19,13 @@ interface StoryMap{
 }
 
 const actions = {
-    "setbg": () => {
+    "setbg": (env) => {
         console.log("setbg");
     },
-    "playcg": () => {
+    "playcg": (env) => {
         console.log("playcg");
     },
-    "fight": () => {
+    "fight": (env) => {
         console.log("fight");
     }
 }

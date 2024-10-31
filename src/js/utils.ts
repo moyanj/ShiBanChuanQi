@@ -114,7 +114,7 @@ export function getExplore(): string {
         return `Safari ${userAgentInfo.safari}`;
     }
 
-    return 'Unknown';
+    return 'Unknown Browser';
 }
 
 export class MersenneTwister {
@@ -379,7 +379,7 @@ export class AudioPlayer {
             this.remove(name);
         }
     }
-    
+
 }
 
 export function isLandscape() {
@@ -392,5 +392,5 @@ export function isLandscape() {
     } else {
         return false;
     }
-    
-  }
+
+}
