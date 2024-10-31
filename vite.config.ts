@@ -16,6 +16,9 @@ export default defineConfig({
       },
     }
   },
+  esbuild:{
+    drop: ['console', 'debugger']
+  },
   build: {
     outDir: 'html',
     chunkSizeWarningLimit: 1024,
@@ -41,15 +44,10 @@ export default defineConfig({
       output: {
         chunkFileNames: "assets/lib-[name].js",
         entryFileNames: "assets/main.js",
-        manualChunks(id) {
-          if (['pinia', 'video.js', 'crypto-js', 'howler'].some(lib => id.includes(lib))) {
-            return 'vendor';
-          }
-        
-          if (['element-plus', 'lodash-es', 'vue'].some(lib => id.includes(lib))) {
-            return 'big';
-          }
-
+        manualChunks: {
+          "framework": ["vue", "element-plus", "pinia"],  // 框架
+          "utils": ["lodash-es", "crypto-js"],
+          "media": ["howler", "video.js"]
       }
     }
   }
