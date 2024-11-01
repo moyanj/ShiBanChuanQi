@@ -6,7 +6,7 @@
   
   <script setup>
   import { ElButton } from 'element-plus';
-  import { audios } from '../js/store';
+  import { APM } from '../js/store';
   
   const props = defineProps({
     type: {
@@ -29,10 +29,10 @@
         default: 'default',
     }
   });
-  audios.add("click_sound", 'audio/click.mp3')
+  APM.add("click_sound", 'audio/click.mp3')
   const playSound = () => {
     console.log("click");
-    audios.play("click_sound");
+    APM.play("click_sound");
   };
   </script>
   

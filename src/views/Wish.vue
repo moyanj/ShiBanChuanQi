@@ -1,7 +1,7 @@
 <script lang="ts" setup>
     import { ElRow, ElMessage } from "element-plus";
     import sbutton from "../components/sbutton.vue";
-    import { useSaveStore, useDataStore, audios } from "../js/store";
+    import { useSaveStore, useDataStore, APM } from "../js/store";
     import { MersenneTwister } from "../js/utils";
     import { ThingList } from "../js/things";
     import { characters } from "../js/character_info";
