@@ -126,6 +126,17 @@ export class StoryManager {
         return this.story.data[this.story.list[this.n + 1]];
     }
 
+    set_current(id: string) {
+        this.n = this.story.list.indexOf(id);
+        this.current_id = id;
+        this.current_data = this.story.data[id];
+    }
+
+    set_story(story: Story) {
+        this.story = story;
+        this.n = -1;
+        this.next();
+    }
 
 }
 
