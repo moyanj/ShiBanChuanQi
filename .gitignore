@@ -26,6 +26,9 @@ dist-ssr
 build/
 .cache/
 html/
+html.old/
+dist/
+
 *.tsbuildinfo
 pnpm-lock.yaml
 electron/html

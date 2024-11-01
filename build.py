@@ -10,12 +10,14 @@ import hashlib
 try:
     import requests
     import tqdm
+    import bsdiff4
 except ImportError:
     import pip
 
-    pip.main(["install", "requests", "tqdm"])
+    pip.main(["install", "requests", "tqdm", "bsdiff4"])
     import requests
     import tqdm
+    import bsdiff4
 
 
 @dataclass
@@ -215,15 +217,6 @@ class Builer:
         for target in self.targets:
             self.check_file(target)
 
-    def build_html(self):
-        print("Building HTML...")
-        try:
-            subprocess.run(["pnpm", "run", "build"], check=True)
-        except subprocess.CalledProcessError:
-            print("Error building HTML!!!")
-            exit(1)
-        print("Building HTML finished!")
-
     def make_build_info(self, target):
         data = {
             "electron_version": target.version,
@@ -293,7 +286,7 @@ class Builer:
         print("Making zip...")
         build_dir = os.path.join("build", str(target))
         with zipfile.ZipFile(
-            f"build/{self.info.name}-{self.info.version}-{target.name}-{target.arch}.zip",
+            f"dist/{self.info.name}-{self.info.version}-{target.name}-{target.arch}.zip",
             "w",
         ) as zip_ref:
             for root, dirs, files in os.walk(build_dir):
@@ -311,12 +304,11 @@ class Builer:
         shutil.rmtree("build", ignore_errors=True)
         os.makedirs("build", exist_ok=True)
         os.makedirs(".cache", exist_ok=True)
+        os.makedirs("dist", exist_ok=True)
         self.download_sha256sum()
         self.download()
 
-        if not self.args.no_build_html:
-            self.build_html()
-            
+        
         self.copy()
 
         for target in self.targets:
@@ -347,6 +339,91 @@ class Builer:
                 self.make_zip(target)
         self.clean()
 
+class HtmlBuiler:
+    def __init__(self, args):
+        self.args = args
+    
+    def make_diff(self):
+        print("Making diff...")
+        os.makedirs("build/diff", exist_ok=True)
+        old_file = []
+        out = {
+            "delfile": [],
+            "addfile": [],
+            "modfile": []
+        }
+        
+        for root, dirs, files in os.walk("html.old"):
+            for file in files:
+                old_file.append(os.sep.join(os.path.join(root, file).split(os.sep)[1:]))
+                
+        for root, dirs, files in os.walk("html"):
+            for file in files:
+                f = os.sep.join(os.path.join(root, file).split(os.sep)[1:])
+                if f in old_file:
+                    with open(os.path.join("html.old",f), "rb") as f1:
+                        old_md5 = hashlib.md5(f1.read()).hexdigest()
+                    with open(os.path.join("html",f), "rb") as f2:
+                        new_md5 = hashlib.md5(f2.read()).hexdigest()
+                        
+                    print(old_md5, new_md5)
+                    if old_md5 != new_md5:
+                        out["modfile"].append(f)
+                        print(f"{f} changed!")
+                    else:
+                        print(f"{f} not changed!")
+
+                    old_file.remove(f)
+                    
+                elif not os.path.exists(os.path.join("html.old",f)):
+                    out["addfile"].append(f)
+                    
+                    print(f"{f} added!")
+                    os.makedirs(os.path.dirname(os.path.join("build/diff",f)), exist_ok=True)
+                    shutil.copy(os.path.join("html",f), os.path.join("build/diff",f))
+                    #old_file.remove(f)
+        out["delfile"] = old_file
+            
+        with open("build/diff/diff.json", "w") as f:
+            json.dump(out, f, indent=4)
+        
+        for f in out["addfile"]:
+            os.makedirs(os.path.dirname(os.path.join("build/diff",f)), exist_ok=True)
+            shutil.copy(os.path.join("html",f), os.path.join("build/diff",f))
+            
+        for f in out["modfile"]:
+            os.makedirs(os.path.dirname(os.path.join("build/diff",f)), exist_ok=True)
+            bsdiff4.file_diff(os.path.join("html.old",f), os.path.join("html",f), os.path.join("build/diff",f+".diff"))
+            
+        with zipfile.ZipFile("dist/diff.zip", "w") as zip_ref:
+            for root, dirs, files in os.walk("build/diff"):
+                for file in files:
+                    f = os.sep.join(os.path.join(root, file).split(os.sep)[2:])
+                    zip_ref.write(os.path.join(root, file), f)
+                
+        
+    def build(self):
+        os.makedirs("dist", exist_ok=True)
+        shutil.rmtree("html.old", ignore_errors=True)
+        if os.path.exists("html"):
+            shutil.copytree("html", "html.old")
+        
+        print("Building HTML...")
+        if not self.args.no_build_html:
+            subprocess.run(["pnpm", "run", "build"], check=True)
+
+        print("Building HTML finished!")
+        if self.args.no_zip:
+            return
+        
+        print("Making zip...")
+        with zipfile.ZipFile("dist/html.zip", "w") as zip_ref:
+            for root, dirs, files in os.walk("html"):
+                for file in files:
+                    zip_ref.write(os.path.join(root, file))
+        
+        if os.path.exists("html.old"):
+            self.make_diff()
 
 if __name__ == "__main__":
 
@@ -360,5 +437,7 @@ if __name__ == "__main__":
     parser.add_argument("--no-check", action="store_true", help="no check")
     parser.add_argument("--default-version", help="default version", default="33.0.2")
     args = parser.parse_args()
-    builder = Builer(args)
-    builder.build()
+    builders = [HtmlBuiler(args),Builer(args)]
+   
+    for builder in builders:
+        builder.build()

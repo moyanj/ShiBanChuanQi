@@ -102,7 +102,7 @@
       <div v-else align="center">
         <!-- 设置404变量 -->
 
-        <h1>666, 隐藏界面被你玩出来了</h1>
+        <h1>404</h1>
 
         <sbutton @click="dataStore.page_type = 'main'">返回</sbutton>
 
