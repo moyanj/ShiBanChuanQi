@@ -76,8 +76,8 @@
     }
   }
   const keys = useMagicKeys();
-  const key = keys["Alt+T"];
-  watch(key, console_handler)
+
+  watch(keys["Alt+T"], console_handler)
 
 
 </script>
