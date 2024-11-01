@@ -1,8 +1,9 @@
 <script setup lang="ts">
-    import { ElCard, ElDivider } from 'element-plus';
+    import { ElCard, ElDivider, ElImage } from 'element-plus';
     import sbutton from '../components/sbutton.vue';
     import { useSaveStore, useDataStore } from '../js/store';
     import { load as load_story, StoryManager } from '../js/plot';
+    import { icons } from '../js/utils'
 
     const saveStore = useSaveStore();
     const dataStore = useDataStore();
@@ -18,7 +19,10 @@
         <el-divider>{{ story_manager.current_data.value.role }}</el-divider>
 
         <p>{{ story_manager.current_data.value.content }}</p>
-        <sbutton @click="story_manager.next()">n</sbutton>
+        <br>
+        <div align="center">
+            <sbutton @click="story_manager.next()" text><el-image :src="icons.down" /></sbutton>
+        </div>
 
     </el-card>
 </template>
@@ -36,8 +40,9 @@
         // 固定至底部
         position: fixed;
         bottom: 15px;
-        left: 10px;
-        right: 10px;
+        left: 15%;
+        right: 15%;
+        width: 70%;
 
         --el-card-padding: 15px;
         --el-card-border-radius: 25px;
@@ -45,8 +50,8 @@
     }
 
     .el-divider {
-        margin: 0 10% 0 10%;
-        width: 80%;
+        margin: 0 15% 0 15%;
+        width: 70%;
     }
 
 </style>
