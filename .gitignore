@@ -33,3 +33,5 @@ dist/
 pnpm-lock.yaml
 electron/html
 electron/package.json
+
+server/venv/
