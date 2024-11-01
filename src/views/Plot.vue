@@ -16,12 +16,12 @@
 
 <template>
     <el-card class="plot">
-        <el-divider>{{ story_manager.current_data.value.role }}</el-divider>
+        <el-divider>{{ story_manager.current_data.value.role }}</el-divider> <!-- 角色名 -->
 
-        <p>{{ story_manager.current_data.value.content }}</p>
+        <p v-html="story_manager.current_data.value.content"></p> <!-- 内容 -->
         <br>
         <div align="center">
-            <sbutton @click="story_manager.next()" text><el-image :src="icons.down" /></sbutton>
+            <sbutton @click="story_manager.next()" text size="small" class="next"><el-image :src="icons.down" /></sbutton>
         </div>
 
     </el-card>
@@ -51,7 +51,12 @@
 
     .el-divider {
         margin: 0 15% 0 15%;
-        width: 70%;
+        width: calc(100% - 30%);
+    }
+
+    .next {
+        position: absolute;
+        bottom: 10px;
     }
 
 </style>
