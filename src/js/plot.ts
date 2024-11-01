@@ -1,7 +1,8 @@
 import template from "lodash-es/template";
 import { useDataStore, useSaveStore } from "./store";
 import sha256 from "crypto-js/sha256"
-import { th } from "element-plus/es/locales.mjs";
+import { ref } from "vue";
+import type { Ref } from "vue";
 
 // 剧情数据类
 interface StoryData {
@@ -97,14 +98,19 @@ export class Story {
 }
 
 export class StoryManager {
-    
+
     story: Story;
     current_id: string;
-    current_data: StoryData;
+    current_data: Ref<StoryData | null>;
     n: number;
+    data_store = useDataStore();
+    save_store = useSaveStore();
+
 
     constructor(story: Story) {
         this.story = story;
+        this.current_data = ref(null);
+
         this.n = -1;
         // 获取第一条
         this.next()
@@ -112,10 +118,11 @@ export class StoryManager {
     }
 
     next() {
-       this.n += 1;
-       this.current_id = this.story.list[this.n];
-       this.current_data = this.story.data[this.current_id];
-       return this.story.data[this.current_id];
+        this.n += 1;
+        this.current_id = this.story.list[this.n];
+        this.save_store.story_index = this.current_id;
+        this.current_data.value = this.story.data[this.current_id];
+        return this.story.data[this.current_id];
     }
 
     get_current() {
@@ -129,7 +136,8 @@ export class StoryManager {
     set_current(id: string) {
         this.n = this.story.list.indexOf(id);
         this.current_id = id;
-        this.current_data = this.story.data[id];
+        this.save_store.story_index = this.current_id;
+        this.current_data.value = this.story.data[id];
     }
 
     set_story(story: Story) {
@@ -141,6 +149,8 @@ export class StoryManager {
 }
 
 export function load(name: string): Story {
+    let save_store = useSaveStore();
+    save_store.story_section = name;
     let xhr = new XMLHttpRequest();
     xhr.open("GET", "story/" + name + ".txt", false);
     xhr.overrideMimeType("text/plain; charset=utf-8");
