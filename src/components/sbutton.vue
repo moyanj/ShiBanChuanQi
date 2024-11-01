@@ -32,6 +32,7 @@
   APM.add("click_sound", 'audio/click.mp3')
   const playSound = () => {
     console.log("click");
+    APM.setVolume("click_sound", 0.3)
     APM.play("click_sound");
   };
   </script>

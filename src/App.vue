@@ -62,6 +62,7 @@
     });
 
   APM.add("background_music", 'audio/background/main.mp3', { loop: true });
+  
   if (!dataStore.is_dev) {
     APM.play("background_music");
   }
