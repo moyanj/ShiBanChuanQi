@@ -3,9 +3,10 @@ import { ElMessageBox } from 'element-plus'
 import { ThingList } from "./things";
 
 function cmd_handler(value) {
+    value = value.value;
     const dataStore = useDataStore();
     const saveStore = useSaveStore();
-
+    
     let cmds = value.split(" ");
     let cmd = cmds[0];
     // 根据命令执行对应操作

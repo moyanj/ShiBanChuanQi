@@ -62,7 +62,7 @@
     });
 
   APM.add("background_music", 'audio/background/main.mp3', { loop: true });
-  
+
   if (!dataStore.is_dev) {
     APM.play("background_music");
   }
@@ -84,33 +84,36 @@
 </script>
 
 <template>
-  <!-- 根据数据存储中的 page_type 显示不同页面 -->
-  <Home v-if="dataStore.page_type == 'main'" />
-  <div v-else>
-    <sbutton @click="dataStore.page_type = 'main'" class="back"><el-image :src="icons.left"
-        style="width: 25px;height: 25px;" /></sbutton>
-    <keep-alive :max="7">
-      <Plot v-if="dataStore.page_type == 'plot'" />
-      <Fight v-else-if="dataStore.page_type == 'fight'" />
-      <About v-else-if="dataStore.page_type == 'about'" />
-      <Setting v-else-if="dataStore.page_type == 'setting'" />
-      <Bag v-else-if="dataStore.page_type == 'bag'" />
-      <Character v-else-if="dataStore.page_type == 'character'" />
-      <Wish v-else-if="dataStore.page_type == 'wish'" />
+  <div>
+
+    <!-- 根据数据存储中的 page_type 显示不同页面 -->
+    <Home v-if="dataStore.page_type == 'main'" />
+    <div v-else>
+      <sbutton @click="dataStore.page_type = 'main'" class="back"><el-image :src="icons.left"
+          style="width: 25px;height: 25px;" /></sbutton>
+      <keep-alive :max="8">
+        <Plot v-if="dataStore.page_type == 'plot'" />
+        <Fight v-else-if="dataStore.page_type == 'fight'" />
+        <About v-else-if="dataStore.page_type == 'about'" />
+        <Setting v-else-if="dataStore.page_type == 'setting'" />
+        <Bag v-else-if="dataStore.page_type == 'bag'" />
+        <Character v-else-if="dataStore.page_type == 'character'" />
+        <Wish v-else-if="dataStore.page_type == 'wish'" />
 
 
-      <div v-else align="center">
-        <!-- 设置404变量 -->
+        <div v-else align="center">
+          <!-- 设置404变量 -->
 
-        <h1>404</h1>
+          <h1>404</h1>
 
-        <sbutton @click="dataStore.page_type = 'main'">返回</sbutton>
+          <sbutton @click="dataStore.page_type = 'main'">返回</sbutton>
 
-      </div>
-    </keep-alive>
+        </div>
+      </keep-alive>
+    </div>
+
+    <!-- 404 -->
   </div>
-  <!-- 404 -->
-
 
 </template>
 
