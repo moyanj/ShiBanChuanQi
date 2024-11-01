@@ -1,8 +1,0 @@
-字体：
-    MiSans : 小米
-图标：
-    Leonid Tsvetkov(https://www.figma.com/@Leonid)
-    北京字节跳动科技有限公司
-    Google Inc.
-    阿里云计算有限公司
-    微软
