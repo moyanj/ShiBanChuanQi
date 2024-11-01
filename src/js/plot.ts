@@ -1,20 +1,21 @@
 import template from "lodash-es/template";
-import { useDataStore,useSaveStore } from "./store";
+import { useDataStore, useSaveStore } from "./store";
 import sha256 from "crypto-js/sha256"
+import { th } from "element-plus/es/locales.mjs";
 
 // 剧情数据类
-interface StoryData{
+interface StoryData {
     role?: string; // 角色名
     content?: string | null; // 内容
     actions?: StoryAction;
 }
 
-interface StoryAction{
+interface StoryAction {
     func: Function;
     args?: Array<string>;
 }
 
-interface StoryMap{
+interface StoryMap {
     [key: string]: StoryData;
 }
 
@@ -30,39 +31,42 @@ const actions = {
     }
 }
 
-export class Story{
+export class Story {
     data: StoryMap = {};
+    list: Array<string> = [];
     raw: string;
     data_store = useDataStore();
     save_store = useSaveStore();
 
-    constructor(text: string){
+    constructor(text: string) {
         this.raw = text;
-        this.parser();    
+        this.parser();
     }
-    public parser(){
+    public parser() {
         let lines = this.raw.split("\n");
         let n = 1;
-        for(let line of lines){
+        for (let line of lines) {
             line = line.trim();
-            if(line.length == 0) continue;
-            if(line[0] == "#") continue;
+            if (line.length == 0) continue;
+            if (line[0] == "#") continue;
 
-            let line_list:Array<string> = line.split(" ");
+            let line_list: Array<string> = line.split(" ");
             if (line_list[0] == "chat") {
                 let ret = this.parser_chat(line_list);
                 let id = sha256(line + n).toString().slice(0, 8);
+                this.list.push(id);
                 this.data[id] = ret;
 
             } else if (line_list[0] == "action") {
                 let ret = this.parser_action(line_list);
                 let id = sha256(line + n).toString().slice(0, 8);
+                this.list.push(id);
                 this.data[id] = ret;
             }
             n += 1;
         }
     }
-    private parser_chat(line: Array<string>): StoryData{
+    private parser_chat(line: Array<string>): StoryData {
         let content_func = template(line.slice(2).join(" "), {
             interpolate: /{{([\s\S]+?)}}/g, // 语法：{{}}
             evaluate: /<%([\s\S]+?)%>/g, // 语法：<% %>
@@ -79,7 +83,7 @@ export class Story{
         }
     }
 
-    private parser_action(line: Array<string>): StoryData{
+    private parser_action(line: Array<string>): StoryData {
         let type = line[1];
         let args = line.slice(2);
         let func = actions[type];
@@ -90,6 +94,39 @@ export class Story{
             }
         }
     }
+}
+
+export class StoryManager {
+    
+    story: Story;
+    current_id: string;
+    current_data: StoryData;
+    n: number;
+
+    constructor(story: Story) {
+        this.story = story;
+        this.n = -1;
+        // 获取第一条
+        this.next()
+
+    }
+
+    next() {
+       this.n += 1;
+       this.current_id = this.story.list[this.n];
+       this.current_data = this.story.data[this.current_id];
+       return this.story.data[this.current_id];
+    }
+
+    get_current() {
+        return this.story.data[this.current_id];
+    }
+
+    get_next() {
+        return this.story.data[this.story.list[this.n + 1]];
+    }
+
+
 }
 
 export function load(name: string): Story {
