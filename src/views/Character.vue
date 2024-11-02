@@ -1,9 +1,10 @@
 <script setup lang="ts">
-    import { ElCard, ElRow, ElCol, ElScrollbar, ElImage, ElButton, ElDivider } from 'element-plus';
+    import { ElCard, ElRow, ElCol, ElScrollbar, ElImage, ElDescriptions, ElDescriptionsItem } from 'element-plus';
     import { CharacterType } from '../js/character';
     import { useSaveStore } from '../js/store';
     import { icons } from '../js/utils';
     import { ref } from 'vue';
+    import placeholder from "../assets/placeholder/p300x400.png"
 
     const save = useSaveStore();
 
@@ -45,9 +46,19 @@
 
         <el-col :span="21" class="content">
             <div class="verticalBar"></div>
-            <div v-if="now_character">
-                <h1>{{ now_character.name }}</h1>
-            </div>
+            <el-descriptions v-if="now_character" border size="large">
+                
+                
+                
+                <el-descriptions-item label="名字" width="100">{{ now_character.name }}</el-descriptions-item>
+
+                <el-descriptions-item label="属性">
+                    <el-image :src="c2e[now_character.type]" width="15px" height="15px" style="margin-right: 10px;" />
+                </el-descriptions-item>
+
+                <el-descriptions-item label="等级">{{ now_character.level }}</el-descriptions-item>
+
+            </el-descriptions>
             <div v-else class="container">
                 <h1>你还没有角色</h1>
             </div>
@@ -94,6 +105,10 @@
         align-items: center;
         justify-content: center;
         min-height: 100vh;
+        width: 100%;
+    }
+
+    .el-descriptions {
         width: 100%;
     }
 
