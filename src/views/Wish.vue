@@ -14,7 +14,7 @@
     wish_list.push(...Object.keys(characters))
 
     function f(x: number): number {
-        const value = 0.0001 + (Math.exp(x / 25) / 100);
+        const value = 0.0001 + (Math.exp(x / 35) / 175);
         const r = (value / 1); // 计算结果
 
         return r;
