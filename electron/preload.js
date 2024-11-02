@@ -9,7 +9,7 @@ contextBridge.exposeInMainWorld('electron', {
       ipcRenderer.on(channel, (event, ...args) => func(event, ...args));
   },
   version: process.versions,
-  argv: () => process.argv,
+  argv: process.argv,
 });
 
 
