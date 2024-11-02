@@ -9,7 +9,6 @@
     var deleteDialog_show = ref(false);
     var delete_args = ref({
         n: 1,
-        max: 1,
         arg: null
     });
 
@@ -46,7 +45,7 @@
             save.things.remove(id, data.n);
         }
         data.n = 1;
-        deleteDialog_show.value = false
+        deleteDialog_show.value = false;
     }
 
     // 转换为el-table的格式
