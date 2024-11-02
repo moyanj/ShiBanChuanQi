@@ -203,7 +203,7 @@ interface AddOptions {
 }
 
 export class AudioPlayer {
-    private objs: AudioObj;
+    objs: AudioObj;
 
     constructor() {
         this.objs = {};
