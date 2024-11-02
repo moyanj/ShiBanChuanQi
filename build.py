@@ -425,9 +425,11 @@ class HtmlBuiler:
 
     def build(self):
         os.makedirs("dist", exist_ok=True)
-        shutil.rmtree("html.old", ignore_errors=True)
-        if os.path.exists("html"):
-            shutil.copytree("html", "html.old")
+        
+        if not self.args.no_build_html:
+            shutil.rmtree("html.old", ignore_errors=True)
+            if os.path.exists("html"):
+                shutil.copytree("html", "html.old")
 
         print("Building HTML...")
         if not self.args.no_build_html:
@@ -458,8 +460,9 @@ if __name__ == "__main__":
     parser.add_argument("--no-zip", action="store_true", help="no zip")
     parser.add_argument("--no-check", action="store_true", help="no check")
     parser.add_argument("--default-version", help="default version", default="33.0.2")
+    parser.add_argument("--no-clean", action="store_true", help="no clean")
     args = parser.parse_args()
-    builders = [HtmlBuiler(args), Builer(args)]
+    builders = [HtmlBuiler(args),]# Builer(args)]
 
     for builder in builders:
         builder.build()
