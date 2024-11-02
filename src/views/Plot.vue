@@ -5,9 +5,8 @@
     import { icons } from '../js/utils'
 
     const saveStore = useSaveStore();
-    const dataStore = useDataStore();
+    
     var story_manager: StoryManager = new StoryManager(load_story(saveStore.story_section),saveStore.story_index);
-    console.log(story_manager);
     
 
 </script>

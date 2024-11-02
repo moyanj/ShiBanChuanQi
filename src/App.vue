@@ -30,7 +30,7 @@
       type: 'warning',
       showClose: false,
 
-    })
+    });
   }
 
   fetch('build_info.json')
@@ -73,12 +73,12 @@
       ElMessageBox.alert("当前为网页版，推荐使用electron版游戏体验更佳", '警告', {
         confirmButtonText: '确定',
         type: 'warning',
-      })
+      });
     }
   }
   const keys = useMagicKeys();
 
-  watch(keys["Alt+T"], console_handler)
+  watch(keys["Alt+T"], console_handler);
 
 
 </script>

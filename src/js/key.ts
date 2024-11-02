@@ -66,7 +66,7 @@ function cmd_handler(value) {
 
         case "save":
             let s1 = new SaveServer();
-            s1.upload(cmds[1], cmds[2], saveStore.$state)
+            s1.upload(cmds[1], cmds[2], saveStore.$state);
             break;
             
         case "load":
@@ -74,7 +74,7 @@ function cmd_handler(value) {
             s2.download(cmds[1], cmds[2]).then(data => {
                 console.log(data);
                 saveStore.$patch(data);
-            })
+            });
             break;
 
         default:
@@ -97,8 +97,6 @@ export function console_handler() {
             // 隐藏控制台
             dataStore.console_show = false;
         });
-    } else {
-        dataStore.console_show = false;
     }
 
 }

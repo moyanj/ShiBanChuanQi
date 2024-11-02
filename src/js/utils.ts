@@ -399,7 +399,7 @@ export function isLandscape() {
 export class SaveServer {
     baseUrl: string;
     constructor() {
-        this.baseUrl = "http://localhost:5000";
+        this.baseUrl = "https://localhost:5000";
     }
 
     public upload(user: string, pwd: string, data: any): Promise<any> {
@@ -436,7 +436,7 @@ export class SaveServer {
             xhr.onerror = () => {
                 reject(new Error('Network error occurred'));
             };
-            console.log(data)
+            
             xhr.send(JSON.stringify(data));
         });
     }

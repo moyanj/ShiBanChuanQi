@@ -53,9 +53,9 @@
                 <h2>致谢名单</h2>
                 <el-scrollbar style="height: 45vh; width: 100%;">
                     <el-card>
-                        <p>小米科技有限公司，北京北大方正电子有限公司，北京字节跳动科技有限公司，上海米哈游科技有限公司，Google Inc.，Leonid
-                            Tsvetkov，微软科技，VueJS团队，Github，北京阿里云计算科技，Suno AI， Stable
-                            Diffusion团队，Electron团队，重庆市凤鸣山中学全体师生。（排名不分先后）
+                        <p>小米科技有限公司，北京北大方正电子有限公司，北京字节跳动科技有限公司，上海米哈游科技有限公司，Google Inc.，
+                            Leonid Tsvetkov，微软科技，VueJS团队，Github，北京阿里云计算科技，Suno AI， Stable
+                            Diffusion团队，Electron团队，Flask团队，重庆市凤鸣山中学全体师生。（排名不分先后）
                         </p>
                     </el-card>
                 </el-scrollbar>

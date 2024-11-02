@@ -57,4 +57,4 @@ export const useSaveStore = defineStore('save', {
   }),
 });
 
-export const APM = new AudioPlayer()
+export const APM = new AudioPlayer();
