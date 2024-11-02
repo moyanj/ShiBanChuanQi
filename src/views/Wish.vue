@@ -14,7 +14,7 @@
     wish_list.push(...Object.keys(characters))
 
     function f(x: number): number {
-        const value = 0.0001 + (Math.exp(x / 25) / 100) + Math.tan(x / 500);
+        const value = 0.0001 + (Math.exp(x / 25) / 100);
         const r = (value / 1); // 计算结果
 
         return r;
@@ -44,11 +44,9 @@
                 saveStore.n_wish = 0; // 重置连续抽奖次数
                 const wish_item = random.random_choice(wish_list);
                 results.push(wish_item);
-            } else {
-                results.push(null); // 没抽到任何物品
             }
         }
-        console.log(results)
+       
         // 处理结果
         results.forEach(item => {
             if (item) {
