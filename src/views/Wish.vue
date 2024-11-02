@@ -4,7 +4,7 @@
     import { useSaveStore, useDataStore, APM } from "../js/store";
     import { MersenneTwister } from "../js/utils";
     import { ThingList } from "../js/things";
-    import { characters } from "../js/character_info";
+    import { characters } from "../js/character";
 
     const saveStore = useSaveStore();
     const dataStore = useDataStore();
