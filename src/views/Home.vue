@@ -11,11 +11,11 @@
     const isHover = ref(false);
 
     if (save.user_avatar === "") {
-        save.user_avatar = `avatars/${random.randint(1,10)}.png`;
+        save.user_avatar = `avatars/${random.randint(1,100)}.png`;
     }
 
     function get_avatar() {
-        save.user_avatar = `avatars/${random.randint(1, 10)}.png`;
+        save.user_avatar = `avatars/${random.randint(1, 100)}.png`;
     }
 
     function change_name() {

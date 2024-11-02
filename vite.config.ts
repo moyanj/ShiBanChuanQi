@@ -42,7 +42,7 @@ export default defineConfig({
         }
       ],
       output: {
-        chunkFileNames: "assets/lib-[name].js",
+        chunkFileNames: "assets/lib/[name].js",
         entryFileNames: "assets/main.js",
         assetFileNames: "assets/[name].[ext]",
         manualChunks: {
