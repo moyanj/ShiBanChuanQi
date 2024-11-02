@@ -1,12 +1,13 @@
 import { useDataStore, useSaveStore } from "./store";
 import { ElMessageBox } from 'element-plus'
 import { ThingList } from "./things";
+import { SaveServer } from "./utils";
 
 function cmd_handler(value) {
     value = value.value;
     const dataStore = useDataStore();
     const saveStore = useSaveStore();
-    
+
     let cmds = value.split(" ");
     let cmd = cmds[0];
     // 根据命令执行对应操作
@@ -61,6 +62,19 @@ function cmd_handler(value) {
 
         case "devtool":
             window.openDevTools();
+            break;
+
+        case "save":
+            let s1 = new SaveServer();
+            s1.upload(cmds[1], cmds[2], saveStore.$state)
+            break;
+            
+        case "load":
+            let s2 = new SaveServer();
+            s2.download(cmds[1], cmds[2]).then(data => {
+                console.log(data);
+                saveStore.$patch(data);
+            })
             break;
 
         default:
