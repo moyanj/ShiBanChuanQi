@@ -329,7 +329,12 @@ class Builer:
         os.makedirs("dist", exist_ok=True)
         self.download_sha256sum()
         self.download()
-
+        with open(
+                    os.path.join("electron", "package.json"),
+                    "w",
+                ) as f:
+                    f.write(self.info.make_json())
+                    
         self.copy()
         self.make_asar()
         for target in self.targets:
@@ -338,19 +343,14 @@ class Builer:
             print("Extracting SDK...")
             # 解压SDK
             with zipfile.ZipFile(f".cache/ele-{target}.zip", "r") as zip_ref:
-                zip_ref.extractall(f"build/{target}")
-
-            with open(
-                os.path.join("electron", "package.json"),
-                "w",
-            ) as f:
-                f.write(self.info.make_json())
+                zip_ref.extractall(f"build/{target}")  
 
             with open(
                 os.path.join("electron", "html", "build_info.json"),
                 "w",
             ) as f:
                 f.write(self.make_build_info(target))
+                
             self.copy_asar(target)
             self.after_build(target)
 
@@ -459,10 +459,10 @@ if __name__ == "__main__":
     parser.add_argument("--no-build-html", action="store_true", help="build html")
     parser.add_argument("--no-zip", action="store_true", help="no zip")
     parser.add_argument("--no-check", action="store_true", help="no check")
-    parser.add_argument("--default-version", help="default version", default="33.0.2")
+    parser.add_argument("--default-version", help="default version", default="30.5.1")
     parser.add_argument("--no-clean", action="store_true", help="no clean")
     args = parser.parse_args()
-    builders = [HtmlBuiler(args),]# Builer(args)]
+    builders = [HtmlBuiler(args), Builer(args)]
 
     for builder in builders:
         builder.build()
