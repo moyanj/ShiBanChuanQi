@@ -1,6 +1,5 @@
 <script setup lang="ts">
-    import { ElCard, ElDivider, ElImage } from 'element-plus';
-    import sbutton from '../components/sbutton.vue';
+    import { ElCard, ElDivider, ElImage,ElButton } from 'element-plus';
     import { useSaveStore, useDataStore } from '../js/store';
     import { load as load_story, StoryManager } from '../js/plot';
     import { icons } from '../js/utils'
@@ -11,17 +10,17 @@
     console.log(story_manager.story.data);
     story_manager.set_current(saveStore.story_index)
 
-
 </script>
 
 <template>
-    <el-card class="plot">
+    <h1 v-if="story_manager.current_data.value == null"></h1>
+    <el-card class="plot" v-else @click="story_manager.next()">
         <el-divider>{{ story_manager.current_data.value.role }}</el-divider> <!-- 角色名 -->
 
         <p v-html="story_manager.current_data.value.content"></p> <!-- 内容 -->
         <br>
         <div align="center">
-            <sbutton @click="story_manager.next()" text size="small" class="next"><el-image :src="icons.down" /></sbutton>
+            <el-button @click="story_manager.next()" text size="small" class="next"><el-image :src="icons.down" /></el-button>
         </div>
 
     </el-card>
