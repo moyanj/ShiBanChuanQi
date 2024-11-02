@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 import pymysql
+import json
 from werkzeug.security import generate_password_hash, check_password_hash
 
 # 初始化Flask应用
@@ -12,6 +13,13 @@ db = pymysql.connect(
     password="vMJDj",
     database="sbcq_saves"
 )
+#允许跨域
+@app.after_request
+def after_request(response):
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Methods'] = 'PUT,GET,POST,DELETE'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type,Authorization'
+    return response
 
 # 定义上传游戏存档的API
 @app.route("/upload", methods=["POST"])
@@ -23,7 +31,7 @@ def upload():
     """
     user = request.json.get("user")
     pwd = request.json.get("pwd")
-    data = request.json.get("data")
+    data = json.dumps(request.json.get("data"),ensure_ascii=False)
 
     if user is None or pwd is None:
         return jsonify({"error": "user or pwd is None"}), 400

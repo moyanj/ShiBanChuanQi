@@ -396,10 +396,10 @@ export function isLandscape() {
 
 }
 
-class SaveServer {
+export class SaveServer {
     baseUrl: string;
     constructor() {
-        this.baseUrl = "http://localhost:8080";
+        this.baseUrl = "http://localhost:5000";
     }
 
     public upload(user: string, pwd: string, data: any): Promise<any> {
@@ -407,7 +407,7 @@ class SaveServer {
     }
 
     public download(user: string, pwd: string): Promise<any> {
-        return this.request("POST", "/download", { user: user, pwd:pwd, });
+        return this.request("GET", `/download?user=${user}&pwd=${pwd}`);
     }
 
     public register(user: string, pwd: string): Promise<any> {
@@ -418,7 +418,7 @@ class SaveServer {
         return this.request("POST", "/remove", { user: user, pwd:pwd, });
     }
 
-    private request(type: string, eurl: string, data: any): Promise<any> {
+    private request(type: string, eurl: string, data: any | null = null): Promise<any> {
         return new Promise((resolve, reject) => {
             const url = this.baseUrl + eurl;
             const xhr = new XMLHttpRequest();
@@ -436,7 +436,7 @@ class SaveServer {
             xhr.onerror = () => {
                 reject(new Error('Network error occurred'));
             };
-
+            console.log(data)
             xhr.send(JSON.stringify(data));
         });
     }
