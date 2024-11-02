@@ -6,9 +6,9 @@
 
     const saveStore = useSaveStore();
     const dataStore = useDataStore();
-    var story_manager: StoryManager = new StoryManager(load_story(saveStore.story_section));
-    console.log(story_manager.story.data);
-    story_manager.set_current(saveStore.story_index)
+    var story_manager: StoryManager = new StoryManager(load_story(saveStore.story_section),saveStore.story_index);
+    console.log(story_manager);
+    
 
 </script>
 

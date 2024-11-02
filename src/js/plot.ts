@@ -107,13 +107,17 @@ export class StoryManager {
     save_store = useSaveStore();
 
 
-    constructor(story: Story) {
+    constructor(story: Story, current_id: string|null=null) {
         this.story = story;
         this.current_data = ref(null);
 
         this.n = -1;
-        // 获取第一条
-        this.next()
+        if (current_id) {
+            this.set_current(current_id);
+        } else {
+            this.next();
+        }
+        
 
     }
 
@@ -135,6 +139,7 @@ export class StoryManager {
 
     set_current(id: string) {
         this.n = this.story.list.indexOf(id);
+        console.log(id, this.n);
         this.current_id = id;
         this.save_store.story_index = this.current_id;
         this.current_data.value = this.story.data[id];
