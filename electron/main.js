@@ -1,10 +1,11 @@
-const { app, BrowserWindow } = require("electron");
+const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("node:path");
 
 function createWindow() {
   const win = new BrowserWindow({
     width: 1366,
     height: 720,
+    title: "十班传奇",
     webPreferences: {
       preload: path.join(__dirname, 'preload.js')
     }
