@@ -1,8 +1,9 @@
 <script setup lang="ts">
-    import { ElCard, ElRow, ElCol, ElScrollbar, ElImage } from 'element-plus';
+    import { ElCard, ElRow, ElCol, ElScrollbar, ElImage, ElButton, ElDivider } from 'element-plus';
     import { CharacterType } from '../js/character';
     import { useSaveStore } from '../js/store';
     import { icons } from '../js/utils';
+    import { ref } from 'vue';
 
     const save = useSaveStore();
 
@@ -16,22 +17,41 @@
         [CharacterType.Water]: icons.element.water,
     }
 
-    const data = save.characters.characters;
+    var data = save.characters.characters;
+    var now_character = ref(data[0]);
+
+    const change_character = (content) => {
+        now_character.value = content;
+    };
 </script>
 
 <template>
     <el-row>
         <el-col :span="3">
-            <el-scrollbar style="" class="menu">
-                <el-card class="item" v-for="item in data">
-                    <el-image :src="c2e[item.type]" width="15px" height="15px"></el-image>
-                    <span class="name">{{item.name}}</span>
+            <el-scrollbar class="menu">
+                <el-card class="item" v-for="item in data" @click="change_character(item)" v-if="data.length > 0">
+                    <div class="item-content">
+                        <el-image :src="c2e[item.type]" width="15px" height="15px"
+                            style="margin-right: 10px;"></el-image>
+                        <h3 class="name" style="margin: 0;">{{ item.name }}</h3>
+                    </div>
                 </el-card>
+                <div v-else  class="container">
+                    你还没有角色
+                </div>
             </el-scrollbar>
+
         </el-col>
-        <div class="verticalBar"></div>
-        <el-col :span="21">
-            <el-button type="primary">Primary</el-button>
+
+        <el-col :span="21" class="content">
+            <div class="verticalBar"></div>
+            <div v-if="now_character">
+                <h1>{{ now_character.name }}</h1>
+            </div>
+            <div v-else class="container">
+                <h1>你还没有角色</h1>
+            </div>
+
         </el-col>
     </el-row>
 
@@ -39,8 +59,15 @@
 
 <style scoped lang="scss">
     .menu {
-        height: 100vh;
+        height: 95vh;
         width: 100%;
+    }
+
+    .item {
+        margin-right: 10px;
+        background-color: #26272b;
+        margin-bottom: 10px;
+
     }
 
     .verticalBar {
@@ -49,13 +76,25 @@
         background: #a9a9a9;
         display: inline-block;
         margin-left: 5px;
-        margin-right: 5px;
+        margin-right: calc(10px + 5px);
     }
 
-    .item {
-        margin-right: 10px;
-        background-color: #26272b;
-        margin-bottom: 10px;
+    .item-content {
+        display: flex;
+        align-items: center;
+    }
+
+    .content {
+        display: flex;
+    }
+
+    .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        width: 100%;
     }
 
 </style>
