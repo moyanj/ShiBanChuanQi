@@ -395,3 +395,49 @@ export function isLandscape() {
     }
 
 }
+
+class SaveServer {
+    baseUrl: string;
+    constructor() {
+        this.baseUrl = "http://localhost:8080";
+    }
+
+    public upload(user: string, pwd: string, data: any): Promise<any> {
+        return this.request("POST", "/upload", { user: user, pwd:pwd, data:data });
+    }
+
+    public download(user: string, pwd: string): Promise<any> {
+        return this.request("POST", "/download", { user: user, pwd:pwd, });
+    }
+
+    public register(user: string, pwd: string): Promise<any> {
+        return this.request("POST", "/reg", { user: user, pwd:pwd, });
+    }
+
+    public remove(user: string, pwd: string): Promise<any> {
+        return this.request("POST", "/remove", { user: user, pwd:pwd, });
+    }
+
+    private request(type: string, eurl: string, data: any): Promise<any> {
+        return new Promise((resolve, reject) => {
+            const url = this.baseUrl + eurl;
+            const xhr = new XMLHttpRequest();
+            xhr.open(type, url, true); // Use async requests
+            xhr.setRequestHeader("Content-Type", "application/json");
+
+            xhr.onload = () => {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    resolve(JSON.parse(xhr.responseText));
+                } else {
+                    reject(new Error(`Request failed with status ${xhr.status}: ${xhr.statusText}`));
+                }
+            };
+
+            xhr.onerror = () => {
+                reject(new Error('Network error occurred'));
+            };
+
+            xhr.send(JSON.stringify(data));
+        });
+    }
+}
