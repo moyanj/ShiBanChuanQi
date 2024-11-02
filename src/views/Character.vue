@@ -3,7 +3,7 @@
     import { CharacterType } from '../js/character';
     import { useSaveStore } from '../js/store';
     import { icons } from '../js/utils';
-    import { ref } from 'vue';
+    import { ref, watch } from 'vue';
     import placeholder from "../assets/placeholder/p300x400.png"
 
     const save = useSaveStore();
@@ -19,7 +19,13 @@
     }
 
     var data = save.characters.characters;
+    data.reverse();
     var now_character = ref(data[0]);
+
+    watch(save.characters, () => {
+        data = save.characters.characters;
+        data.reverse();
+    });
 
     const change_character = (content) => {
         now_character.value = content;
