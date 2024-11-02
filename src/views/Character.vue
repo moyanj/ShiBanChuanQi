@@ -57,7 +57,7 @@
                 </el-descriptions-item>
 
                 <el-descriptions-item label="等级">{{ now_character.level }}</el-descriptions-item>
-
+                <el-descriptions-item label="介绍">{{ now_character.desc }}</el-descriptions-item>
             </el-descriptions>
             <div v-else class="container">
                 <h1>你还没有角色</h1>
