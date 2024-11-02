@@ -221,12 +221,9 @@ class Builer:
         for target in self.targets:
             self.check_file(target)
 
-    def make_build_info(self, target):
+    def make_build_info(self):
         data = {
-            "electron_version": target.version,
             "timestamp": time.time() * 1000,
-            "platform": target.system,
-            "arch": target.arch,
             "time": time.strftime("%Y/%m/%d %H:%M:%S", time.localtime()),
             "type": "electron",
             "version": self.info.version,
@@ -329,13 +326,21 @@ class Builer:
         os.makedirs("dist", exist_ok=True)
         self.download_sha256sum()
         self.download()
+        
+        self.copy()
+        
         with open(
                     os.path.join("electron", "package.json"),
                     "w",
                 ) as f:
                     f.write(self.info.make_json())
                     
-        self.copy()
+        with open(
+                os.path.join("electron", "html", "build_info.json"),
+                "w",
+            ) as f:
+                f.write(self.make_build_info())
+                    
         self.make_asar()
         for target in self.targets:
             print(f"Building {target}...")
@@ -344,12 +349,6 @@ class Builer:
             # 解压SDK
             with zipfile.ZipFile(f".cache/ele-{target}.zip", "r") as zip_ref:
                 zip_ref.extractall(f"build/{target}")  
-
-            with open(
-                os.path.join("electron", "html", "build_info.json"),
-                "w",
-            ) as f:
-                f.write(self.make_build_info(target))
                 
             self.copy_asar(target)
             self.after_build(target)
