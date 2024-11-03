@@ -21,9 +21,11 @@
 
     var data = save.characters.get_all();
     data.reverse();
+    console.log(data);
     var now_character = ref(data[0]);
 
-    watch(save.characters, () => {
+    watch(save.characters.characters, () => {
+        console.log("data changed");
         data = save.characters.get_all();
         data.reverse();
     });
