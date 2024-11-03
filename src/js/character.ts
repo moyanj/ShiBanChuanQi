@@ -1,3 +1,5 @@
+import { ref, Ref } from "vue";
+
 interface CharacterData {
     level: number;
     xp: number;
@@ -76,6 +78,7 @@ export class CharacterManager {
     }
 
     is_in(character_name: string) {
+        console.log(this.characters);
         return this.characters[character_name] !== undefined;
     }
 
@@ -83,13 +86,20 @@ export class CharacterManager {
         if (!this.characters[character_name]) {
             return null;
         }
-        return Character.load(this.characters[character_name]);
+        let character_class = characters[character_name];
+        
+        if (character_class === null) {
+            return null;
+        }
+        let c = new character_class();
+        return c.load(this.characters[character_name]);
     }
 
     get_all(): Array<Character> {
         let r = [];
-        for (let i in this.characters.keys) {
-            r.push(Character.load(this.characters[i]));
+        console.log(this.characters);
+        for (let i in this.characters) {
+            r.push(this.get(i));
         }
         return r;
     }
@@ -191,15 +201,14 @@ export class Character {
         }
     }
 
-    static load(data: CharacterData): Character {
-        let r = new Character();
-        r.level = data.level;
-        r.xp = data.xp;
-        r.hp = data.hp;
-        r.atk = data.atk;
-        r.def_ = data.def;
+    load(data: CharacterData): Character {
+        this.level = data.level;
+        this.xp = data.xp;
+        this.hp = data.hp;
+        this.atk = data.atk;
+        this.def_ = data.def;
 
-        return r;
+        return this;
     }
 }
 
