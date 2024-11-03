@@ -1,12 +1,13 @@
 <script setup lang="ts">
-    import { ElCard, ElRow, ElCol, ElScrollbar, ElImage, ElDescriptions, ElDescriptionsItem } from 'element-plus';
+    import { ElCard, ElRow, ElCol, ElScrollbar, ElImage, ElDescriptions, ElDescriptionsItem, ElDialog } from 'element-plus';
     import { CharacterType } from '../js/character';
     import { useSaveStore } from '../js/store';
     import { icons } from '../js/utils';
     import { ref, watch } from 'vue';
-    import placeholder from "../assets/placeholder/p300x400.png"
+    import sbutton from '../components/sbutton.vue'
 
     const save = useSaveStore();
+    var show_info = ref(false);
 
     const c2e = {
         [CharacterType.Fire]: icons.element.fire,
@@ -52,25 +53,39 @@
 
         <el-col :span="21" class="content">
             <div class="verticalBar"></div>
-            <el-descriptions v-if="now_character" border size="large">
-                
-                
-                
-                <el-descriptions-item label="名字" width="100">{{ now_character.name }}</el-descriptions-item>
+            <el-descriptions v-if="now_character" border size="large" :column="4">
 
+                <el-descriptions-item label="名字">{{ now_character.name }}</el-descriptions-item>
                 <el-descriptions-item label="属性">
                     <el-image :src="c2e[now_character.type]" width="15px" height="15px" style="margin-right: 10px;" />
                 </el-descriptions-item>
 
                 <el-descriptions-item label="等级">{{ now_character.level }}</el-descriptions-item>
-                <el-descriptions-item label="介绍">{{ now_character.desc }}</el-descriptions-item>
+                <el-descriptions-item label="详细信息"><sbutton class="show_info" @click="show_info = true">显示</sbutton></el-descriptions-item>
+
+
+                <el-descriptions-item label="介绍" :span="4">{{ now_character.desc }}</el-descriptions-item>
+                
             </el-descriptions>
+
             <div v-else class="container">
                 <h1>你还没有角色</h1>
             </div>
 
         </el-col>
     </el-row>
+
+    <el-dialog v-model="show_info" title="角色信息" width="50%">
+        <el-scrollbar>
+            <el-descriptions border :column="1" class="info">
+                <el-descriptions-item label="经验">{{ now_character.xp }}</el-descriptions-item>
+                <el-descriptions-item label="生命">{{ now_character.hp }}</el-descriptions-item>
+                <el-descriptions-item label="攻击力">{{ now_character.atk }}</el-descriptions-item>
+                <el-descriptions-item label="防御力">{{ now_character.def_ }}</el-descriptions-item>
+                <el-descriptions-item label="速度">{{ now_character.speed }}</el-descriptions-item>
+            </el-descriptions>
+        </el-scrollbar>
+    </el-dialog>
 
 </template>
 
@@ -117,5 +132,11 @@
     .el-descriptions {
         width: 100%;
     }
+
+    .show_info {
+        width: 100%;
+        height: 100%;
+    }
+    
 
 </style>

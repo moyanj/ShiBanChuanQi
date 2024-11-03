@@ -346,6 +346,7 @@ export class Fan extends Character {
         this.name = "凡";
         this.inside_name = "Fan";
         this.type = CharacterType.Physics;
+        this.desc = "我要回家。我要回家！我要回家鹿管"
     }
 }
 
