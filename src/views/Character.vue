@@ -19,12 +19,12 @@
         [CharacterType.Water]: icons.element.water,
     }
 
-    var data = save.characters.characters;
+    var data = save.characters.get_all();
     data.reverse();
     var now_character = ref(data[0]);
 
     watch(save.characters, () => {
-        data = save.characters.characters;
+        data = save.characters.get_all();
         data.reverse();
     });
 

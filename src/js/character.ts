@@ -6,6 +6,10 @@ interface CharacterData {
     def: number;
 }
 
+interface CharacterDatas {
+    [property: string]: CharacterData;
+}
+
 export enum CharacterType  {
     Fire = "火", // 火
     Water = "水", // 水
@@ -50,43 +54,44 @@ export class FightEnv {
 }
 
 export class CharacterManager {
-    characters: Array<Character>;
+    characters: CharacterDatas;
     constructor() {
-        this.characters = [];
+        this.characters = {};
     }
 
     add(character: Character) {
-        var name = Object.getPrototypeOf(character).constructor.name;
-        // 判断是否重复
-        for (let i = 0; i < this.characters.length; i++) {
-            let now_name = this.characters[i].inside_name;
-            
-            console.log(name, );
-            if (name == now_name) {
-                return;
-            }
+        if (this.characters[character.inside_name]) {
+            // 已经存在
+            return;
         }
-        this.characters.push(character);
+        this.characters[character.inside_name] = character.dump();
     }
 
     remove(character_name: string) {
-        
-        for (let i = 0; i < this.characters.length; i++) {
-            if (this.characters[i].inside_name == character_name) {
-                this.characters.splice(i, 1);
-                return;
-            }
+        if (this.characters[character_name]) {
+            delete this.characters[character_name];
+            return true;
         }
+        return false;
     }
 
     is_in(character_name: string) {
-        for (let i = 0; i < this.characters.length; i++) {
+        return this.characters[character_name] !== undefined;
+    }
 
-            if (this.characters[i].inside_name == character_name) {
-                return true;
-            }
+    get(character_name: string): Character | null {
+        if (!this.characters[character_name]) {
+            return null;
         }
-        return false;
+        return Character.load(this.characters[character_name]);
+    }
+
+    get_all(): Array<Character> {
+        let r = [];
+        for (let i in this.characters.keys) {
+            r.push(Character.load(this.characters[i]));
+        }
+        return r;
     }
 }
 
@@ -186,14 +191,15 @@ export class Character {
         }
     }
 
-    load(data: CharacterData): Character {
-        this.level = data.level;
-        this.xp = data.xp;
-        this.hp = data.hp;
-        this.atk = data.atk;
-        this.def_ = data.def;
+    static load(data: CharacterData): Character {
+        let r = new Character();
+        r.level = data.level;
+        r.xp = data.xp;
+        r.hp = data.hp;
+        r.atk = data.atk;
+        r.def_ = data.def;
 
-        return this;
+        return r;
     }
 }
 
