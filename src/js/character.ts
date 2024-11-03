@@ -1,3 +1,11 @@
+interface CharacterData {
+    level: number;
+    xp: number;
+    hp: number;
+    atk: number;
+    def: number;
+}
+
 export enum CharacterType  {
     Fire = "火", // 火
     Water = "水", // 水
@@ -126,6 +134,7 @@ export class Character {
         this.atk = 10; // 攻击力
         this.def_ = 10; // 防御
         this.speed = 100; // 速度
+
         this.env = env;
     }
 
@@ -165,6 +174,26 @@ export class Character {
 
     super_skill(other=1) {
         return this.atk * 2 * other;
+    }
+
+    dump(): CharacterData {
+        return {
+            level: this.level, // 等级
+            xp: this.xp, // 经验
+            hp: this.hp, // 血量
+            atk: this.atk, // 攻击力
+            def: this.def_, // 防御
+        }
+    }
+
+    load(data: CharacterData): Character {
+        this.level = data.level;
+        this.xp = data.xp;
+        this.hp = data.hp;
+        this.atk = data.atk;
+        this.def_ = data.def;
+
+        return this;
     }
 }
 
