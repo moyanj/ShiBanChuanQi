@@ -15,8 +15,8 @@ export class ThingsManager {
     constructor() {
         this.things = {};
     }
-    add(thing: Thing, n: number = 1) {
-        let name = thing.inside_name;
+    add(thing: Thing, n: number = 1): void {
+        let name: string = thing.inside_name;
         if (this.things[name] == undefined) {
             this.things[name] = 0;
         } else if (this.things[name] == null) {
@@ -24,7 +24,7 @@ export class ThingsManager {
         }
         this.things[name] += n;
     }
-    get(id: string) {
+    get(id: string): number {
         if (this.things[id] == undefined) {
             this.things[id] = 0;
         } else if (this.things[id] == null) {
@@ -32,10 +32,10 @@ export class ThingsManager {
         }
         return this.things[id];
     }
-    get_all() {
+    get_all():object {
         return this.things;
     }
-    remove(id: string, n: number = 1) {
+    remove(id: string, n: number = 1):void {
         this.things[id] -= n;
     }
 }
@@ -49,7 +49,7 @@ export class XinHuo extends Thing {
     }
 }
 
-export const ThingList = {
+export const ThingList:object = {
     "XinHuo": XinHuo
 }
 

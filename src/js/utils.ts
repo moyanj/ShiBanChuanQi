@@ -14,9 +14,9 @@ import icon_element_physics from "../assets/icon/element-physics.png";
 import icon_element_liangzi from "../assets/icon/element-liangzi.png";
 import icon_element_nihility from "../assets/icon/element-nihility.png";
 
-import { Howl, HowlOptions } from "howler";
+import { Howl } from "howler";
 
-export const icons = {
+export const icons:object = {
     left: icon_left,
     character: icon_character,
     info: icon_info,
@@ -36,7 +36,7 @@ export const icons = {
     }
 }
 
-export const audios = {
+export const audios:object = {
     background: 'audio/background/main.mp3',
     click: 'audio/click.mp3',
     // 主题曲1
