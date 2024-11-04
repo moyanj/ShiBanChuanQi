@@ -43,9 +43,9 @@ export class Story {
         this.raw = text;
         this.parser();
     }
-    public parser() {
-        let lines = this.raw.split("\n");
-        let n = 1;
+    public parser(): void {
+        let lines: Array<string> = this.raw.split("\n");
+        let n: number = 1;
         for (let line of lines) {
             line = line.trim();
             if (line.length == 0) continue;
@@ -85,9 +85,9 @@ export class Story {
     }
 
     private parser_action(line: Array<string>): StoryData {
-        let type = line[1];
-        let args = line.slice(2);
-        let func = actions[type];
+        let type: string = line[1];
+        let args: string[] = line.slice(2);
+        let func: Function = actions[type];
         return {
             actions: {
                 func: func,
@@ -107,7 +107,7 @@ export class StoryManager {
     save_store = useSaveStore();
 
 
-    constructor(story: Story, current_id: string|null=null) {
+    constructor(story: Story, current_id: string | null = null) {
         this.story = story;
         this.current_data = ref(null);
 
@@ -117,11 +117,11 @@ export class StoryManager {
         } else {
             this.next();
         }
-        
+
 
     }
 
-    next() {
+    next(): StoryData {
         this.n += 1;
         this.current_id = this.story.list[this.n];
         this.save_store.story_index = this.current_id;
@@ -129,23 +129,23 @@ export class StoryManager {
         return this.story.data[this.current_id];
     }
 
-    get_current() {
+    get_current(): StoryData {
         return this.story.data[this.current_id];
     }
 
-    get_next() {
+    get_next(): StoryData {
         return this.story.data[this.story.list[this.n + 1]];
     }
 
-    set_current(id: string) {
+    set_current(id: string): void {
         this.n = this.story.list.indexOf(id);
-        console.log(id, this.n);
+
         this.current_id = id;
         this.save_store.story_index = this.current_id;
         this.current_data.value = this.story.data[id];
     }
 
-    set_story(story: Story) {
+    set_story(story: Story): void {
         this.story = story;
         this.n = -1;
         this.next();

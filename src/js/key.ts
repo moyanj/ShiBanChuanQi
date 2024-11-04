@@ -8,8 +8,8 @@ function cmd_handler(value) {
     const dataStore = useDataStore();
     const saveStore = useSaveStore();
 
-    let cmds = value.split(" ");
-    let cmd = cmds[0];
+    let cmds:Array<string> = value.split(" ");
+    let cmd:string = cmds[0];
     // 根据命令执行对应操作
     switch (cmd) {
         case "help":
