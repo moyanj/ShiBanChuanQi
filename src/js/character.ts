@@ -6,6 +6,16 @@ interface CharacterData {
     def: number;
 }
 
+interface AttrBonusType {
+    [CharacterType.Fire]: number;
+    [CharacterType.Grass]: number;
+    [CharacterType.LiangZi]: number;
+    [CharacterType.Nihility]: number;
+    [CharacterType.Physics]: number;
+    [CharacterType.Thunder]: number;
+    [CharacterType.Water]: number;
+}
+
 interface CharacterDatas {
     [property: string]: CharacterData;
 }
@@ -123,6 +133,7 @@ export class Character {
     atk: number;
     def_: number;
     speed: number;
+    attr_bonus: AttrBonusType;
     env: FightEnv | null;
 
     constructor(env: FightEnv | null = null) {
@@ -146,6 +157,16 @@ export class Character {
         this.atk = 10; // 攻击力
         this.def_ = 10; // 防御
         this.speed = 100; // 速度
+
+        this.attr_bonus = {
+            [CharacterType.Fire]: 0.0,
+            [CharacterType.Grass]: 0.0,
+            [CharacterType.LiangZi]: 0.0,
+            [CharacterType.Nihility]: 0.0,
+            [CharacterType.Physics]: 0.0,
+            [CharacterType.Thunder]: 0.0,
+            [CharacterType.Water]: 0.0
+        }
 
         this.env = env;
     }
@@ -246,6 +267,9 @@ export class FanShiFu extends Character {
         this.name = "范师傅";
         this.inside_name = "FanShiFu";
         this.type = CharacterType.Thunder;
+
+        this.desc = "人生殊梦一场，大梦归离而已";
+
     }
 }
 
@@ -255,6 +279,8 @@ export class ShuiLiFang extends Character {
         this.name = "水立方";
         this.inside_name = "ShuiLiFang";
         this.type = CharacterType.Water;
+
+        this.desc = "海的那边是自由"
     }
 }
 export class ChenGe extends Character {
@@ -263,6 +289,8 @@ export class ChenGe extends Character {
         this.name = "辰哥";
         this.inside_name = "ChenGe";
         this.type = CharacterType.Nihility;
+
+        this.desc = '”做啊！继续做啊！“';
     }
 }
 
@@ -326,6 +354,8 @@ export class ZhiYuan extends Character {
         this.name = "致远";
         this.inside_name = "ZhiYuan";
         this.type = CharacterType.Physics;
+
+        this.desc = "他曾深爱着的那颗星，不知为何，早已不在了";
     }
 }
 
@@ -335,6 +365,8 @@ export class ZhaoLin extends Character {
         this.name = "赵霖";
         this.inside_name = "ZhaoLin";
         this.type = CharacterType.Nihility;
+
+        this.desc = "世上最后的小学生";
     }
 }
 
@@ -344,6 +376,8 @@ export class JiMing extends Character {
         this.name = "记铭";
         this.inside_name = "JiMing";
         this.type = CharacterType.Water;
+
+        this.desc = "曾经那四光年的枪，却在今日变得毫无光泽"
     }
 }
 
@@ -352,6 +386,7 @@ export class XuanGe extends Character {
         super(env)
         this.name = "宣哥";
         this.inside_name = "XuanGe";
+        this.type = CharacterType.Thunder;
     }
 }
 
@@ -361,6 +396,8 @@ export class LaoDeng extends Character {
         this.name = "老登";
         this.inside_name = "LaoDeng";
         this.type = CharacterType.Grass;
+
+        this.desc = '“不能再做了，再做，就要坏掉了！”'
     }
 }
 
@@ -378,6 +415,8 @@ export class DongCheDi extends Character {
         super(env)
         this.name = "懂车帝";
         this.inside_name = "DongCheDi";
+        this.type = CharacterType.Physics;
+        this.desc = "开车与开车，互不干扰";
     }
 }
 
@@ -397,6 +436,7 @@ export class LiXi extends Character {
         this.name = "李熙";
         this.inside_name = "LiXi";
         this.type = CharacterType.Fire;
+        this.desc = '“勇敢飞吧，她会永远在你左右”';
     }
 }
 
@@ -405,6 +445,7 @@ export class DiaoMin extends Character {
         super(env)
         this.name = "刁民";
         this.inside_name = "DiaoMin";
+        this.type = CharacterType.Fire;
     }
 }
 
@@ -413,6 +454,7 @@ export class ZouJieTou extends Character {
         super(env)
         this.name = "邹杰偷";
         this.inside_name = "ZouJieTou";
+        this.type = CharacterType.Grass;
     }
 }
 
@@ -421,6 +463,7 @@ export class WuYu extends Character {
         super(env)
         this.name = "乌鱼";
         this.inside_name = "WuYu";
+        this.type = CharacterType.Thunder;
     }
 }
 
@@ -438,6 +481,43 @@ export class PeiBa extends Character {
         super(env)
         this.name = "佩八";
         this.inside_name = "PeiBa";
+        this.type = CharacterType.Fire;
+    }
+}
+
+export class ChengXiang extends Character {
+    constructor(env = null) {
+        super(env)
+        this.name = "丞相";
+        this.inside_name = "ChengXiang";
+        this.type = CharacterType.Nihility;
+    }
+}
+
+export class YouDaYu extends Character {
+    constructor(env = null) {
+        super(env)
+        this.name = "右大雨";
+        this.inside_name = "YouDaYu";
+        this.type = CharacterType.Water;
+    }
+}
+
+export class XiaoQiao extends Character {
+    constructor(env = null) {
+        super(env)
+        this.name = "小乔";
+        this.inside_name = "ChengXiang";
+        this.type = CharacterType.Thunder;
+    }
+}
+
+export class PaoGe extends Character {
+    constructor(env = null) {
+        super(env)
+        this.name = "炮哥";
+        this.inside_name = "PaoGe";
+        this.type = CharacterType.Fire;
     }
 }
 
@@ -465,5 +545,9 @@ export var characters = {
     "ZouJieTou": ZouJieTou,
     "WuYu": WuYu,
     "Song": Song,
-    "PeiBa": PeiBa
+    "PeiBa": PeiBa,
+    "ChengXiang": ChengXiang,
+    "YouDaYu": YouDaYu,
+    "XiaoQiao": XiaoQiao,
+    "PaoGe": PaoGe
 }
