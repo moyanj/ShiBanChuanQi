@@ -16,7 +16,7 @@ import icon_element_nihility from "../assets/icon/element-nihility.png";
 
 import { Howl } from "howler";
 
-export const icons:object = {
+export const icons = {
     left: icon_left,
     character: icon_character,
     info: icon_info,
