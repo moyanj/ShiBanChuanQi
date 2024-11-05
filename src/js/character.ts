@@ -113,7 +113,7 @@ export class CharacterManager {
 }
 
 
-export class Character {
+export abstract class Character {
     name: string;
     inside_name: string;
     desc: string;
