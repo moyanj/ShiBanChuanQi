@@ -1,5 +1,5 @@
 <script setup lang="ts">
-    import { ElCard, ElRow, ElCol, ElScrollbar, ElImage, ElDescriptions, ElDescriptionsItem, ElDialog } from 'element-plus';
+    import { ElCard, ElRow, ElCol, ElScrollbar, ElImage, ElDescriptions, ElDescriptionsItem, ElDialog, ElForm, ElFormItem, ElSlider } from 'element-plus';
     import { CharacterType } from '../js/character';
     import { useSaveStore } from '../js/store';
     import { icons } from '../js/utils';
@@ -8,6 +8,8 @@
 
     const save = useSaveStore();
     var show_info = ref(false);
+    var show_up_character = ref(false);
+    var n = ref(0);
 
     const c2e = {
         [CharacterType.Fire]: icons.element.fire,
@@ -21,11 +23,11 @@
 
     var data = save.characters.get_all();
     data.reverse();
-    console.log(data);
+
     var now_character = ref(data[0]);
 
     watch(save.characters.characters, () => {
-        console.log("data changed");
+
         data = save.characters.get_all();
         data.reverse();
     });
@@ -46,7 +48,7 @@
                         <h3 class="name" style="margin: 0;">{{ item.name }}</h3>
                     </div>
                 </el-card>
-                <div v-else  class="container">
+                <div v-else class="container">
                     你还没有角色
                 </div>
             </el-scrollbar>
@@ -62,12 +64,15 @@
                     <el-image :src="c2e[now_character.type]" width="15px" height="15px" style="margin-right: 10px;" />
                 </el-descriptions-item>
 
-                <el-descriptions-item label="等级">{{ now_character.level }}</el-descriptions-item>
-                <el-descriptions-item label="详细信息"><sbutton class="show_info" @click="show_info = true">显示</sbutton></el-descriptions-item>
+                <el-descriptions-item label="等级">{{ now_character.level }}&nbsp;&nbsp;&nbsp;&nbsp;<sbutton
+                        @click="show_up_character = true;">升级</sbutton></el-descriptions-item>
+                <el-descriptions-item label="详细信息">
+                    <sbutton class="show_info" @click="show_info = true">显示</sbutton>
+                </el-descriptions-item>
 
 
                 <el-descriptions-item label="介绍" :span="4">{{ now_character.desc }}</el-descriptions-item>
-                
+
             </el-descriptions>
 
             <div v-else class="container">
@@ -87,6 +92,21 @@
                 <el-descriptions-item label="速度">{{ now_character.speed }}</el-descriptions-item>
             </el-descriptions>
         </el-scrollbar>
+    </el-dialog>
+
+    <el-dialog v-model="show_up_character" title="角色升级">
+        <el-form>
+            <el-form-item label="据下一级所需的经验: ">
+                <span>{{ Math.ceil(now_character.level_xp()) - now_character.xp }} </span>
+            </el-form-item>
+            <el-form-item label="数量：">
+                <el-slider v-model="n" :min="1" :max="save.things.get('EXP')" show-input />
+            </el-form-item>
+
+            
+        </el-form>
+
+
     </el-dialog>
 
 </template>
@@ -139,6 +159,10 @@
         width: 100%;
         height: 100%;
     }
-    
+
+    .el-popper {
+        color: #000;
+    }
+
 
 </style>
