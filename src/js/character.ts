@@ -521,6 +521,97 @@ export class PaoGe extends Character {
     }
 }
 
+export class YQJ extends Character {
+    constructor(env = null) {
+        super(env)
+        this.name = "YQJ";
+        this.inside_name = "YQJ";
+        this.type = CharacterType.Grass;
+    }
+}
+
+export class NingNing extends Character {
+    constructor(env = null) {
+        super(env)
+        this.name = "宁宁";
+        this.inside_name = "NingNing";
+        this.type = CharacterType.Nihility;
+    }
+}
+
+export class XingXin extends Character {
+    constructor(env = null) {
+        super(env)
+        this.name = "星鑫";
+        this.inside_name = "XingXin";
+        this.type = CharacterType.LiangZi;
+    }
+}
+
+export class JiGao extends Character {
+    constructor(env = null) {
+        super(env)
+        this.name = "积高";
+        this.inside_name = "JiGao";
+        this.type = CharacterType.Water;
+    }
+}
+
+export class Xian extends Character {
+    constructor(env = null) {
+        super(env)
+        this.name = "闲";
+        this.inside_name = "Xian";
+        this.type = CharacterType.Grass;
+    }
+}
+
+export class Jin extends Character {
+    constructor(env = null) {
+        super(env)
+        this.name = "锦";
+        this.inside_name = "Jin";
+        this.type = CharacterType.Water;
+    }
+}
+
+export class WangYuan extends Character {
+    constructor(env = null) {
+        super(env)
+        this.name = "王元";
+        this.inside_name = "WangYuan";
+        this.type = CharacterType.Nihility;
+    }
+}
+
+export class RenJie extends Character {
+    constructor(env = null) {
+        super(env)
+        this.name = "任杰";
+        this.inside_name = "RenJie";
+        this.type = CharacterType.Nihility;
+    }
+}
+
+export class YanCui extends Character {
+    constructor(env = null) {
+        super(env)
+        this.name = "颜粹";
+        this.inside_name = "YanCui";
+        this.type = CharacterType.Grass;
+    }
+}
+
+export class NiuWenJin extends Character {
+    constructor(env = null) {
+        super(env)
+        this.name = "牛文静";
+        this.inside_name = "NiuWenJin";
+        this.type = CharacterType.Thunder;
+        this.desc = "不听该被遭哦！"
+    }
+}
+
 export var characters = {
     "Fairy": Fairy,
     "FanShiFu": FanShiFu,
@@ -549,5 +640,15 @@ export var characters = {
     "ChengXiang": ChengXiang,
     "YouDaYu": YouDaYu,
     "XiaoQiao": XiaoQiao,
-    "PaoGe": PaoGe
+    "PaoGe": PaoGe,
+    "YQJ": YQJ,
+    "NingNing": NingNing,
+    "XingXin": XingXin,
+    "JiGao": JiGao,
+    "Xian": Xian,
+    "Jin": Jin,
+    "WangYuan": WangYuan,
+    "RenJie": RenJie,
+    "YanCui": YanCui,
+    "NiuWenJin": NiuWenJin
 }
