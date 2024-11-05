@@ -49,8 +49,18 @@ export class XinHuo extends Thing {
     }
 }
 
+export class EXP extends Thing {
+    constructor() {
+        super();
+        this.name = "经验值";
+        this.desc = "用于升级角色的经验值";
+        this.inside_name = "EXP";
+    }
+}
+
 export const ThingList:object = {
-    "XinHuo": XinHuo
+    "XinHuo": XinHuo,
+    "EXP": EXP
 }
 
 
