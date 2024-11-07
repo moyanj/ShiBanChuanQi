@@ -99,7 +99,7 @@
             <el-form-item label="据下一级所需的经验: ">
                 <span>{{ Math.ceil(now_character.level_xp()) - now_character.xp }} </span>
             </el-form-item>
-            <el-form-item label="数量：">
+            <el-form-item label="数量：" v-if="save.things.get('EXP') > 0">
                 <el-slider v-model="n" :min="1" :max="save.things.get('EXP')" show-input />
             </el-form-item>
 
