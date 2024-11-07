@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-    import { ElRow, ElMessage } from "element-plus";
+    import { ElRow, ElMessage, ElDialog, ElScrollbar, ElTable, ElTableColumn } from "element-plus";
     import sbutton from "../components/sbutton.vue";
     import svideo from "../components/svideo.vue";
     import 'video.js/dist/video-js.css';
@@ -9,6 +9,7 @@
     import { ThingList } from "../js/things";
     import { characters } from "../js/character";
     import { ref } from "vue";
+
 
     const saveStore = useSaveStore();
     const dataStore = useDataStore();
@@ -20,7 +21,10 @@
     }
 
     var player = ref();
-    var show_ani = ref(true)
+    var show_ani = ref(false);
+    var show_result = ref(false);
+    var wishing = ref(false);
+    var result = ref([])
 
     const random = new MersenneTwister();
     const wish_list = []
@@ -44,12 +48,15 @@
             return;
         }
 
-        show_ani.value = false;
+        show_ani.value = true;
         player.value.player.play();
         player.value.player.on("ended", () => {
-            show_ani.value = true;
+            player.value.player.off("ended")
+            show_ani.value = false;
             wish(n);
         })
+
+
     }
 
     function wish(n: number = 1) {
@@ -59,22 +66,41 @@
         saveStore.things.remove("XinHuo", cost);
         saveStore.wish_number += n; // 更新抽奖次数
 
-        let results = [];
+        result.value = [];
+
 
         for (let i = 0; i < n; i++) {
             saveStore.n_wish++;
             saveStore.wish_number++; // 更新抽奖次数
             const n = random.random();
             if (n <= f(saveStore.n_wish)) {
+                console.log(1)
                 saveStore.n_wish = 0; // 重置连续抽奖次数
                 const wish_item = random.random_choice(wish_list);
-                results.push(wish_item);
+                
+                if (saveStore.characters.is_in(wish_item)) {
+                    result.value.push({
+                        n: i,
+                        content: new characters[wish_item]().name
+                    });
+                } else {
+                    result.value.push({
+                    n: i,
+                    content: `${new characters[wish_item]().name}（已存在）`
+                });
+                }
+
             } else {
-                results.push(null)
+                result.value.push({
+                    n: i,
+                    content: "无"
+                });
             }
         }
+        show_result.value = true;
+        console.log(result)
 
-        // 处理结果
+        /* 处理结果
         results.forEach(item => {
             if (item) {
                 if (item in characters) {
@@ -116,7 +142,7 @@
                 }
 
             }
-        });
+        });*/
     }
 
 </script>
@@ -131,9 +157,21 @@
 
         <p>据上一次出货的抽数：{{ saveStore.n_wish }}</p>
         <p>总抽数：{{ saveStore.wish_number }}</p>
-        <svideo :options="player_conf" class="ani" :hidden="show_ani" ref="player">
+
+        <!-- 抽卡动画 -->
+        <svideo :options="player_conf" class="ani" :hidden="!show_ani" ref="player">
             <source src="/video/wish.mp4" type="video/mp4">
         </svideo>
+
+        <el-dialog v-model="show_result" title="抽卡结果">
+            <el-scrollbar height="40vh">
+                <el-table :data="result" border>
+                    <el-table-column prop="n" label="抽数" />
+                    <el-table-column prop="content" label="内容" />
+                </el-table>
+            </el-scrollbar>
+        </el-dialog>
+
     </div>
 </template>
 
