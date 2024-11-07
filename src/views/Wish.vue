@@ -77,17 +77,23 @@
                 console.log(1)
                 saveStore.n_wish = 0; // 重置连续抽奖次数
                 const wish_item = random.random_choice(wish_list);
-                
+
                 if (saveStore.characters.is_in(wish_item)) {
                     result.value.push({
                         n: i,
-                        content: new characters[wish_item]().name
+                        content: `${new characters[wish_item]().name}（已存在）`
                     });
+
                 } else {
-                    result.value.push({
-                    n: i,
-                    content: `${new characters[wish_item]().name}（已存在）`
-                });
+                    if (wish_item in characters) {
+                        let c = new characters[wish_item]();
+                        saveStore.characters.add(c);
+                        result.value.push({
+                            n: i,
+                            content: c.name
+                        });
+                    }
+
                 }
 
             } else {
@@ -98,7 +104,7 @@
             }
         }
         show_result.value = true;
-        console.log(result)
+        
 
         /* 处理结果
         results.forEach(item => {
