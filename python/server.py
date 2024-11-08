@@ -1,5 +1,7 @@
 from flask import Flask, request, jsonify
 import pymysql
+import requests
+import hmac
 import json
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -13,6 +15,29 @@ db = pymysql.connect(
     password="vMJDj",
     database="sbcq_saves"
 )
+
+def check(info):
+
+    if info is None:
+        return False
+    sign_token = hmac.new(b"c29a9ecaf69025e936034b1bb03e0f8d", info["lot_number"].encode(), digestmod='SHA256').hexdigest()
+    info["sign_token"] = sign_token
+    try:
+        res = requests.post("https://gcaptcha4.geetest.com/validate?captcha_id=6acf3658d1b41039662abc436d70e412", info)
+        assert res.status_code == 200
+        gt_msg = json.loads(res.text)
+    except Exception as e:
+        gt_msg = {'result': 'success', 'reason': 'request geetest api fail'}
+        
+    if gt_msg['result'] == 'success':
+         return True
+    else:
+        return False
+
+
+
+
+
 #允许跨域
 @app.after_request
 def after_request(response):
@@ -32,8 +57,10 @@ def upload():
     """
     user = request.json.get("user")
     pwd = request.json.get("pwd")
-    print(request.json)
     data = json.dumps(request.json.get("data"),ensure_ascii=False)
+    
+    if not check(request.json.get("gt")):
+        return jsonify({"error": "error"}), 403
 
     if user is None or pwd is None:
         return jsonify({"error": "user or pwd is None"}), 400
@@ -83,6 +110,9 @@ def reg():
     """
     user = request.json.get("user")
     pwd = request.json.get("pwd")
+    
+    if not check(request.json.get("gt")):
+        return jsonify({"error": "error"}), 403
 
     if user is None or pwd is None:
         return jsonify({"error": "user or pwd is None"}), 400
@@ -107,6 +137,10 @@ def remove():
     """
     user = request.json.get("user")
     pwd = request.json.get("pwd")
+    
+    if not check(request.json.get("gt")):
+        return jsonify({"error": "error"}), 403
+    
     if user is None or pwd is None:
         return jsonify({"error": "user or pwd is None"}), 400
     
