@@ -149,6 +149,9 @@ def remove():
     db.commit()
     return jsonify({"msg": "user removed successfully"}), 200
 
+@app.get("/ping")
+def ping():
+    return "pong"
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
