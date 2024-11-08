@@ -1,7 +1,7 @@
 
 
 declare global {
-    interface GeetestConfig {
+    export interface GeetestConfig {
         captchaId: string,
         product?: string,
         nativeButton?: object,
@@ -20,7 +20,7 @@ declare global {
         userInfo?: string
     }
 
-    interface GeetestObj {
+    export interface GeetestObj {
         appendTo(ele: string | HTMLElement): void;
         getValidate(): object;
         reset(): void;

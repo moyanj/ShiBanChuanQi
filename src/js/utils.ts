@@ -401,7 +401,7 @@ export function isLandscape() {
 export class SaveServer {
     baseUrl: string;
     constructor() {
-        this.baseUrl = "https://localhost:5000";
+        this.baseUrl = "http://localhost:5000";
     }
 
     public upload(user: string, pwd: string, data: any): Promise<any> {
@@ -428,11 +428,8 @@ export class SaveServer {
             xhr.setRequestHeader("Content-Type", "application/json");
 
             xhr.onload = () => {
-                if (xhr.status >= 200 && xhr.status < 300) {
-                    resolve(JSON.parse(xhr.responseText));
-                } else {
-                    reject(new Error(`Request failed with status ${xhr.status}: ${xhr.statusText}`));
-                }
+                resolve(xhr);
+                
             };
 
             xhr.onerror = () => {
