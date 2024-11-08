@@ -57,7 +57,7 @@
         <el-card class="user-info" @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave">
             <el-row>
                 <el-col :span="4" @click="get_avatar">
-                    <el-avatar :size="40"><img :src="save.user_avatar" id="avatar"></el-avatar> <!-- 头像 -->
+                    <el-avatar><img :src="save.user_avatar" id="avatar"></el-avatar> <!-- 头像 -->
                 </el-col>
                 <el-col :span="20">
                     <a v-show="isHover" class="user-name" @click="change_name">{{ save.user_name }}</a>
@@ -121,7 +121,7 @@
 
     #title {
         margin: 20px;
-        font-size: 6rem;
+        font-size: 96px;
         font-weight: bold;
         font-family: 'SuXinShi'
     }
@@ -163,6 +163,8 @@
     }
     .el-avatar {
         vertical-align: middle;
+        width: 40px;
+        height: 40px;
     }
 
     .user-name {
