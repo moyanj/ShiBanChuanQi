@@ -326,21 +326,21 @@ class Builer:
         os.makedirs("dist", exist_ok=True)
         self.download_sha256sum()
         self.download()
-        
+
         self.copy()
-        
+
         with open(
-                    os.path.join("electron", "package.json"),
-                    "w",
-                ) as f:
-                    f.write(self.info.make_json())
-                    
+            os.path.join("electron", "package.json"),
+            "w",
+        ) as f:
+            f.write(self.info.make_json())
+
         with open(
-                os.path.join("electron", "html", "build_info.json"),
-                "w",
-            ) as f:
-                f.write(self.make_build_info())
-                    
+            os.path.join("electron", "html", "build_info.json"),
+            "w",
+        ) as f:
+            f.write(self.make_build_info())
+
         self.make_asar()
         for target in self.targets:
             print(f"Building {target}...")
@@ -348,8 +348,8 @@ class Builer:
             print("Extracting SDK...")
             # 解压SDK
             with zipfile.ZipFile(f".cache/ele-{target}.zip", "r") as zip_ref:
-                zip_ref.extractall(f"build/{target}")  
-                
+                zip_ref.extractall(f"build/{target}")
+
             self.copy_asar(target)
             self.after_build(target)
 
@@ -381,19 +381,15 @@ class HtmlBuiler:
                     with open(os.path.join("html", f), "rb") as f2:
                         new_md5 = hashlib.md5(f2.read()).hexdigest()
 
-                    print(old_md5, new_md5)
                     if old_md5 != new_md5:
                         out["modfile"].append(f)
-                        print(f"{f} changed!")
-                    else:
-                        print(f"{f} not changed!")
+                        
 
                     old_file.remove(f)
 
                 elif not os.path.exists(os.path.join("html.old", f)):
                     out["addfile"].append(f)
 
-                    print(f"{f} added!")
                     os.makedirs(
                         os.path.dirname(os.path.join("build/diff", f)), exist_ok=True
                     )
@@ -402,7 +398,7 @@ class HtmlBuiler:
         out["delfile"] = old_file
 
         with open("build/diff/diff.json", "w") as f:
-            json.dump(out, f, indent=4)
+            json.dump(out, f)
 
         for f in out["addfile"]:
             os.makedirs(os.path.dirname(os.path.join("build/diff", f)), exist_ok=True)
@@ -424,7 +420,7 @@ class HtmlBuiler:
 
     def build(self):
         os.makedirs("dist", exist_ok=True)
-        
+
         if not self.args.no_build_html:
             shutil.rmtree("html.old", ignore_errors=True)
             if os.path.exists("html"):
@@ -442,7 +438,10 @@ class HtmlBuiler:
         with zipfile.ZipFile("dist/html.zip", "w") as zip_ref:
             for root, dirs, files in os.walk("html"):
                 for file in files:
-                    zip_ref.write(os.path.join(root, file))
+                    zip_ref.write(
+                        os.path.join(root, file),
+                        os.path.relpath(os.path.join(root, file), "html"),
+                    )
 
         if os.path.exists("html.old"):
             self.make_diff()
