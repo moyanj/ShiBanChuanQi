@@ -16,6 +16,7 @@ db = pymysql.connect(
 #允许跨域
 @app.after_request
 def after_request(response):
+   
     response.headers['Access-Control-Allow-Origin'] = '*'
     response.headers['Access-Control-Allow-Methods'] = 'PUT,GET,POST,DELETE'
     response.headers['Access-Control-Allow-Headers'] = 'Content-Type,Authorization'
@@ -31,6 +32,7 @@ def upload():
     """
     user = request.json.get("user")
     pwd = request.json.get("pwd")
+    print(request.json)
     data = json.dumps(request.json.get("data"),ensure_ascii=False)
 
     if user is None or pwd is None:

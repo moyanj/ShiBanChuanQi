@@ -11,17 +11,7 @@
     var show_reg_data = ref(false);
     var password = ref('');
     var username = ref('');
-    var captcha: GeetestObj = null;
 
-    function init() {
-        window.initGeetest4({
-            product: "bind",
-            captchaId: "6acf3658d1b41039662abc436d70e412"
-        }, (g) => {
-            captcha = g;
-        })
-    }
-    init();
     function reset() {
         ElMessageBox.confirm("确定删除吗？", {
             type: "warning"
@@ -34,39 +24,56 @@
     }
 
     function reg() {
-        init();
-        captcha.showCaptcha();
-        captcha.onSuccess(() => {
-            let s = new SaveServer();
-            s.register(username.value, password.value).then((xhr: XMLHttpRequest) => {
-                if (xhr.status == 201) {
-                    show_reg_data.value = false;
-                    ElMessage.success("注册成功");
-                } else if (xhr.status == 409) {
-                    ElMessage.error("用户已存在");
-                } else {
-                    ElMessage.error("服务器错误");
-                }
+        window.initGeetest4({
+            product: "bind",
+            captchaId: "6acf3658d1b41039662abc436d70e412"
+        }, (captcha) => {
+            captcha.showCaptcha();
+            captcha.onSuccess(() => {
+                let s = new SaveServer();
+                console.log(captcha.getValidate())
+                s.register(username.value, password.value, captcha.getValidate()).then((xhr: XMLHttpRequest) => {
+                    if (xhr.status == 201) {
+                        show_reg_data.value = false;
+                        ElMessage.success("注册成功");
+                    } else if (xhr.status == 409) {
+                        ElMessage.error("用户已存在");
+                    } else {
+                        ElMessage.error("服务器错误");
+                    }
+                }).finally(() => {
+                    captcha.destroy();
+                })
             })
         })
     }
 
     function upload() {
-        init();
-        captcha.showCaptcha();
-        captcha.onSuccess(() => {
-            let s = new SaveServer();
-            s.upload(username.value, password.value, saveStore.$state).then((xhr: XMLHttpRequest) => {
-                if (xhr.status == 200) {
-                    show_upload_data.value = false;
-                    ElMessage.success("上传成功");
-                } else if (xhr.status == 401) {
-                    ElMessage.error("用户名或密码错误");
-                } else {
-                    ElMessage.error("服务器错误");
-                }
-            }).catch((e) => {
-                console.log(e)
+        window.initGeetest4({
+            product: "bind",
+            captchaId: "6acf3658d1b41039662abc436d70e412"
+        }, (captcha) => {
+            captcha.showCaptcha();
+            captcha.onSuccess(() => {
+
+                let s = new SaveServer();
+                console.log(captcha.getValidate())
+
+                s.upload(username.value, password.value, saveStore.$state, captcha.getValidate()).then((xhr: XMLHttpRequest) => {
+                    if (xhr.status == 200) {
+                        show_upload_data.value = false;
+                        ElMessage.success("上传成功");
+                    } else if (xhr.status == 401) {
+                        ElMessage.error("用户名或密码错误");
+                    } else {
+                        ElMessage.error("服务器错误");
+                    }
+
+                }).catch((e) => {
+                    console.log(e)
+                }).finally(() => {
+                    captcha.destroy();
+                })
             })
         })
     }
