@@ -6,7 +6,7 @@
         throw new Error('Geetest requires browser environment');
     }
 
-var document:Document = window.document;
+var document = window.document;
 var Math = window.Math;
 var head = document.getElementsByTagName("head")[0];
 var TIMEOUT = 10000;
