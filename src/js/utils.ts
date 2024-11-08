@@ -6,6 +6,7 @@ import icon_setting from "../assets/icon/setting.svg";
 import icon_door from "../assets/icon/door.svg";
 import icon_wish from "../assets/icon/wish.png";
 import icon_down from "../assets/icon/down.svg";
+import icon_skip from "../assets/icon/skip.svg";
 import icon_element_fire from "../assets/icon/element-fire.png";
 import icon_element_water from "../assets/icon/element-water.png";
 import icon_element_thunder from "../assets/icon/element-thunder.png";
@@ -25,6 +26,7 @@ export const icons = {
     door: icon_door,
     wish: icon_wish,
     down: icon_down,
+    skip: icon_skip,
     element: {
         fire: icon_element_fire,
         water: icon_element_water,
@@ -36,7 +38,7 @@ export const icons = {
     }
 }
 
-export const audios:object = {
+export const audios: object = {
     background: 'audio/background/main.mp3',
     click: 'audio/click.mp3',
     // 主题曲1
@@ -403,7 +405,7 @@ export class SaveServer {
     }
 
     public upload(user: string, pwd: string, data: any): Promise<any> {
-        return this.request("POST", "/upload", { user: user, pwd:pwd, data:data });
+        return this.request("POST", "/upload", { user: user, pwd: pwd, data: data });
     }
 
     public download(user: string, pwd: string): Promise<any> {
@@ -411,11 +413,11 @@ export class SaveServer {
     }
 
     public register(user: string, pwd: string): Promise<any> {
-        return this.request("POST", "/reg", { user: user, pwd:pwd, });
+        return this.request("POST", "/reg", { user: user, pwd: pwd, });
     }
 
     public remove(user: string, pwd: string): Promise<any> {
-        return this.request("POST", "/remove", { user: user, pwd:pwd, });
+        return this.request("POST", "/remove", { user: user, pwd: pwd, });
     }
 
     private request(type: string, eurl: string, data: any | null = null): Promise<any> {
@@ -436,7 +438,7 @@ export class SaveServer {
             xhr.onerror = () => {
                 reject(new Error('Network error occurred'));
             };
-            
+
             xhr.send(JSON.stringify(data));
         });
     }

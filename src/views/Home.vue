@@ -156,10 +156,7 @@
         padding-left: 25px;
         padding-right: 25px;
 
-        .icon {
-            width: 25px;
-            height: 25px;
-        }
+        
     }
     .el-avatar {
         vertical-align: middle;

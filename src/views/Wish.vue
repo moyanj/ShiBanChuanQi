@@ -1,11 +1,11 @@
 <script lang="ts" setup>
-    import { ElRow, ElMessage, ElDialog, ElScrollbar, ElTable, ElTableColumn } from "element-plus";
+    import { ElRow, ElMessage, ElDialog, ElScrollbar, ElTable, ElTableColumn, ElImage } from "element-plus";
     import sbutton from "../components/sbutton.vue";
     import svideo from "../components/svideo.vue";
     import 'video.js/dist/video-js.css';
 
     import { useSaveStore, useDataStore, APM } from "../js/store";
-    import { MersenneTwister } from "../js/utils";
+    import { MersenneTwister, icons } from "../js/utils";
     import { ThingList } from "../js/things";
     import { characters } from "../js/character";
     import { ref } from "vue";
@@ -23,7 +23,7 @@
     var player = ref();
     var show_ani = ref(false);
     var show_result = ref(false);
-    var wishing = ref(false);
+    var show_skip = ref(false);
     var result = ref([])
 
     const random = new MersenneTwister();
@@ -58,9 +58,11 @@
 
         show_ani.value = true;
         player.value.player.play();
+        show_skip.value = true;
         player.value.player.on("ended", () => {
             player.value.player.off("ended")
             show_ani.value = false;
+            show_skip.value = false;
             wish(n);
         })
 
@@ -159,10 +161,16 @@
         });*/
     }
 
+    function skip() {
+        let end = player.value.player.duration();
+        player.value.player.currentTime(end)
+    }
+
 </script>
 
 <template>
     <div class="container">
+        <sbutton id="skip" v-show="show_skip" @click="skip"><el-image :src="icons.skip" class="icon"/></sbutton>
         <el-row>
             <sbutton type="primary" @click="run(1)">点击抽卡</sbutton>
             <sbutton type="primary" @click="run(10)">点击抽卡(十连)</sbutton>
@@ -203,8 +211,20 @@
         position: fixed;
         width: 100vw;
         height: 100vh;
-        z-index: 11222;
+        z-index: 1001;
         left: 0;
         top: 0;
+    }
+
+    .icon {
+        width: 20px;
+        height: 20px;
+    }
+
+    #skip {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        z-index: 1002;
     }
 </style>
