@@ -64,19 +64,6 @@ function cmd_handler(value) {
             window.openDevTools();
             break;
 
-        case "save":
-            let s1 = new SaveServer();
-            s1.upload(cmds[1], cmds[2], saveStore.$state);
-            break;
-            
-        case "load":
-            let s2 = new SaveServer();
-            s2.download(cmds[1], cmds[2]).then(data => {
-                console.log(data);
-                saveStore.$patch(data);
-            });
-            break;
-
         default:
             // 当命令未知时提示用户
             alert("未知命令");

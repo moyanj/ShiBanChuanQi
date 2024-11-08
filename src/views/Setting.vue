@@ -48,6 +48,32 @@
         })
     }
 
+    function load() {
+        window.initGeetest4({
+            product: "bind",
+            captchaId: "6acf3658d1b41039662abc436d70e412"
+        }, (captcha) => {
+            captcha.showCaptcha();
+            captcha.onSuccess(() => {
+                let s = new SaveServer();
+                
+                s.download(username.value, password.value).then((xhr: XMLHttpRequest) => {
+                    if (xhr.status == 200) {
+                        let data = JSON.parse(xhr.responseText);
+                        saveStore.$patch(data)
+                        ElMessage.success("加载成功");
+                    } else if (xhr.status == 401) {
+                        ElMessage.error("用户名或密码错误");
+                    } else {
+                        ElMessage.error("服务器错误");
+                    }
+                }).finally(() => {
+                    captcha.destroy();
+                })
+            })
+        })
+    }
+
     function upload() {
         window.initGeetest4({
             product: "bind",
@@ -57,7 +83,6 @@
             captcha.onSuccess(() => {
 
                 let s = new SaveServer();
-                console.log(captcha.getValidate())
 
                 s.upload(username.value, password.value, saveStore.$state, captcha.getValidate()).then((xhr: XMLHttpRequest) => {
                     if (xhr.status == 200) {
@@ -120,6 +145,20 @@
             </el-form-item>
             <el-form-item>
                 <sbutton type="primary" @click="reg">注册</sbutton>
+            </el-form-item>
+        </el-form>
+    </el-dialog>
+
+    <el-dialog title="加载数据" v-model="show_reg_data">
+        <el-form label-width="auto">
+            <el-form-item label="用户名">
+                <el-input v-model="username" placeholder="请输入用户名"></el-input>
+            </el-form-item>
+            <el-form-item label="密码">
+                <el-input v-model="password" placeholder="请输入密码" show-password type="password"></el-input>
+            </el-form-item>
+            <el-form-item>
+                <sbutton type="primary" @click="reg">加载</sbutton>
             </el-form-item>
         </el-form>
     </el-dialog>
