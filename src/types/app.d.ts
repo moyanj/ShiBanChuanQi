@@ -5,6 +5,7 @@ declare global {
       webkitAudioContext: object;
       mozAudioContext: object;
       msAudioContext: object;
+      initGeetest4: Function;
       electron: {
         version: {
           electron: string;
