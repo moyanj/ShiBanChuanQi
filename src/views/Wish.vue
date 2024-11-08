@@ -38,7 +38,7 @@
     }
 
     function run(n: number = 1) {
-
+    
         const cost = 180 * n; // 十连抽消耗的星火
         if (saveStore.things.get("XinHuo") < cost) {
             ElMessage({
@@ -163,6 +163,7 @@
 
         <p>据上一次出货的抽数：{{ saveStore.n_wish }}</p>
         <p>总抽数：{{ saveStore.wish_number }}</p>
+        <div id="captcha"></div>
 
         <!-- 抽卡动画 -->
         <svideo :options="player_conf" class="ani" :hidden="!show_ani" ref="player">
