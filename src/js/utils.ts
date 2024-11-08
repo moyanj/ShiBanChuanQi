@@ -16,6 +16,7 @@ import icon_element_liangzi from "../assets/icon/element-liangzi.png";
 import icon_element_nihility from "../assets/icon/element-nihility.png";
 
 import { Howl } from "howler";
+import { assign } from "lodash-es";
 
 export const icons = {
     left: icon_left,
@@ -404,23 +405,23 @@ export class SaveServer {
         this.baseUrl = "http://localhost:5000";
     }
 
-    public upload(user: string, pwd: string, data: any): Promise<any> {
-        return this.request("POST", "/upload", { user: user, pwd: pwd, data: data });
+    public upload(user: string, pwd: string, data: any, gt:object): Promise<any> {
+        return this.request("POST", "/upload", { user: user, pwd: pwd, data: data }, gt);
     }
 
-    public download(user: string, pwd: string): Promise<any> {
-        return this.request("GET", `/download?user=${user}&pwd=${pwd}`);
+    public download(user: string, pwd: string, gt:object): Promise<any> {
+        return this.request("GET", `/download?user=${user}&pwd=${pwd}`, gt);
     }
 
-    public register(user: string, pwd: string): Promise<any> {
-        return this.request("POST", "/reg", { user: user, pwd: pwd, });
+    public register(user: string, pwd: string, gt:object): Promise<any> {
+        return this.request("POST", "/reg", { user: user, pwd: pwd, }, gt);
     }
 
-    public remove(user: string, pwd: string): Promise<any> {
-        return this.request("POST", "/remove", { user: user, pwd: pwd, });
+    public remove(user: string, pwd: string, gt:object): Promise<any> {
+        return this.request("POST", "/remove", { user: user, pwd: pwd, }, gt);
     }
 
-    private request(type: string, eurl: string, data: any | null = null): Promise<any> {
+    private request(type: string, eurl: string, data: any | null = null, gt:object=null): Promise<any> {
         return new Promise((resolve, reject) => {
             const url = this.baseUrl + eurl;
             const xhr = new XMLHttpRequest();
@@ -435,7 +436,7 @@ export class SaveServer {
             xhr.onerror = () => {
                 reject(new Error('Network error occurred'));
             };
-
+            data.gt = gt;
             xhr.send(JSON.stringify(data));
         });
     }
