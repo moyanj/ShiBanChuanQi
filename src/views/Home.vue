@@ -176,6 +176,7 @@
         text-overflow: ellipsis;
         visibility: hidden;
         transition: visibility 0.3s;
+        font-size: 15px;
     }
 
     .user-info:hover .user-name {

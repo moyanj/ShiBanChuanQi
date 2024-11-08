@@ -102,8 +102,10 @@
     }
 
     #title {
-        font-size: 4rem;
-        font-family: 'SuXinShi';
+        margin: 20px;
+        font-size: 90px;
+        font-weight: bold;
+        font-family: 'SuXinShi'
     }
 
     #cg {
@@ -114,6 +116,10 @@
     .zx {
         margin-bottom: 15px;
         width: 100%;
+    }
+
+    li {
+        font-size: 12.8px;
     }
 
 </style>

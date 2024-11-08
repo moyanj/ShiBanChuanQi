@@ -43,8 +43,8 @@
             <el-scrollbar class="menu">
                 <el-card class="item" v-for="item in data" @click="change_character(item)" v-if="data.length > 0">
                     <div class="item-content">
-                        <el-image :src="c2e[item.type]" width="15px" height="15px"
-                            style="margin-right: 10px;"></el-image>
+                        <el-image :src="c2e[item.type]"
+                            style="margin-right: 10px;" class="type"></el-image>
                         <h3 class="name" style="margin: 0;">{{ item.name }}</h3>
                     </div>
                 </el-card>
@@ -61,7 +61,7 @@
 
                 <el-descriptions-item label="名字">{{ now_character.name }}</el-descriptions-item>
                 <el-descriptions-item label="属性">
-                    <el-image :src="c2e[now_character.type]" width="15px" height="15px" style="margin-right: 10px;" />
+                    <el-image :src="c2e[now_character.type]" class="type"/>
                 </el-descriptions-item>
 
                 <el-descriptions-item label="等级">{{ now_character.level }}&nbsp;&nbsp;&nbsp;&nbsp;<sbutton
@@ -164,5 +164,10 @@
         color: #000;
     }
 
+    .type {
+        width: 25px;
+        height: 25px;
+        margin-right: 10px;
+    }
 
 </style>
