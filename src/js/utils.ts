@@ -409,8 +409,8 @@ export class SaveServer {
         return this.request("POST", "/upload", { user: user, pwd: pwd, data: data }, gt);
     }
 
-    public download(user: string, pwd: string, gt:object): Promise<any> {
-        return this.request("GET", `/download?user=${user}&pwd=${pwd}`, gt);
+    public download(user: string, pwd: string): Promise<any> {
+        return this.request("GET", `/download?user=${user}&pwd=${pwd}`);
     }
 
     public register(user: string, pwd: string, gt:object): Promise<any> {
