@@ -38,7 +38,15 @@
     }
 
     function run(n: number = 1) {
-    
+        /*
+        window.initGeetest4({
+            captchaId: "6acf3658d1b41039662abc436d70e412"
+        }, (g) => {
+            g.appendTo("#captcha");
+            g.onSuccess(() => {
+                console.log(6)
+            })
+        })*/
         const cost = 180 * n; // 十连抽消耗的星火
         if (saveStore.things.get("XinHuo") < cost) {
             ElMessage({
@@ -104,7 +112,7 @@
             }
         }
         show_result.value = true;
-        
+
 
         /* 处理结果
         results.forEach(item => {
