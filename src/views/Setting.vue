@@ -1,6 +1,6 @@
 <script setup lang="ts">
     import { ref } from 'vue';
-    import { ElScrollbar, ElMessageBox, ElMessage, ElDialog, ElForm, ElFormItem, ElInput } from 'element-plus';
+    import { ElScrollbar, ElMessageBox, ElMessage, ElDialog, ElForm, ElFormItem, ElInput, ElLoading } from 'element-plus';
     import { useSaveStore, useDataStore } from '../js/store';
     import { SaveServer } from '../js/utils';
     import sbutton from '../components/sbutton.vue'
@@ -33,7 +33,9 @@
             captcha.onSuccess(() => {
                 let s = new SaveServer();
                 console.log(captcha.getValidate())
+                var loading = ElLoading.service();
                 s.register(username.value, password.value, captcha.getValidate()).then((xhr: XMLHttpRequest) => {
+                    loading.close()
                     if (xhr.status == 201) {
                         show_reg_data.value = false;
                         ElMessage.success("注册成功");
@@ -57,9 +59,11 @@
             captcha.showCaptcha();
             captcha.onSuccess(() => {
                 let s = new SaveServer();
-                
+                var loading = ElLoading.service();
                 s.download(username.value, password.value).then((xhr: XMLHttpRequest) => {
+                    loading.close()
                     if (xhr.status == 200) {
+                        show_load_data.value = false;
                         let data = JSON.parse(xhr.responseText);
                         saveStore.$patch(JSON.parse(data.data))
                         ElMessage.success("加载成功");
@@ -84,8 +88,9 @@
             captcha.onSuccess(() => {
 
                 let s = new SaveServer();
-
+                var loading = ElLoading.service();
                 s.upload(username.value, password.value, saveStore.$state, captcha.getValidate()).then((xhr: XMLHttpRequest) => {
+                    loading.close()
                     if (xhr.status == 200) {
                         show_upload_data.value = false;
                         ElMessage.success("上传成功");
@@ -130,6 +135,7 @@
             <el-form-item label="密码">
                 <el-input v-model="password" placeholder="请输入密码" show-password type="password"></el-input>
             </el-form-item>
+            <p>本地数据将会覆盖云端数据</p>
             <el-form-item>
                 <sbutton type="primary" @click="upload">上传</sbutton>
             </el-form-item>
@@ -158,7 +164,9 @@
             <el-form-item label="密码">
                 <el-input v-model="password" placeholder="请输入密码" show-password type="password"></el-input>
             </el-form-item>
+            <p>云端数据将会与本地数据合并</p>
             <el-form-item>
+                
                 <sbutton type="primary" @click="load">加载</sbutton>
             </el-form-item>
         </el-form>
