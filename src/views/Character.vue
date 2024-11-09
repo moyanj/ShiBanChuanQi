@@ -35,6 +35,12 @@
     const change_character = (content) => {
         now_character.value = content;
     };
+
+    const level_up = () => {
+        save.things.remove("EXP", n.value)
+        now_character.value.level_up(n.value);
+        save.characters.update(now_character.value)
+    }
 </script>
 
 <template>
@@ -45,7 +51,7 @@
                     <div class="item-content">
                         <el-image :src="c2e[item.type]"
                             style="margin-right: 10px;" class="type"></el-image>
-                        <h3 class="name" style="margin: 0;">{{ item.name }}</h3>
+                        <h4 class="name" style="margin: 0;">{{ item.name }}</h4>
                     </div>
                 </el-card>
                 <div v-else class="container">
@@ -85,11 +91,11 @@
     <el-dialog v-model="show_info" title="角色信息" width="50%">
         <el-scrollbar>
             <el-descriptions border :column="1" class="info">
-                <el-descriptions-item label="经验">{{ now_character.xp }}</el-descriptions-item>
-                <el-descriptions-item label="生命">{{ now_character.hp }}</el-descriptions-item>
-                <el-descriptions-item label="攻击力">{{ now_character.atk }}</el-descriptions-item>
-                <el-descriptions-item label="防御力">{{ now_character.def_ }}</el-descriptions-item>
-                <el-descriptions-item label="速度">{{ now_character.speed }}</el-descriptions-item>
+                <el-descriptions-item label="经验">{{ Math.round(now_character.xp) }}</el-descriptions-item>
+                <el-descriptions-item label="生命">{{ Math.round(now_character.hp) }}</el-descriptions-item>
+                <el-descriptions-item label="攻击力">{{ Math.round(now_character.atk) }}</el-descriptions-item>
+                <el-descriptions-item label="防御力">{{ Math.round(now_character.def_) }}</el-descriptions-item>
+                <el-descriptions-item label="速度">{{ Math.round(now_character.speed) }}</el-descriptions-item>
             </el-descriptions>
         </el-scrollbar>
     </el-dialog>
@@ -97,10 +103,16 @@
     <el-dialog v-model="show_up_character" title="角色升级">
         <el-form>
             <el-form-item label="据下一级所需的经验: ">
-                <span>{{ Math.ceil(now_character.level_xp()) - now_character.xp }} </span>
+                <span>{{ Math.ceil(now_character.level_xp(now_character.level) - now_character.xp )}} </span>
             </el-form-item>
             <el-form-item label="数量：" v-if="save.things.get('EXP') > 0">
                 <el-slider v-model="n" :min="1" :max="save.things.get('EXP')" show-input />
+            </el-form-item>
+            <el-form-item label="数量：" v-else>
+                <span>你没有EXP</span>
+            </el-form-item>
+            <el-form-item v-if="save.things.get('EXP') > 0">
+                <sbutton @click="level_up">升级</sbutton>
             </el-form-item>
 
             

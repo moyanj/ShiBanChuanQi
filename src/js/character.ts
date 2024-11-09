@@ -4,6 +4,7 @@ interface CharacterData {
     hp: number;
     atk: number;
     def: number;
+    attr_bonus: AttrBonusType;
 }
 
 interface AttrBonusType {
@@ -104,11 +105,16 @@ export class CharacterManager {
 
     get_all(): Array<Character> {
         let r: Array<Character> = [];
-        console.log(this.characters);
         for (let i in this.characters) {
             r.push(this.get(i));
         }
         return r;
+    }
+    update(c: Character) {
+        if (!this.characters[c.inside_name]) {
+            return null;
+        }
+        this.characters[c.inside_name] = c.dump();
     }
 }
 
@@ -171,9 +177,21 @@ export abstract class Character {
         this.env = env;
     }
 
-    level_xp(): number {
+    level_up(exp: number) {
+        this.xp += exp;
+
+        while (this.xp >= this.level_xp(this.level)) {
+            this.xp -= this.level_xp(this.level);
+            this.level += 1;
+        }
+        this.level_hp();
+        this.level_def();
+        this.level_atk();
+    }
+
+    level_xp(level): number {
         // 计算升级所需经验
-        return 100 * Math.pow(this.level, 2.5) + 150 * this.level * Math.log(this.level + 1);
+        return 100 * Math.pow(level, 2.5) + 150 * level * Math.log(level + 1);
     }
 
     level_hp(): void {
@@ -216,6 +234,7 @@ export abstract class Character {
             hp: this.hp, // 血量
             atk: this.atk, // 攻击力
             def: this.def_, // 防御
+            attr_bonus: this.attr_bonus // 属性加成
         }
     }
 
@@ -225,7 +244,7 @@ export abstract class Character {
         this.hp = data.hp;
         this.atk = data.atk;
         this.def_ = data.def;
-
+        this.attr_bonus = data.attr_bonus;
         return this;
     }
 }
