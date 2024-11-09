@@ -1,4 +1,4 @@
-"v4.1.8 Geetest Inc.";
+const version = "v4.1.8 Geetest Inc.";
 
 (function (window) {
     "use strict";
