@@ -10,9 +10,7 @@
     const electron = window.electron;
 
     const player = {
-        autoplay: false,
         controls: true,
-        muted: false,
         fluid: true
     }
     const show_cg = ref(false);
