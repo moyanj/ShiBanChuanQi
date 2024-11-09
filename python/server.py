@@ -3,31 +3,42 @@ import psycopg2
 import requests
 import hmac
 import json
+import time
 from werkzeug.security import generate_password_hash, check_password_hash
 
 # 初始化Flask应用
 app = Flask(__name__)
-# 连接数据库
-db = psycopg2.connect(
-    host="154.37.213.180",
-    port=5432,
-    user="sbcq_saves",
-    password="wZNKC855yyZ8ZmQ6",
-    database="sbcq_saves"
-)
-cur = db.cursor()
-create_table_query = '''
-CREATE TABLE IF NOT EXISTS game_save (
-    id SERIAL PRIMARY KEY,
-    "username" VARCHAR(255) NOT NULL UNIQUE,
-    pwd VARCHAR(255) NOT NULL,
-    save_data TEXT,
-    save_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-'''
 
-cur.execute(create_table_query)
-db.commit()
+def get_conn():
+    while True:
+        try:
+            # 连接数据库
+            db = psycopg2.connect(
+                host="154.37.213.180",
+                port=5432,
+                user="sbcq_saves",
+                password="wZNKC855yyZ8ZmQ6",
+                database="sbcq_saves"
+            )
+            cur = db.cursor()
+            create_table_query = '''
+            CREATE TABLE IF NOT EXISTS game_save (
+                id SERIAL PRIMARY KEY,
+                "username" VARCHAR(255) NOT NULL UNIQUE,
+                pwd VARCHAR(255) NOT NULL,
+                save_data TEXT,
+                save_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+            '''
+            cur.execute(create_table_query)
+            db.commit()
+            return db
+        except:
+
+            print("DB connection lost!!! ")
+            time.sleep(0.25)
+
+
 
 def check(info):
     print("c")
@@ -74,7 +85,7 @@ def upload():
 
     if user is None or pwd is None:
         return jsonify({"error": "user or pwd is None"}), 400
-
+    db = get_conn()
     cursor = db.cursor()
     cursor.execute("SELECT pwd FROM game_save WHERE username=%s", (user,))
     result = cursor.fetchone()
@@ -100,7 +111,7 @@ def download():
 
     if user is None or pwd is None:
         return jsonify({"error": "user or pwd is None"}), 400
-
+    db = get_conn()
     cursor = db.cursor()
     cursor.execute("SELECT save_data, pwd FROM game_save WHERE username=%s", (user,))
     result = cursor.fetchone()
@@ -126,7 +137,7 @@ def reg():
 
     if user is None or pwd is None:
         return jsonify({"error": "user or pwd is None"}), 400
-
+    db = get_conn()
     cursor = db.cursor()
     hashed_pwd = generate_password_hash(pwd)
     try:
@@ -153,7 +164,7 @@ def remove():
     
     if user is None or pwd is None:
         return jsonify({"error": "user or pwd is None"}), 400
-    
+    db = get_conn()
     cursor = db.cursor()
     cursor.execute("DELETE FROM game_save WHERE username=%s", (user,))
     db.commit()
