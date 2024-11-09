@@ -3,6 +3,7 @@ import psycopg2
 import requests
 import hmac
 import json
+import time
 from werkzeug.security import generate_password_hash, check_password_hash
 
 # 初始化Flask应用
@@ -74,7 +75,7 @@ def upload():
 
     if user is None or pwd is None:
         return jsonify({"error": "user or pwd is None"}), 400
-
+    db = get_conn()
     cursor = db.cursor()
     cursor.execute("SELECT pwd FROM game_save WHERE username=%s", (user,))
     result = cursor.fetchone()
@@ -100,7 +101,7 @@ def download():
 
     if user is None or pwd is None:
         return jsonify({"error": "user or pwd is None"}), 400
-
+    db = get_conn()
     cursor = db.cursor()
     cursor.execute("SELECT save_data, pwd FROM game_save WHERE username=%s", (user,))
     result = cursor.fetchone()
@@ -126,7 +127,7 @@ def reg():
 
     if user is None or pwd is None:
         return jsonify({"error": "user or pwd is None"}), 400
-
+    db = get_conn()
     cursor = db.cursor()
     hashed_pwd = generate_password_hash(pwd)
     try:
@@ -153,7 +154,7 @@ def remove():
     
     if user is None or pwd is None:
         return jsonify({"error": "user or pwd is None"}), 400
-    
+    db = get_conn()
     cursor = db.cursor()
     cursor.execute("DELETE FROM game_save WHERE username=%s", (user,))
     db.commit()
