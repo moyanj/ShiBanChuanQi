@@ -63,7 +63,7 @@
 
         <el-col :span="21" class="content">
             <div class="verticalBar"></div>
-            <el-descriptions v-if="now_character" border size="large" :column="4">
+            <el-descriptions v-if="now_character" border size="large" :column="4" width="100%">
 
                 <el-descriptions-item label="名字">{{ now_character.name }}</el-descriptions-item>
                 <el-descriptions-item label="属性">
@@ -78,7 +78,9 @@
 
 
                 <el-descriptions-item label="介绍" :span="4">{{ now_character.desc }}</el-descriptions-item>
-
+                <el-descriptions-item label="普攻" :span="4">{{ now_character.general_name }} {{ now_character.general_desc }}</el-descriptions-item>
+                <el-descriptions-item label="技能" :span="4">{{ now_character.skill_name }} {{ now_character.skill_desc }}</el-descriptions-item>
+                <el-descriptions-item label="爆发技" :span="4">{{ now_character.super_skill_name }} {{ now_character.super_skill_desc }}</el-descriptions-item>
             </el-descriptions>
 
             <div v-else class="container">
