@@ -27,7 +27,8 @@
     size: {
       type: String,
       default: 'default',
-    }
+    },
+    "v-loading":{}
   });
   if (!("click_sound" in APM.objs)) {
     APM.add("click_sound", 'audio/click.mp3')
