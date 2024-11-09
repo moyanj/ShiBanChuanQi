@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-import pymysql
+import psycopg2
 import requests
 import hmac
 import json
@@ -15,27 +15,37 @@ db = pymysql.connect(
     password="vMJDj",
     database="sbcq_saves"
 )
+cur = db.cursor()
+create_table_query = '''
+CREATE TABLE IF NOT EXISTS game_save (
+    id SERIAL PRIMARY KEY,
+    "username" VARCHAR(255) NOT NULL UNIQUE,
+    pwd VARCHAR(255) NOT NULL,
+    save_data TEXT,
+    save_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+'''
+
+cur.execute(create_table_query)
+db.commit()
 
 def check(info):
-
+    print("c")
     if info is None:
         return False
     sign_token = hmac.new(b"c29a9ecaf69025e936034b1bb03e0f8d", info["lot_number"].encode(), digestmod='SHA256').hexdigest()
     info["sign_token"] = sign_token
     try:
-        res = requests.post("https://gcaptcha4.geetest.com/validate?captcha_id=6acf3658d1b41039662abc436d70e412", info)
+        res = requests.post("https://gcaptcha4.geetest.com/validate?captcha_id=6acf3658d1b41039662abc436d70e412", info, timeout=1)
         assert res.status_code == 200
         gt_msg = json.loads(res.text)
     except Exception as e:
         gt_msg = {'result': 'success', 'reason': 'request geetest api fail'}
-        
+    print("d")
     if gt_msg['result'] == 'success':
          return True
     else:
         return False
-
-
-
 
 
 #允许跨域
@@ -66,13 +76,13 @@ def upload():
         return jsonify({"error": "user or pwd is None"}), 400
 
     cursor = db.cursor()
-    cursor.execute("SELECT pwd FROM game_save WHERE user=%s", (user,))
+    cursor.execute("SELECT pwd FROM game_save WHERE username=%s", (user,))
     result = cursor.fetchone()
 
     if result is None or not check_password_hash(result[0], pwd):
         return jsonify({"error": "user or pwd is wrong"}), 401
     
-    cursor.execute("UPDATE game_save SET save_data=%s WHERE user=%s", (data, user))
+    cursor.execute("UPDATE game_save SET save_data=%s WHERE username=%s", (data, user))
     db.commit()
     
     return jsonify({"msg": "data updated successfully"}), 200
@@ -92,7 +102,7 @@ def download():
         return jsonify({"error": "user or pwd is None"}), 400
 
     cursor = db.cursor()
-    cursor.execute("SELECT save_data, pwd FROM game_save WHERE user=%s", (user,))
+    cursor.execute("SELECT save_data, pwd FROM game_save WHERE username=%s", (user,))
     result = cursor.fetchone()
 
     if result is None or not check_password_hash(result[1], pwd):
@@ -120,9 +130,9 @@ def reg():
     cursor = db.cursor()
     hashed_pwd = generate_password_hash(pwd)
     try:
-        cursor.execute("INSERT INTO game_save(user, pwd) VALUES(%s, %s)", (user, hashed_pwd))
+        cursor.execute("INSERT INTO game_save(username, pwd) VALUES(%s, %s)", (user, hashed_pwd))
         db.commit()
-    except pymysql.err.IntegrityError:
+    except:
         return jsonify({"error": "user already exists"}), 409
     
     return jsonify({"msg": "registration successful"}), 201
@@ -145,7 +155,7 @@ def remove():
         return jsonify({"error": "user or pwd is None"}), 400
     
     cursor = db.cursor()
-    cursor.execute("DELETE FROM game_save WHERE user=%s", (user,))
+    cursor.execute("DELETE FROM game_save WHERE username=%s", (user,))
     db.commit()
     return jsonify({"msg": "user removed successfully"}), 200
 

@@ -402,10 +402,11 @@ export function isLandscape() {
 export class SaveServer {
     baseUrl: string;
     constructor() {
-        this.baseUrl = "http://localhost:5000";
+        this.baseUrl = "https://sbcq-server.onrender.com";
+        // this.baseUrl = "http://127.0.0.1:5000"
     }
 
-    public upload(user: string, pwd: string, data: any, gt:object): Promise<any> {
+    public upload(user: string, pwd: string, data: any, gt: object): Promise<any> {
         return this.request("POST", "/upload", { user: user, pwd: pwd, data: data }, gt);
     }
 
@@ -413,15 +414,15 @@ export class SaveServer {
         return this.request("GET", `/download?user=${user}&pwd=${pwd}`);
     }
 
-    public register(user: string, pwd: string, gt:object): Promise<any> {
+    public register(user: string, pwd: string, gt: object): Promise<any> {
         return this.request("POST", "/reg", { user: user, pwd: pwd, }, gt);
     }
 
-    public remove(user: string, pwd: string, gt:object): Promise<any> {
+    public remove(user: string, pwd: string, gt: object): Promise<any> {
         return this.request("POST", "/remove", { user: user, pwd: pwd, }, gt);
     }
 
-    private request(type: string, eurl: string, data: any | null = null, gt:object=null): Promise<any> {
+    private request(type: string, eurl: string, data: any | null = null, gt: object = null): Promise<any> {
         return new Promise((resolve, reject) => {
             const url = this.baseUrl + eurl;
             const xhr = new XMLHttpRequest();
@@ -430,13 +431,16 @@ export class SaveServer {
 
             xhr.onload = () => {
                 resolve(xhr);
-                
+
             };
 
             xhr.onerror = () => {
                 reject(new Error('Network error occurred'));
             };
-            data.gt = gt;
+            if (gt) {
+                data.gt = gt;
+            }
+
             xhr.send(JSON.stringify(data));
         });
     }

@@ -9,6 +9,7 @@
     const saveStore = useSaveStore();
     var show_upload_data = ref(false);
     var show_reg_data = ref(false);
+    var show_load_data = ref(false);
     var password = ref('');
     var username = ref('');
 
@@ -60,7 +61,7 @@
                 s.download(username.value, password.value).then((xhr: XMLHttpRequest) => {
                     if (xhr.status == 200) {
                         let data = JSON.parse(xhr.responseText);
-                        saveStore.$patch(data)
+                        saveStore.$patch(JSON.parse(data.data))
                         ElMessage.success("加载成功");
                     } else if (xhr.status == 401) {
                         ElMessage.error("用户名或密码错误");
@@ -110,7 +111,7 @@
     <el-scrollbar class="content">
         <settingItem label="云存档">
             <sbutton type="primary" @click="show_upload_data = true">上传数据</sbutton>
-            <sbutton type="primary">加载数据</sbutton>
+            <sbutton type="primary" @click="show_load_data = true">加载数据</sbutton>
             <sbutton type="primary" @click="show_reg_data = true">注册账户</sbutton>
             <p style="font-size:11px;">由Sqlpub和Render提供支持</p>
         </settingItem>
@@ -149,7 +150,7 @@
         </el-form>
     </el-dialog>
 
-    <el-dialog title="加载数据" v-model="show_reg_data">
+    <el-dialog title="加载数据" v-model="show_load_data">
         <el-form label-width="auto">
             <el-form-item label="用户名">
                 <el-input v-model="username" placeholder="请输入用户名"></el-input>
@@ -158,7 +159,7 @@
                 <el-input v-model="password" placeholder="请输入密码" show-password type="password"></el-input>
             </el-form-item>
             <el-form-item>
-                <sbutton type="primary" @click="reg">加载</sbutton>
+                <sbutton type="primary" @click="load">加载</sbutton>
             </el-form-item>
         </el-form>
     </el-dialog>
