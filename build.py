@@ -459,8 +459,12 @@ if __name__ == "__main__":
     parser.add_argument("--no-check", action="store_true", help="no check")
     parser.add_argument("--default-version", help="default version", default="30.5.1")
     parser.add_argument("--no-clean", action="store_true", help="no clean")
+    parser.add_argument("--no-ele", action="store_true", help="no clean")
     args = parser.parse_args()
-    builders = [HtmlBuiler(args), Builer(args)]
+    if args.no_ele:
+        builders = [HtmlBuiler(args)]
+    else:
+        builders = [HtmlBuiler(args), Builer(args)]
 
     for builder in builders:
         builder.build()
