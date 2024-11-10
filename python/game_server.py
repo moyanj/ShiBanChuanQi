@@ -1,15 +1,20 @@
-#!/usr/bin/env python
-
 import asyncio
-
 from websockets.asyncio.server import serve
 
+sockets = {}
+his = {}
 
 async def handler(websocket):
     while True:
+        print("a")
         message = await websocket.recv()
-        print(message)
-        await websocket.send(message)
+        sockets[message] = websocket
+        idx = await websocket.recv()
+        if idx not in sockets:
+            await websocket.send("err")
+        else:
+            await websocket.send("ok")
+        
 
 
 async def main(port):
