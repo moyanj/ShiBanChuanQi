@@ -10,7 +10,8 @@ export default defineConfig({
   base: './',
   plugins: [
     px2viewport({
-      viewportWidth: 1366
+      viewportWidth: 1366,
+      unitPrecision: 10
     }),
     vue()
   ],
