@@ -28,8 +28,6 @@ export interface SaveStoreState {
   n_wish: number;
   characters: CharacterManager;
   wish_number: number;
-  story_section: string;
-  story_index: string;
 }
 
 export const useDataStore = defineStore('data_store', {
@@ -52,8 +50,6 @@ export const useSaveStore = defineStore('save', {
     n_wish: 0, // 自上次出货以来抽卡次数
     characters: new CharacterManager(), // 角色
     wish_number: 0, // 抽卡次数
-    story_section: "001", // 故事章节
-    story_index: "",
   }),
 });
 
