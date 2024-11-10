@@ -29,7 +29,7 @@
         "Stable Diffusion团队",
         "Electron团队",
         "Flask团队",
-        "重庆市凤鸣山中学全体师生"
+        "重庆市凤鸣山中学全体教职工人员以及学生"
     ]
 
     function play() {
