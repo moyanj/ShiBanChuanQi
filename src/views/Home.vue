@@ -11,7 +11,7 @@
     const isHover = ref(false);
 
     if (save.user_avatar === "") {
-        save.user_avatar = `avatars/${random.randint(1,100)}.png`;
+        save.user_avatar = `avatars/${random.randint(1, 100)}.png`;
     }
 
     function get_avatar() {
@@ -42,7 +42,7 @@
     }
 
     const onclick_start = () => {
-        data.page_type = 'plot'
+        data.page_type = 'fight'
     }
 </script>
 
@@ -51,7 +51,7 @@
         <h1 id="title">十班传奇</h1>
         <br>
         <div>
-            <sbutton type="primary" size="large" class="start" @click="onclick_start">开始战斗</sbutton> 
+            <sbutton type="primary" size="large" class="start" @click="onclick_start">开始战斗</sbutton>
         </div>
         <!-- 用户信息 -->
         <el-card class="user-info" @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave">
@@ -69,39 +69,39 @@
             <el-row>
                 <el-col :span="4">
                     <sbutton text @click="data.page_type = 'character'">
-                        <el-image :src="icons.character" class="icon"/>
+                        <el-image :src="icons.character" class="icon" />
                         <span>&nbsp;角色</span>
                     </sbutton>
                 </el-col>
 
                 <el-col :span="4">
                     <sbutton text @click="data.page_type = 'wish'">
-                        <el-image :src="icons.wish" class="icon"/>
+                        <el-image :src="icons.wish" class="icon" />
                         <span>&nbsp;抽卡</span>
                     </sbutton>
                 </el-col>
-                
+
                 <el-col :span="4">
                     <sbutton text @click="data.page_type = 'MiJing'">
-                        <el-image :src="icons.door" class="icon"/>
-                        <span>&nbsp;秘境</span>
+                        <el-image :src="icons.online" class="icon" />
+                        <span>&nbsp;联机</span>
                     </sbutton>
                 </el-col>
                 <el-col :span="4">
                     <sbutton text @click="data.page_type = 'bag'">
-                        <el-image :src="icons.backpack" class="icon"/>
+                        <el-image :src="icons.backpack" class="icon" />
                         <span>&nbsp;背包</span>
                     </sbutton>
                 </el-col>
                 <el-col :span="4">
                     <sbutton text @click="data.page_type = 'setting'">
-                        <el-image :src="icons.setting" class="icon"/>
+                        <el-image :src="icons.setting" class="icon" />
                         <span>&nbsp;设置</span>
                     </sbutton>
                 </el-col>
                 <el-col :span="4">
                     <sbutton text @click="data.page_type = 'about'">
-                        <el-image :src="icons.info" class="icon"/>
+                        <el-image :src="icons.info" class="icon" />
                         <span>&nbsp;关于</span>
                     </sbutton>
                 </el-col>
@@ -156,8 +156,9 @@
         padding-left: 25px;
         padding-right: 25px;
 
-        
+
     }
+
     .el-avatar {
         vertical-align: middle;
         width: 40px;

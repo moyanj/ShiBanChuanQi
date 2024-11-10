@@ -4,9 +4,10 @@ import icon_info from "../assets/icon/info.svg";
 import icon_backpack from "../assets/icon/backpack.svg";
 import icon_setting from "../assets/icon/setting.svg";
 import icon_door from "../assets/icon/door.svg";
-import icon_wish from "../assets/icon/wish.png";
+import icon_wish from "../assets/icon/wish.svg";
 import icon_down from "../assets/icon/down.svg";
 import icon_skip from "../assets/icon/skip.svg";
+import icon_online from "../assets/icon/online.svg";
 import icon_element_fire from "../assets/icon/element-fire.png";
 import icon_element_water from "../assets/icon/element-water.png";
 import icon_element_thunder from "../assets/icon/element-thunder.png";
@@ -16,7 +17,6 @@ import icon_element_liangzi from "../assets/icon/element-liangzi.png";
 import icon_element_nihility from "../assets/icon/element-nihility.png";
 
 import { Howl } from "howler";
-import { assign } from "lodash-es";
 
 export const icons = {
     left: icon_left,
@@ -28,6 +28,7 @@ export const icons = {
     wish: icon_wish,
     down: icon_down,
     skip: icon_skip,
+    online: icon_online,
     element: {
         fire: icon_element_fire,
         water: icon_element_water,
