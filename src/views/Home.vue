@@ -123,7 +123,7 @@
         margin: 20px;
         font-size: 96px;
         font-weight: bold;
-        font-family: 'SuXinShi'
+        font-family: 'SuXinShi';
     }
 
     .user-info {
