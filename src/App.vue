@@ -87,17 +87,19 @@
 
     <!-- 根据数据存储中的 page_type 显示不同页面 -->
     <Home v-if="dataStore.page_type == 'main'" />
+    <Fight v-else-if="dataStore.page_type == 'fight'" />
     <div v-else>
-      <sbutton @click="dataStore.page_type = 'main'" class="back"><el-image :src="icons.left"
-          style="width: 25px;height: 25px;" /></sbutton>
+
+      <sbutton @click="dataStore.page_type = 'main'" class="back">
+        <el-image :src="icons.left" style="width: 25px;height: 25px;" />
+      </sbutton>
+
       <keep-alive :max="8">
-        <Fight v-if="dataStore.page_type == 'fight'" />
-        <About v-else-if="dataStore.page_type == 'about'" />
+        <About v-if="dataStore.page_type == 'about'" />
         <Setting v-else-if="dataStore.page_type == 'setting'" />
         <Bag v-else-if="dataStore.page_type == 'bag'" />
         <Character v-else-if="dataStore.page_type == 'character'" />
         <Wish v-else-if="dataStore.page_type == 'wish'" />
-
 
         <div v-else align="center">
           <!-- 设置404变量 -->
