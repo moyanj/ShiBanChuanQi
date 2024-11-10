@@ -7,13 +7,21 @@ his = {}
 async def handler(websocket):
     while True:
         print("a")
-        message = await websocket.recv()
-        sockets[message] = websocket
+        # 注册
+        name = await websocket.recv()
+        sockets[name] = websocket
+        await websocket.send(name)
+        
         idx = await websocket.recv()
         if idx not in sockets:
             await websocket.send("err")
         else:
             await websocket.send("ok")
+            await sockets[idx].send("connected")
+            
+        while True:
+            msg = await websocket.recv()
+            await sockets[idx].send(msg)
         
 
 
