@@ -2,7 +2,6 @@
   // 导入页面组件
   import Home from './views/Home.vue';
   import Fight from './views/Fight.vue';
-  import Plot from './views/Plot.vue';
   import About from './views/About.vue';
   import Setting from './views/Setting.vue';
   import Bag from './views/Bag.vue';
@@ -92,8 +91,7 @@
       <sbutton @click="dataStore.page_type = 'main'" class="back"><el-image :src="icons.left"
           style="width: 25px;height: 25px;" /></sbutton>
       <keep-alive :max="8">
-        <Plot v-if="dataStore.page_type == 'plot'" />
-        <Fight v-else-if="dataStore.page_type == 'fight'" />
+        <Fight v-if="dataStore.page_type == 'fight'" />
         <About v-else-if="dataStore.page_type == 'about'" />
         <Setting v-else-if="dataStore.page_type == 'setting'" />
         <Bag v-else-if="dataStore.page_type == 'bag'" />
