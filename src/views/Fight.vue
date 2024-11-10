@@ -1,13 +1,20 @@
 <script setup lang="ts">
-    import { useFps } from '@vueuse/core';
+    import { ref } from 'vue';
+    import sbutton from '../components/sbutton.vue';
 
-    const fps = useFps();
+    var show_manager = ref(false);
 </script>
 
 <template>
-    <div class="content">
+    <div class="content" >
         <h1>战斗</h1>
-        <p>开发中{{ fps }}</p>
+        <p>开发中</p>
+        <sbutton @click="show_manager=true">开启manager</sbutton>
+    </div>
+
+    <div class="manager content" v-if="show_manager" :class="{blur: show_manager}">
+        <a>ssssssssssssssssssssssssssss</a>
+        <sbutton @click="show_manager=false">关闭manager</sbutton>
     </div>
 </template>
 
@@ -18,10 +25,17 @@
         top: 0;
         width: 100vw;
         height: 100vh;
-        background-color: beige;
     }
-    
+
     .back {
         display: none;
+    }
+
+    .manager {
+        z-index: 10001;
+    }
+
+    .blur {
+        backdrop-filter:blur(10px);
     }
 </style>
