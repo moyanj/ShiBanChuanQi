@@ -91,7 +91,7 @@ def upload():
     result = cursor.fetchone()
 
     if result is None or not check_password_hash(result[0], pwd):
-        return jsonify({"error": "user or pwd is wrong"}), 401
+        
     
     cursor.execute("UPDATE game_save SET save_data=%s WHERE username=%s", (data, user))
     db.commit()
