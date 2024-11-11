@@ -1,0 +1,54 @@
+name: Build Alpha Version
+
+on: 
+  push:
+    branches:
+      - 'main'
+      - 'html/**'
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - '.github/workflows/**'
+
+jobs:
+
+  BuildHTML:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup NodeJS 
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.18.0
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Install Python Environment
+        run: pip install requests tqdm bsdiff4
+
+      - name: Build
+        run: python build.py linux-x64 --no-ele
+
+      - name: Upload Full Package
+        uses: actions/upload-artifact@v4
+        with:
+          name: FullPackage
+          path: dist/html.zip
+          compression-level: 0
+
+      - name: Upload Diff Package
+        uses: actions/upload-artifact@v4
+        with:
+          name: DiffPackage
+          path: dist/diff.zip
+          compression-level: 0
+      

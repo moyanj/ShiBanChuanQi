@@ -30,7 +30,7 @@ html.old/
 dist/
 
 *.tsbuildinfo
-pnpm-lock.yaml
+
 electron/html
 electron/package.json
 
