@@ -28,9 +28,12 @@
         <sbutton @click="show_manager = true" class="menu">
             <el-image :src="icons.menu" style="width: 24px;height: 24px;" />
         </sbutton>
+
+        <div class="enemy"></div>
+        <div class="our"></div>
     </div>
     <transition name="manager">
-        <div class="content" v-if="show_manager" style="z-index: 1002;backdrop-filter: blur(3px);">
+        <div class="content" v-if="show_manager" style="z-index: 1003;backdrop-filter: blur(3px);">
             <div class="manager">
                 <sbutton @click="show_manager = false" text>
                     <svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 24 24">
@@ -75,5 +78,17 @@
     .manager-enter-from,
     .manager-leave-to {
         opacity: 0;
+    }
+
+    .enemy {
+        width: 100vw;
+        height: 50vh;
+        background-color: red;
+    }
+
+    .our {
+        width: 100vw;
+        height: 50vh;
+        background-color: green;
     }
 </style>
