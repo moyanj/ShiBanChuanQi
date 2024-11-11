@@ -32,8 +32,8 @@
         <div class="enemy"></div>
         <div class="our"></div>
     </div>
-    <transition name="manager">
-        <div class="content" v-if="show_manager" style="z-index: 1003;backdrop-filter: blur(3px);">
+    
+        <div class="content" v-if="show_manager" style="z-index: 1003;backdrop-filter: blur(10px);">
             <div class="manager">
                 <sbutton @click="show_manager = false" text>
                     <svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 24 24">
@@ -41,9 +41,10 @@
                             stroke-width="2" d="M18 6L6 18M6 6l12 12" />
                     </svg>
                 </sbutton>
+                <sbutton @click="data.page_type = 'main'">exit</sbutton>
             </div>
         </div>
-    </transition>
+    
 </template>
 
 <style scoped lang="scss">
@@ -68,16 +69,6 @@
 
     .manager {
         margin: 15px;
-    }
-
-    .manager-enter-active,
-    .manager-leave-active {
-        transition: opacity 0.3s ease;
-    }
-
-    .manager-enter-from,
-    .manager-leave-to {
-        opacity: 0;
     }
 
     .enemy {

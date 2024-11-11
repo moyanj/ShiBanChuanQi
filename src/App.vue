@@ -84,35 +84,26 @@
 
 <template>
     <div>
-        <Transition mode="out-in">
+        <sbutton @click="dataStore.page_type = 'main'" class="back"
+            v-show="dataStore.page_type != 'fight' && dataStore.page_type != 'main'">
+            <el-image :src="icons.left" style="width: 25px;height: 25px;" />
+        </sbutton>
+        <Transition>
             <!-- 根据数据存储中的 page_type 显示不同页面 -->
             <Home v-if="dataStore.page_type == 'main'" />
             <Fight v-else-if="dataStore.page_type == 'fight'" />
-            <div v-else>
+            <About v-else-if="dataStore.page_type == 'about'" />
+            <Setting v-else-if="dataStore.page_type == 'setting'" />
+            <Bag v-else-if="dataStore.page_type == 'bag'" />
+            <Character v-else-if="dataStore.page_type == 'character'" />
+            <Wish v-else-if="dataStore.page_type == 'wish'" />
 
-                <sbutton @click="dataStore.page_type = 'main'" class="back">
-                    <el-image :src="icons.left" style="width: 25px;height: 25px;" />
-                </sbutton>
-
-                <keep-alive :max="8">
-                    <About v-if="dataStore.page_type == 'about'" />
-                    <Setting v-else-if="dataStore.page_type == 'setting'" />
-                    <Bag v-else-if="dataStore.page_type == 'bag'" />
-                    <Character v-else-if="dataStore.page_type == 'character'" />
-                    <Wish v-else-if="dataStore.page_type == 'wish'" />
-
-                    <div v-else align="center">
-                        <!-- 设置404变量 -->
-
-                        <h1>404</h1>
-
-                        <sbutton @click="dataStore.page_type = 'main'">返回</sbutton>
-
-                    </div>
-                </keep-alive>
+            <div v-else align="center">
+                <h1>404</h1>
+                <sbutton @click="dataStore.page_type = 'main'">返回</sbutton>
             </div>
+
         </Transition>
-        <!-- 404 -->
     </div>
 
 </template>
@@ -134,12 +125,11 @@
 
     .v-enter-from {
         opacity: 0;
-        transform: translateY(45px);
+        transform: translateY(100vh);
     }
 
     .v-leave-to {
         opacity: 0;
-        transform: translateY(-45px);
+        transform: translateY(-100vh);
     }
-
 </style>
