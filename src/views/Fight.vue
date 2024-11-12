@@ -5,6 +5,7 @@
     import { useDataStore, useSaveStore } from '../js/store';
     import { icons } from '../js/utils';
     import sbutton from '../components/sbutton.vue';
+    import { ChatCompletion } from "@baiducloud/qianfan";
 
     const data = useDataStore();
     const save = useSaveStore();
@@ -20,6 +21,20 @@
         }
 
     })
+    const client = new ChatCompletion({ QIANFAN_ACCESS_KEY: 'your_api_key', QIANFAN_SECRET_KEY: 'your_secret_key' });
+    async function main() {
+        const resp = await client.chat({
+            messages: [
+                {
+                    role: 'user',
+                    content: '今天深圳天气',
+                },
+            ],
+        }, "ERNIE-Lite-8K");
+        console.log(resp);
+    }
+
+    main();
 
 </script>
 
@@ -32,19 +47,19 @@
         <div class="enemy"></div>
         <div class="our"></div>
     </div>
-    
-        <div class="content" v-if="show_manager" style="z-index: 1003;backdrop-filter: blur(10px);">
-            <div class="manager">
-                <sbutton @click="show_manager = false" text>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                        <path fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round"
-                            stroke-width="2" d="M18 6L6 18M6 6l12 12" />
-                    </svg>
-                </sbutton>
-                <sbutton @click="data.page_type = 'main'">exit</sbutton>
-            </div>
+
+    <div class="content" v-if="show_manager" style="z-index: 1003;backdrop-filter: blur(10px);">
+        <div class="manager">
+            <sbutton @click="show_manager = false" text>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                    <path fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M18 6L6 18M6 6l12 12" />
+                </svg>
+            </sbutton>
+            <sbutton @click="data.page_type = 'main'">exit</sbutton>
         </div>
-    
+    </div>
+
 </template>
 
 <style scoped lang="scss">
