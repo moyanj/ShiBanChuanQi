@@ -24,7 +24,7 @@
 </script>
 
 <template>
-    <div class="content">
+    <div class="content fight-c">
         <sbutton @click="show_manager = true" class="menu">
             <el-image :src="icons.menu" style="width: 24px;height: 24px;" />
         </sbutton>
@@ -36,7 +36,7 @@
         <div class="content" v-if="show_manager" style="z-index: 1003;backdrop-filter: blur(10px);">
             <div class="manager">
                 <sbutton @click="show_manager = false" text>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 24 24">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
                         <path fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round"
                             stroke-width="2" d="M18 6L6 18M6 6l12 12" />
                     </svg>
@@ -74,12 +74,14 @@
     .enemy {
         width: 100vw;
         height: 50vh;
-        background-color: red;
     }
 
     .our {
         width: 100vw;
         height: 50vh;
-        background-color: green;
+    }
+
+    .fight-c {
+        background-image: url('../assets/bg/fight.jpeg');
     }
 </style>
