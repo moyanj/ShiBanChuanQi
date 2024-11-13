@@ -30,7 +30,7 @@
         <sbutton @click="show_manager = true" class="menu">
             <el-image :src="icons.menu" style="width: 24px;height: 24px;" />
         </sbutton>
-
+        <div class="toolbar"></div>
         <div class="enemy"></div>
         <div class="our"></div>
     </div>
@@ -85,6 +85,17 @@
 
     .fight-c {
         background: no-repeat url('../assets/bg/fight.jpeg');
-        background-size:cover;
+        background-size: cover;
+    }
+
+    .toolbar {
+        border-radius: 10px 10px 10px 10px;
+        position: fixed;
+        top: calc(50vh - 150px / 2);
+        width: 50px;
+        height: 150px;
+        background-color: #2a2a2a;
+        margin-left: 10px;
+        box-shadow: 2px 2px 2px 2px rgba(0, 0, 0, 0.3);
     }
 </style>
