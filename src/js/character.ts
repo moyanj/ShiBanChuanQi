@@ -196,18 +196,17 @@ export abstract class Character {
 
     level_hp(): void {
         // 计算等级对应血量
-        this.hp = 32.45 * this.level + Math.pow(this.level / 4, 2.863) + 650;
+        this.hp = 46.45 * this.level + Math.pow(this.level, 1.863) + 650  + 13.4 * this.level;
     }
 
     level_def(): void {
         // 计算等级对应防御
-        this.def_ = 5 + 2 * Math.pow(this.level, 1.1);
+        this.def_ =1 + Math.abs(13.2 * Math.pow(this.level, 1.04) + 5.678 * this.level) + 55;
     }
 
     level_atk(): void {
         // 计算等级对应攻击力
         this.atk = 1 + Math.abs(15.2 * Math.pow(this.level, 1.18) + 11.4 * this.level) + 350;
-
     }
 
     skill(other = 1): number {
