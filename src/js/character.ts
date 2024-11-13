@@ -191,12 +191,12 @@ export abstract class Character {
 
     level_xp(level): number {
         // 计算升级所需经验
-        return 100 * Math.pow(level, 2.5) + 150 * level * Math.log(level + 1);
+        return 1 + Math.abs(102 * Math.pow(level, 1.28) + 114 * Math.log(level / 0.15)) + 350;
     }
 
     level_hp(): void {
         // 计算等级对应血量
-        this.hp = 55 * this.level + 100 + 20 * Math.pow(this.level, 1.6);
+        this.hp = 32.45 * this.level + Math.pow(this.level / 4, 2.863) + 650;
     }
 
     level_def(): void {
@@ -206,11 +206,8 @@ export abstract class Character {
 
     level_atk(): void {
         // 计算等级对应攻击力
-        if (this.level <= 15) {
-            this.atk = 10 + 5 * this.level + 2 * Math.pow(this.level, 1.3);
-        } else {
-            this.atk = 30 + 10 * this.level + 5 * Math.pow(this.level, 1.1);
-        }
+        this.atk = 1 + Math.abs(15.2 * Math.pow(this.level, 1.18) + 11.4 * this.level) + 350;
+
     }
 
     skill(other = 1): number {
