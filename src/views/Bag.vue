@@ -58,8 +58,9 @@
 </script>
 
 <template>
-    <el-table :data="table_data" max-width="800px" class="table" empty-text="暂无物品">
-        <el-table-column prop="name" label="物品名" width="100px"></el-table-column>
+    <h1 align="right">背包</h1>
+    <el-table :data="table_data" class="table" empty-text="暂无物品">
+        <el-table-column prop="name" label="物品名"></el-table-column>
         <el-table-column prop="desc" label="描述"></el-table-column>
         <el-table-column prop="count" label="数量"></el-table-column>
         <el-table-column label="操作">
@@ -89,10 +90,6 @@
         justify-content: center;
         min-height: 100vh;
 
-    }
-
-    .table {
-        margin-top: 10vh;
     }
 
 

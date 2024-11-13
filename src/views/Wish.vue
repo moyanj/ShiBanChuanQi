@@ -38,15 +38,7 @@
     }
 
     function run(n: number = 1) {
-        /*
-        window.initGeetest4({
-            captchaId: "6acf3658d1b41039662abc436d70e412"
-        }, (g) => {
-            g.appendTo("#captcha");
-            g.onSuccess(() => {
-                console.log(6)
-            })
-        })*/
+
         const cost = 180 * n; // 十连抽消耗的星火
         if (saveStore.things.get("XinHuo") < cost) {
             ElMessage({
@@ -79,12 +71,11 @@
         result.value = [];
 
 
-        for (let i = 0; i < n; i++) {
+        for (let i = 1; i < n+1; i++) {
             saveStore.n_wish++;
             saveStore.wish_number++; // 更新抽奖次数
             const n = random.random();
             if (n <= f(saveStore.n_wish)) {
-                console.log(1)
                 saveStore.n_wish = 0; // 重置连续抽奖次数
                 const wish_item = random.random_choice(wish_list);
 
@@ -114,51 +105,6 @@
             }
         }
         show_result.value = true;
-
-
-        /* 处理结果
-        results.forEach(item => {
-            if (item) {
-                if (item in characters) {
-
-                    if (!saveStore.characters.is_in(item)) {
-                        let c = new characters[item]();
-                        ElMessage({
-                            message: `恭喜你，获得了${c.name}`,
-                            type: "success",
-                        });
-                        saveStore.characters.add(c);
-                    } else {
-                        let c = new characters[item]();
-                        ElMessage({
-                            message: `恭喜你，获得了${c.name}，但是你已经拥有了，无法再次获得`,
-                            type: "info",
-                        });
-                        saveStore.things.add(new ThingList["XinHuo"](), 180)
-                    }
-                } else if (item in ThingList) {
-                    ElMessage({
-                        message: `恭喜你，获得了${item}`,
-                        type: "success",
-                    });
-                    saveStore.things.add(new ThingList[item]());
-                } else {
-                    ElMessage({
-                        message: `恭喜你，获得了${item}，但是这个物品不存在，无法获得`,
-                        type: "warning",
-                    });
-                }
-            } else {
-                if (n == 1) {
-                    ElMessage({
-                        message: "你什么也没抽到",
-                        type: "info",
-                        duration: 1000,
-                    });
-                }
-
-            }
-        });*/
     }
 
     function skip() {
