@@ -1,3 +1,5 @@
+import { cloneDeep } from "lodash-es";
+
 interface CharacterData {
     level: number;
     xp: number;
@@ -33,30 +35,37 @@ export enum CharacterType {
 
 export class FightEnv {
     // 敌方角色数组
-    enemy_characters: Array<Character> = [];
+    enemy_characters: Character[] = [];
     // 我方角色数组
-    my_characters: Array<Character> = [];
+    our_characters: Character[] = [];
     // 敌方角色当前角色
     now_character: Character;
 
-    constructor(enemy: Array<Character>, my: Array<Character>) {
-        this.enemy_characters = enemy;
-        this.my_characters = my;
-        this.now_character = this.get_now_character();
+    constructor(enemy: Character[], our: Character[]) {
+       
+    }
+
+    copy_chara(enemy: Character[], our: Character[]) {
+        for (let i = 0; i < enemy.length; i++) {
+            this.enemy_characters.push(cloneDeep(enemy[i]))
+        }
+        for (let i = 0; i < our.length; i++) {
+            this.our_characters.push(cloneDeep(our[i]))
+        }
     }
 
     get_now_character(): Character {
-        var max: Character = this.my_characters[0]; // 默认为第一个
+        var max: Character = this.our_characters[0]; // 默认为第一个
 
         // 找出我方和敌方中速度最快的
-        for (let i = 0; i < this.enemy_characters.length + this.my_characters.length; i++) {
-            if (i < this.my_characters.length) {
-                if (this.my_characters[i].speed > max.speed) {
-                    max = this.my_characters[i];
+        for (let i = 0; i < this.enemy_characters.length + this.our_characters.length; i++) {
+            if (i < this.our_characters.length) {
+                if (this.our_characters[i].speed > max.speed) {
+                    max = this.our_characters[i];
                 }
             } else {
-                if (this.enemy_characters[i - this.my_characters.length].speed > max.speed) {
-                    max = this.enemy_characters[i - this.my_characters.length];
+                if (this.enemy_characters[i - this.our_characters.length].speed > max.speed) {
+                    max = this.enemy_characters[i - this.our_characters.length];
                 }
             }
         }
@@ -209,18 +218,18 @@ export abstract class Character {
         this.atk = 1 + Math.abs(15.2 * Math.pow(this.level, 1.18) + 11.4 * this.level) + 350;
     }
 
-    skill(other = 1): number {
+    skill(): number {
         // 计算技能伤害
-        return this.atk * 1.5 * other;
+        return this.atk * 1.5;
     }
 
-    general(other: number = 1): number {
+    general(): number {
         // 计算一般攻击伤害
-        return this.atk * 0.9 * other;
+        return this.atk * 0.9;
     }
 
-    super_skill(other: number = 1): number {
-        return this.atk * 2 * other;
+    super_skill(): number {
+        return this.atk * 2;
     }
 
     dump(): CharacterData {
@@ -263,16 +272,16 @@ export class Fairy extends Character {
 
         this.type = CharacterType.LiangZi;
     }
-    general(other: number = 1): number {
-        return this.atk * 0.9 * other;
+    general(): number {
+        return this.atk * 0.9;
     }
 
-    skill(other: number = 1): number {
-        return this.atk * 2.5 * other;
+    skill(): number {
+        return this.atk * 2.5;
     }
 
-    super_skill(other: number = 1): number {
-        return this.atk * 5 * other;
+    super_skill(): number {
+        return this.atk * 5;
     }
 }
 
