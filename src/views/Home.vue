@@ -8,7 +8,6 @@
     const save: SaveStoreState = useSaveStore();
     const data = useDataStore();
     const random = new MersenneTwister();
-    const isHover = ref(false);
 
     if (save.user_avatar === "") {
         save.user_avatar = `avatars/${random.randint(1, 100)}.png`;
@@ -33,14 +32,6 @@
         })
     }
 
-    const handleMouseEnter = () => {
-        isHover.value = true
-    }
-
-    const handleMouseLeave = () => {
-        isHover.value = false
-    }
-
     const onclick_start = () => {
         data.page_type = 'fight'
     }
@@ -54,13 +45,13 @@
             <sbutton type="primary" size="large" class="start" @click="onclick_start">开始战斗</sbutton>
         </div>
         <!-- 用户信息 -->
-        <el-card class="user-info" @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave">
+        <el-card class="user-info">
             <el-row>
                 <el-col :span="4" @click="get_avatar">
                     <el-avatar><img :src="save.user_avatar" id="avatar"></el-avatar> <!-- 头像 -->
                 </el-col>
                 <el-col :span="20">
-                    <a v-show="isHover" class="user-name" @click="change_name">{{ save.user_name }}</a>
+                    <a class="user-name" @click="change_name">{{ save.user_name }}</a>
                 </el-col>
             </el-row>
         </el-card>
@@ -131,16 +122,12 @@
         position: fixed;
         top: 10px;
         left: 10px;
-        width: 40px;
+        width: 200px;
         height: 40px;
         --el-card-padding: 0px;
         transition: width 0.3s;
         overflow: hidden;
         cursor: pointer;
-    }
-
-    .user-info:hover {
-        width: 200px;
     }
 
     .toolbar {
@@ -155,8 +142,6 @@
         padding-bottom: 5px;
         padding-left: 25px;
         padding-right: 25px;
-
-
     }
 
     .el-avatar {
@@ -172,12 +157,7 @@
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        visibility: hidden;
         transition: visibility 0.3s;
         font-size: 15px;
-    }
-
-    .user-info:hover .user-name {
-        visibility: visible;
     }
 </style>
