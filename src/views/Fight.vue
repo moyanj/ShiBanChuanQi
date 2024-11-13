@@ -21,20 +21,7 @@
         }
 
     })
-    const client = new ChatCompletion({ QIANFAN_ACCESS_KEY: 'your_api_key', QIANFAN_SECRET_KEY: 'your_secret_key' });
-    async function main() {
-        const resp = await client.chat({
-            messages: [
-                {
-                    role: 'user',
-                    content: '今天深圳天气',
-                },
-            ],
-        }, "ERNIE-Lite-8K");
-        console.log(resp);
-    }
 
-    main();
 
 </script>
 
@@ -51,7 +38,7 @@
     <div class="content" v-if="show_manager" style="z-index: 1003;backdrop-filter: blur(10px);">
         <div class="manager">
             <sbutton @click="show_manager = false" text>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="icon">
                     <path fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M18 6L6 18M6 6l12 12" />
                 </svg>
@@ -97,6 +84,7 @@
     }
 
     .fight-c {
-        background-image: url('../assets/bg/fight.jpeg');
+        background: no-repeat url('../assets/bg/fight.jpeg');
+        background-size:cover;
     }
 </style>
