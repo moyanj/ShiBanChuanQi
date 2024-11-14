@@ -5,6 +5,7 @@
     import { useDataStore, useSaveStore } from '../js/store';
     import { icons } from '../js/utils';
     import sbutton from '../components/sbutton.vue';
+    import { Qianfan } from '../js/lib/ai';
 
     const data = useDataStore();
     const save = useSaveStore();
@@ -20,6 +21,17 @@
         }
 
     })
+    const ai = new Qianfan();
+    async function main() {
+        let res = await ai.chat([
+            {
+                "role": "user",
+                "content": "您好"
+            }
+        ])
+        console.log(res)
+    }
+    main()
 
 
 </script>
