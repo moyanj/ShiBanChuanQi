@@ -2,7 +2,7 @@ enum Role {
     user = "user",
     ai = "assistant"
 }
-interface ChatHistory {
+export interface ChatHistory {
     role: Role | string;
     content: string
 }
@@ -22,6 +22,8 @@ const decode = (type) => {
     }
     return decoded
 }
+
+export class HistoryManager {}
 
 export class Qianfan {
     private token: string;
