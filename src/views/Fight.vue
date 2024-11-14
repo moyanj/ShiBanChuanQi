@@ -5,7 +5,6 @@
     import { useDataStore, useSaveStore } from '../js/store';
     import { icons } from '../js/utils';
     import sbutton from '../components/sbutton.vue';
-    import { ChatCompletion } from "@baiducloud/qianfan";
 
     const data = useDataStore();
     const save = useSaveStore();
