@@ -35,4 +35,4 @@ electron/html
 electron/package.json
 
 .venv/
-test.js
+test.*

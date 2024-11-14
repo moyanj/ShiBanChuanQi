@@ -1,4 +1,4 @@
-import { cloneDeep } from "lodash-es";
+import { Battle, BattleCharacters } from "./fight";
 
 interface CharacterData {
     level: number;
@@ -31,46 +31,6 @@ export enum CharacterType {
     LiangZi = "量子", // 量子
     Nihility = "虚无", // 虚无
     Physics = "物理", // 物理
-}
-
-export class FightEnv {
-    // 敌方角色数组
-    enemy_characters: Character[] = [];
-    // 我方角色数组
-    our_characters: Character[] = [];
-    // 敌方角色当前角色
-    now_character: Character;
-
-    constructor(enemy: Character[], our: Character[]) {
-       
-    }
-
-    copy_chara(enemy: Character[], our: Character[]) {
-        for (let i = 0; i < enemy.length; i++) {
-            this.enemy_characters.push(cloneDeep(enemy[i]))
-        }
-        for (let i = 0; i < our.length; i++) {
-            this.our_characters.push(cloneDeep(our[i]))
-        }
-    }
-
-    get_now_character(): Character {
-        var max: Character = this.our_characters[0]; // 默认为第一个
-
-        // 找出我方和敌方中速度最快的
-        for (let i = 0; i < this.enemy_characters.length + this.our_characters.length; i++) {
-            if (i < this.our_characters.length) {
-                if (this.our_characters[i].speed > max.speed) {
-                    max = this.our_characters[i];
-                }
-            } else {
-                if (this.enemy_characters[i - this.our_characters.length].speed > max.speed) {
-                    max = this.enemy_characters[i - this.our_characters.length];
-                }
-            }
-        }
-        return max;
-    }
 }
 
 export class CharacterManager {
@@ -149,9 +109,9 @@ export abstract class Character {
     def_: number;
     speed: number;
     attr_bonus: AttrBonusType;
-    env: FightEnv | null;
+    env: BattleCharacters | null;
 
-    constructor(env: FightEnv | null = null) {
+    constructor() {
         this.name = "Test"; // 角色名
         this.inside_name = "Test";
         this.desc = "这是一个测试角色";
@@ -182,8 +142,6 @@ export abstract class Character {
             [CharacterType.Thunder]: 0.0,
             [CharacterType.Water]: 0.0
         }
-
-        this.env = env;
     }
 
     level_up(exp: number) {
@@ -205,12 +163,12 @@ export abstract class Character {
 
     level_hp(): void {
         // 计算等级对应血量
-        this.hp = 46.45 * this.level + Math.pow(this.level, 1.863) + 650  + 13.4 * this.level;
+        this.hp = 46.45 * this.level + Math.pow(this.level, 1.863) + 650 + 13.4 * this.level;
     }
 
     level_def(): void {
         // 计算等级对应防御
-        this.def_ =1 + Math.abs(13.2 * Math.pow(this.level, 1.04) + 5.678 * this.level) + 55;
+        this.def_ = 1 + Math.abs(13.2 * Math.pow(this.level, 1.04) + 5.678 * this.level) + 55;
     }
 
     level_atk(): void {
@@ -255,8 +213,8 @@ export abstract class Character {
 }
 
 export class Fairy extends Character {
-    constructor(env = null) {
-        super(env);
+    constructor() {
+        super();
         this.name = "Fairy";
         this.inside_name = "Fairy";
         this.desc = "Ⅲ型总序式集成泛用人工智能";
@@ -286,8 +244,8 @@ export class Fairy extends Character {
 }
 
 export class FanShiFu extends Character {
-    constructor(env = null) {
-        super(env)
+    constructor() {
+        super()
         this.name = "范师傅";
         this.inside_name = "FanShiFu";
         this.type = CharacterType.Thunder;
@@ -298,8 +256,8 @@ export class FanShiFu extends Character {
 }
 
 export class ShuiLiFang extends Character {
-    constructor(env = null) {
-        super(env)
+    constructor() {
+        super()
         this.name = "水立方";
         this.inside_name = "ShuiLiFang";
         this.type = CharacterType.Water;
@@ -308,8 +266,8 @@ export class ShuiLiFang extends Character {
     }
 }
 export class ChenGe extends Character {
-    constructor(env = null) {
-        super(env)
+    constructor() {
+        super()
         this.name = "辰哥";
         this.inside_name = "ChenGe";
         this.type = CharacterType.Nihility;
@@ -319,8 +277,8 @@ export class ChenGe extends Character {
 }
 
 export class ZongTong extends Character {
-    constructor(env = null) {
-        super(env)
+    constructor() {
+        super()
         this.name = "总统";
         this.inside_name = "ZongTong";
         this.type = CharacterType.Fire;
@@ -328,8 +286,8 @@ export class ZongTong extends Character {
 }
 
 export class HaoJing extends Character {
-    constructor(env = null) {
-        super(env)
+    constructor() {
+        super()
         this.name = "昊京";
         this.inside_name = "HaoJing";
         this.type = CharacterType.Grass
@@ -337,8 +295,8 @@ export class HaoJing extends Character {
 }
 
 export class NiuYaoZi extends Character {
-    constructor(env = null) {
-        super(env)
+    constructor() {
+        super()
         this.name = "牛尧资";
         this.inside_name = "NiuYaoZi";
         this.type = CharacterType.Water;
@@ -346,8 +304,8 @@ export class NiuYaoZi extends Character {
 }
 
 export class DongYin extends Character {
-    constructor(env = null) {
-        super(env)
+    constructor() {
+        super()
         this.name = "东瀛";
         this.inside_name = "DongYin";
         this.type = CharacterType.LiangZi;
@@ -355,8 +313,8 @@ export class DongYin extends Character {
 }
 
 export class FeiNiao extends Character {
-    constructor(env = null) {
-        super(env)
+    constructor() {
+        super()
         this.name = "飞鸟";
         this.inside_name = "FeiNiao";
         this.type = CharacterType.Fire;
@@ -364,8 +322,8 @@ export class FeiNiao extends Character {
 }
 
 export class ZhiLang extends Character {
-    constructor(env = null) {
-        super(env)
+    constructor() {
+        super()
         this.name = "智郎";
         this.inside_name = "ZhiLang";
         this.type = CharacterType.Physics;
@@ -373,8 +331,8 @@ export class ZhiLang extends Character {
 }
 
 export class ZhiYuan extends Character {
-    constructor(env = null) {
-        super(env)
+    constructor() {
+        super()
         this.name = "致远";
         this.inside_name = "ZhiYuan";
         this.type = CharacterType.Physics;
@@ -384,8 +342,8 @@ export class ZhiYuan extends Character {
 }
 
 export class ZhaoLin extends Character {
-    constructor(env = null) {
-        super(env)
+    constructor() {
+        super()
         this.name = "赵霖";
         this.inside_name = "ZhaoLin";
         this.type = CharacterType.Nihility;
@@ -395,8 +353,8 @@ export class ZhaoLin extends Character {
 }
 
 export class JiMing extends Character {
-    constructor(env = null) {
-        super(env)
+    constructor() {
+        super()
         this.name = "记铭";
         this.inside_name = "JiMing";
         this.type = CharacterType.Water;
@@ -406,8 +364,8 @@ export class JiMing extends Character {
 }
 
 export class XuanGe extends Character {
-    constructor(env = null) {
-        super(env)
+    constructor() {
+        super()
         this.name = "宣哥";
         this.inside_name = "XuanGe";
         this.type = CharacterType.Thunder;
@@ -415,8 +373,8 @@ export class XuanGe extends Character {
 }
 
 export class LaoDeng extends Character {
-    constructor(env = null) {
-        super(env)
+    constructor() {
+        super()
         this.name = "老登";
         this.inside_name = "LaoDeng";
         this.type = CharacterType.Grass;
@@ -426,8 +384,8 @@ export class LaoDeng extends Character {
 }
 
 export class JiBo extends Character {
-    constructor(env = null) {
-        super(env)
+    constructor() {
+        super()
         this.name = "计博";
         this.inside_name = "JiBo";
         this.type = CharacterType.LiangZi;
@@ -435,8 +393,8 @@ export class JiBo extends Character {
 }
 
 export class DongCheDi extends Character {
-    constructor(env = null) {
-        super(env)
+    constructor() {
+        super()
         this.name = "懂车帝";
         this.inside_name = "DongCheDi";
         this.type = CharacterType.Physics;
@@ -445,8 +403,8 @@ export class DongCheDi extends Character {
 }
 
 export class Fan extends Character {
-    constructor(env = null) {
-        super(env)
+    constructor() {
+        super()
         this.name = "凡";
         this.inside_name = "Fan";
         this.type = CharacterType.Physics;
@@ -455,8 +413,8 @@ export class Fan extends Character {
 }
 
 export class LiXi extends Character {
-    constructor(env = null) {
-        super(env)
+    constructor() {
+        super()
         this.name = "李熙";
         this.inside_name = "LiXi";
         this.type = CharacterType.Fire;
@@ -465,8 +423,8 @@ export class LiXi extends Character {
 }
 
 export class DiaoMin extends Character {
-    constructor(env = null) {
-        super(env)
+    constructor() {
+        super()
         this.name = "刁民";
         this.inside_name = "DiaoMin";
         this.type = CharacterType.Fire;
@@ -474,8 +432,8 @@ export class DiaoMin extends Character {
 }
 
 export class ZouJieTou extends Character {
-    constructor(env = null) {
-        super(env)
+    constructor() {
+        super()
         this.name = "邹杰偷";
         this.inside_name = "ZouJieTou";
         this.type = CharacterType.Grass;
@@ -483,8 +441,8 @@ export class ZouJieTou extends Character {
 }
 
 export class WuYu extends Character {
-    constructor(env = null) {
-        super(env)
+    constructor() {
+        super()
         this.name = "乌鱼";
         this.inside_name = "WuYu";
         this.type = CharacterType.Thunder;
@@ -492,8 +450,8 @@ export class WuYu extends Character {
 }
 
 export class Song extends Character {
-    constructor(env = null) {
-        super(env)
+    constructor() {
+        super()
         this.name = "松";
         this.inside_name = "Song";
         this.type = CharacterType.LiangZi;
@@ -501,8 +459,8 @@ export class Song extends Character {
 }
 
 export class PeiBa extends Character {
-    constructor(env = null) {
-        super(env)
+    constructor() {
+        super()
         this.name = "佩八";
         this.inside_name = "PeiBa";
         this.type = CharacterType.Fire;
@@ -510,8 +468,8 @@ export class PeiBa extends Character {
 }
 
 export class ChengXiang extends Character {
-    constructor(env = null) {
-        super(env)
+    constructor() {
+        super()
         this.name = "丞相";
         this.inside_name = "ChengXiang";
         this.type = CharacterType.Nihility;
@@ -519,8 +477,8 @@ export class ChengXiang extends Character {
 }
 
 export class YouDaYu extends Character {
-    constructor(env = null) {
-        super(env)
+    constructor() {
+        super()
         this.name = "右大雨";
         this.inside_name = "YouDaYu";
         this.type = CharacterType.Water;
@@ -528,8 +486,8 @@ export class YouDaYu extends Character {
 }
 
 export class XiaoQiao extends Character {
-    constructor(env = null) {
-        super(env)
+    constructor() {
+        super()
         this.name = "小乔";
         this.inside_name = "ChengXiang";
         this.type = CharacterType.Thunder;
@@ -537,8 +495,8 @@ export class XiaoQiao extends Character {
 }
 
 export class PaoGe extends Character {
-    constructor(env = null) {
-        super(env)
+    constructor() {
+        super()
         this.name = "炮哥";
         this.inside_name = "PaoGe";
         this.type = CharacterType.Fire;
@@ -546,8 +504,8 @@ export class PaoGe extends Character {
 }
 
 export class YQJ extends Character {
-    constructor(env = null) {
-        super(env)
+    constructor() {
+        super()
         this.name = "YQJ";
         this.inside_name = "YQJ";
         this.type = CharacterType.Grass;
@@ -555,8 +513,8 @@ export class YQJ extends Character {
 }
 
 export class NingNing extends Character {
-    constructor(env = null) {
-        super(env)
+    constructor() {
+        super()
         this.name = "宁宁";
         this.inside_name = "NingNing";
         this.type = CharacterType.Nihility;
@@ -564,8 +522,8 @@ export class NingNing extends Character {
 }
 
 export class XingXin extends Character {
-    constructor(env = null) {
-        super(env)
+    constructor() {
+        super()
         this.name = "星鑫";
         this.inside_name = "XingXin";
         this.type = CharacterType.LiangZi;
@@ -573,8 +531,8 @@ export class XingXin extends Character {
 }
 
 export class JiGao extends Character {
-    constructor(env = null) {
-        super(env)
+    constructor() {
+        super()
         this.name = "积高";
         this.inside_name = "JiGao";
         this.type = CharacterType.Water;
@@ -582,8 +540,8 @@ export class JiGao extends Character {
 }
 
 export class Xian extends Character {
-    constructor(env = null) {
-        super(env)
+    constructor() {
+        super()
         this.name = "闲";
         this.inside_name = "Xian";
         this.type = CharacterType.Grass;
@@ -591,8 +549,8 @@ export class Xian extends Character {
 }
 
 export class Jin extends Character {
-    constructor(env = null) {
-        super(env)
+    constructor() {
+        super()
         this.name = "锦";
         this.inside_name = "Jin";
         this.type = CharacterType.Water;
@@ -600,8 +558,8 @@ export class Jin extends Character {
 }
 
 export class WangYuan extends Character {
-    constructor(env = null) {
-        super(env)
+    constructor() {
+        super()
         this.name = "王元";
         this.inside_name = "WangYuan";
         this.type = CharacterType.Nihility;
@@ -609,8 +567,8 @@ export class WangYuan extends Character {
 }
 
 export class RenJie extends Character {
-    constructor(env = null) {
-        super(env)
+    constructor() {
+        super()
         this.name = "任杰";
         this.inside_name = "RenJie";
         this.type = CharacterType.Nihility;
@@ -618,8 +576,8 @@ export class RenJie extends Character {
 }
 
 export class YanCui extends Character {
-    constructor(env = null) {
-        super(env)
+    constructor() {
+        super()
         this.name = "颜粹";
         this.inside_name = "YanCui";
         this.type = CharacterType.Grass;
@@ -627,8 +585,8 @@ export class YanCui extends Character {
 }
 
 export class NiuWenJin extends Character {
-    constructor(env = null) {
-        super(env)
+    constructor() {
+        super()
         this.name = "牛文静";
         this.inside_name = "NiuWenJin";
         this.type = CharacterType.Thunder;
