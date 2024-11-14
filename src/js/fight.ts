@@ -67,7 +67,7 @@ export class Battle {
 
     get_now() {
         // 初始化 atb 为一个空对象
-        let atb:ATB = {};
+        let atb: ATB = {};
 
         // 合并敌方和我方的 atb 数据
         for (let i in this.enemy.atb) {
@@ -92,5 +92,6 @@ export class Battle {
         return max;
     }
 
+    trun() {}
 
 }
