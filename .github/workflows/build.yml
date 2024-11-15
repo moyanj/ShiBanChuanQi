@@ -36,19 +36,11 @@ jobs:
         run: pip install requests tqdm bsdiff4
 
       - name: Build
-        run: python build.py linux-x64 --no-ele
+        run: python build.py linux-x64 --no-ele --no-zip
 
       - name: Upload Full Package
         uses: actions/upload-artifact@v4
         with:
-          name: FullPackage
-          path: dist/html.zip
+          name: dist
+          path: html/
           compression-level: 0
-
-      - name: Upload Diff Package
-        uses: actions/upload-artifact@v4
-        with:
-          name: DiffPackage
-          path: dist/diff.zip
-          compression-level: 0
-      
