@@ -133,7 +133,11 @@
     </el-dialog>
 
     <el-dialog v-model="show_ill" title="角色立绘" top="5vh">
-        <el-image :src="ill" fit="cover" class="ill"/>
+        <el-image :src="ill" fit="cover" class="ill">
+            <template #error>
+                <h4 align="center">该角色暂无立绘</h4>
+            </template>
+        </el-image>
     </el-dialog>
 
 </template>
