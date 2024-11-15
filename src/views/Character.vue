@@ -6,10 +6,13 @@
     import { ref, watch } from 'vue';
     import sbutton from '../components/sbutton.vue'
 
+
     const save = useSaveStore();
     var show_info = ref(false);
     var show_up_character = ref(false);
+    var show_ill = ref(false);
     var n = ref(0);
+    var ill = ref();
 
     const c2e = {
         [CharacterType.Fire]: icons.element.fire,
@@ -27,7 +30,6 @@
     var now_character = ref(data[0]);
 
     watch(save.characters.characters, () => {
-
         data = save.characters.get_all();
         data.reverse();
     });
@@ -41,6 +43,13 @@
         now_character.value.level_up(n.value);
         save.characters.update(now_character.value)
     }
+    watch(now_character, () => {
+        ill.value = `/illustrations/${now_character.value.inside_name}.png`;
+
+    })
+
+    //const module = await import(`../assets/illustrations${now_character.value.inside_name}.png`)
+
 </script>
 
 <template>
@@ -49,8 +58,7 @@
             <el-scrollbar class="menu">
                 <el-card class="item" v-for="item in data" @click="change_character(item)" v-if="data.length > 0">
                     <div class="item-content">
-                        <el-image :src="c2e[item.type]"
-                            style="margin-right: 10px;" class="type"></el-image>
+                        <el-image :src="c2e[item.type]" style="margin-right: 10px;" class="type"></el-image>
                         <h4 class="name" style="margin: 0;">{{ item.name }}</h4>
                     </div>
                 </el-card>
@@ -67,7 +75,7 @@
 
                 <el-descriptions-item label="名字">{{ now_character.name }}</el-descriptions-item>
                 <el-descriptions-item label="属性">
-                    <el-image :src="c2e[now_character.type]" class="type"/>
+                    <el-image :src="c2e[now_character.type]" class="type" />
                 </el-descriptions-item>
 
                 <el-descriptions-item label="等级">{{ now_character.level }}&nbsp;&nbsp;&nbsp;&nbsp;<sbutton
@@ -77,10 +85,13 @@
                 </el-descriptions-item>
 
 
-                <el-descriptions-item label="介绍" :span="4">{{ now_character.desc }}</el-descriptions-item>
-                <el-descriptions-item label="普攻" :span="4">{{ now_character.general_name }} {{ now_character.general_desc }}</el-descriptions-item>
-                <el-descriptions-item label="技能" :span="4">{{ now_character.skill_name }} {{ now_character.skill_desc }}</el-descriptions-item>
-                <el-descriptions-item label="爆发技" :span="4">{{ now_character.super_skill_name }} {{ now_character.super_skill_desc }}</el-descriptions-item>
+                <el-descriptions-item label="介绍" :span="4">{{ now_character.desc }} <sbutton @click="show_ill= true">查看立绘</sbutton></el-descriptions-item>
+                <el-descriptions-item label="普攻" :span="4">{{ now_character.general_name }} {{
+                    now_character.general_desc }}</el-descriptions-item>
+                <el-descriptions-item label="技能" :span="4">{{ now_character.skill_name }} {{ now_character.skill_desc
+                    }}</el-descriptions-item>
+                <el-descriptions-item label="爆发技" :span="4">{{ now_character.super_skill_name }} {{
+                    now_character.super_skill_desc }}</el-descriptions-item>
             </el-descriptions>
 
             <div v-else class="container">
@@ -105,7 +116,7 @@
     <el-dialog v-model="show_up_character" title="角色升级">
         <el-form>
             <el-form-item label="据下一级所需的经验: ">
-                <span>{{ Math.ceil(now_character.level_xp(now_character.level) - now_character.xp )}} </span>
+                <span>{{ Math.ceil(now_character.level_xp(now_character.level) - now_character.xp) }} </span>
             </el-form-item>
             <el-form-item label="数量：" v-if="save.things.get('EXP') > 0">
                 <el-slider v-model="n" :min="1" :max="save.things.get('EXP')" show-input />
@@ -117,10 +128,12 @@
                 <sbutton @click="level_up">升级</sbutton>
             </el-form-item>
 
-            
+
         </el-form>
+    </el-dialog>
 
-
+    <el-dialog v-model="show_ill" title="角色立绘" top="5vh">
+        <el-image :src="ill" fit="cover" class="ill"/>
     </el-dialog>
 
 </template>
@@ -184,4 +197,8 @@
         margin-right: 10px;
     }
 
+    .ill {
+        width: auto;
+        height: 75vh;
+    }
 </style>
