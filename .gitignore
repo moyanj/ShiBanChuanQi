@@ -36,3 +36,5 @@ electron/package.json
 
 .venv/
 test.*
+
+__pycache__/
