@@ -1,14 +1,15 @@
 <script setup lang="ts">
     import { ref } from 'vue';
     import { onKeyStroke } from '@vueuse/core';
-    import { ElImage } from 'element-plus';
+    import { ElImage, ElAvatar } from 'element-plus';
     import { useDataStore, useSaveStore } from '../js/store';
-    import { icons } from '../js/utils';
+    import { icons, MersenneTwister } from '../js/utils';
     import sbutton from '../components/sbutton.vue';
     import { Qianfan } from '../js/lib/ai';
 
     const data = useDataStore();
     const save = useSaveStore();
+    const random = new MersenneTwister()
 
     var show_manager = ref(false);
 
@@ -41,7 +42,14 @@
         <sbutton @click="show_manager = true" class="menu">
             <el-image :src="icons.menu" style="width: 24px;height: 24px;" />
         </sbutton>
-        <div class="toolbar"></div>
+        <div class="toolbar">
+            <div>
+                <el-avatar><img :src="`avatars/${random.randint(1, 100)}.png`" id="avatar"></el-avatar>
+            </div>
+            <div>
+                <el-avatar><img :src="save.user_avatar" id="avatar"></el-avatar>
+            </div>
+        </div>
         <div class="enemy"></div>
         <div class="our"></div>
     </div>
@@ -103,10 +111,23 @@
         border-radius: 10px 10px 10px 10px;
         position: fixed;
         top: calc(50vh - 150px / 2);
-        width: 50px;
+        width: 30px;
         height: 150px;
         background-color: #2a2a2a;
         margin-left: 10px;
         box-shadow: 2px 2px 2px 2px rgba(0, 0, 0, 0.3);
+
+        padding: 10px;
+
+        div {
+            height: 50%;
+            width: 100%;
+            border: 1px solid red;
+
+            .el-avatar {
+                width: 30px;
+                height: 30px;
+            }
+        }
     }
 </style>
