@@ -3,6 +3,7 @@ import { ThingsManager } from './things';
 import { CharacterManager } from './character';
 import { AudioPlayer } from './utils';
 import { HistoryManager } from './lib/ai';
+import { randomName } from './lib/name';
 
 interface BuildInfoState {
     version: string;
@@ -49,7 +50,7 @@ export const useDataStore = defineStore('data', {
 export const useSaveStore = defineStore('save', {
     persist: true,
     state: (): SaveStoreState => ({
-        user_name: '玩家', // 玩家名字
+        user_name: randomName.getNickName(), // 玩家名字
         user_avatar: 'avatars/1.png', // 玩家头像
         things: new ThingsManager(), // 物品
         n_wish: 0, // 自上次出货以来抽卡次数
