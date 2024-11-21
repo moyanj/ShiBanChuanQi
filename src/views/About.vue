@@ -42,7 +42,7 @@
     <el-row>
         <el-col :span="12">
             <div class="grid-content container">
-                <h1 id="title">十班传奇</h1>
+                <h1 id="title">十班全明星</h1>
                 <br>
                 <p v-if="data.build_info != null">版本：{{ data.build_info.version }}</p>
                 <p v-if="data.is_electron">Electron版本：{{ electron.version.electron }}</p>
@@ -64,8 +64,8 @@
                         <p>辰哥：策划，测试</p>
                         <p>太奶：策划，编剧</p>
                         <p>镐京：策划</p>
-                        <br v-for="i in 20">
-                        <p>没错，几乎全tm是我写的</p>
+                        <br v-for="i in 100">
+                        <p>没错，全tm是我写的</p>
                     </el-scrollbar>
                 </el-card>
 
@@ -75,8 +75,8 @@
                 <el-card class="zx">
                     <el-scrollbar style="height: 25vh;">
                         <li v-for="item in zx_list"><span>{{ item }}</span></li>
-                        <p>（排名不分先后）<br>衷心感谢每一位支持者，正是因为你们的帮助和鼓励，我们的项目才能不断向前推进。在这个过程中，您们的信任与支持是我们不断进步的动力。期待与大家共同见证更多的成就与精彩！</p>
-                        <p style="text-align: right;">2024年10月20日 莫颜</p>
+                        <p>（排名不分先后）<br>我们在此衷心感谢每一位支持者，正是因为你们的帮助和鼓励，我们的项目才能不断向前推进。在这个过程中，您们的信任与支持是我们不断进步的动力。期待与大家共同见证更多的成就与精彩！</p>
+                        <p style="text-align: right;">2024年10月20日 十班全明星制作组</p>
                     </el-scrollbar>
                 </el-card>
 
@@ -104,8 +104,8 @@
     #title {
         margin: 20px;
         font-size: 90px;
-        font-weight: bold;
-        font-family: 'SuXinShi'
+        font-weight: 455;
+        font-family: 'ZiHunJianQi'
     }
 
     #cg {

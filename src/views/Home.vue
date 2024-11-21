@@ -39,7 +39,7 @@
 
 <template>
     <div class="container">
-        <h1 id="title">十班传奇</h1>
+        <h1 id="title">十班全明星</h1>
         <br>
         <div>
             <sbutton type="primary" size="large" class="start" @click="onclick_start">开始战斗</sbutton>
@@ -113,8 +113,8 @@
     #title {
         margin: 20px;
         font-size: 96px;
-        font-weight: bold;
-        font-family: 'SuXinShi';
+        font-weight: 455;
+        font-family: 'ZiHunJianQi';
     }
 
     .user-info {
