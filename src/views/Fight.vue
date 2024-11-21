@@ -5,7 +5,6 @@
     import { useDataStore, useSaveStore } from '../js/store';
     import { icons, MersenneTwister } from '../js/utils';
     import sbutton from '../components/sbutton.vue';
-    import { Qianfan } from '../js/lib/ai';
 
     const data = useDataStore();
     const save = useSaveStore();
@@ -22,17 +21,8 @@
         }
 
     })
-    const ai = new Qianfan();
-    async function main() {
-        let res = await ai.chat([
-            {
-                "role": "user",
-                "content": "您好"
-            }
-        ])
-        console.log(res)
-    }
-    main()
+
+    var emeny_name = "test"
 
 
 </script>
@@ -51,18 +41,26 @@
             </div>
         </div>
         <div class="enemy"></div>
-        <div class="our"></div>
+        <div class="our">
+            <div class="atk">
+                <div><img :src="icons.sword" id="general" /></div>
+                <div id="skill">技能</div>
+                <div id="super-skill">爆发技</div>
+            </div>
+        </div>
     </div>
 
     <div class="content" v-if="show_manager" style="z-index: 1003;backdrop-filter: blur(10px);">
         <div class="manager">
-            <sbutton @click="show_manager = false" text>
+            <sbutton @click="show_manager = false" text small>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="icon">
                     <path fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M18 6L6 18M6 6l12 12" />
                 </svg>
             </sbutton>
-            <sbutton @click="data.page_type = 'main'">exit</sbutton>
+            <sbutton @click="data.page_type = 'main'">退出战斗</sbutton>
+            <br>
+            <h2>正在与{{ emeny_name }}战斗</h2>
         </div>
     </div>
 
@@ -127,6 +125,32 @@
             .el-avatar {
                 width: 30px;
                 height: 30px;
+            }
+        }
+    }
+
+    .atk {
+        position: fixed;
+        bottom: 25px;
+        right: 25px;
+        width: 210px;
+        height: 50px;
+        background-color: red;
+        display: flex;
+
+        div {
+            background-color: green;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-left: 10px;
+            margin-right: 10px;
+            line-height: 50px;
+            text-align: center;
+            
+            img {
+                width: 95%;
+                height: auto;
             }
         }
     }
