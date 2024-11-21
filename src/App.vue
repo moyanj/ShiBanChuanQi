@@ -32,15 +32,15 @@
         });
     }
 
+    if (window.electron) {
+        dataStore.is_electron = true;
+    } else {
+        dataStore.is_electron = false;
+    }
+
     fetch('build_info.json')
         .then(response => response.json())
         .then(data => {
-            if (data.type == "electron") {
-                dataStore.is_electron = true;
-            } else {
-                dataStore.is_electron = false;
-            }
-
             // 将数据存储到数据存储中
             dataStore.build_info = data;
         })
