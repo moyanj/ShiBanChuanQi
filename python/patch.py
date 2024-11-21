@@ -18,22 +18,23 @@ class Patch:
         self.init()
     
     def init(self):
+        self.patch_data = zipfile.ZipFile(self.file)
         # 打开补丁文件并读取diff.json
-        with zipfile.ZipFile(self.file) as z:
-            # 直接在内存中读取diff.json，而不是提取到磁盘
-            diff_json = z.read('diff.json').decode('utf-8')
+        # 直接在内存中读取diff.json，而不是提取到磁盘
+        diff_json = self.patch_data.read('diff.json').decode('utf-8')
         
         self.info = json.loads(diff_json)
-        self.patch_data = z
         
     def delfile(self):
         # 删除文件列表中的文件
         for i in self.info.get("delfile", []):
             try:
-                os.remove(i)
+                if os.path.exists(i):
+                    os.remove(i)
                 print(f"Deleted file: {i}")
             except Exception as e:
                 print(f"Failed to delete file {i}: {e}")
+                exit()
     
     def addfile(self):
         # 添加文件列表中的文件
@@ -45,6 +46,7 @@ class Patch:
                 print(f"Added file: {i}")
             except Exception as e:
                 print(f"Failed to add file {i}: {e}")
+                exit()
     
     def modfile(self):
         # 修改文件（应用二进制补丁）
@@ -57,6 +59,10 @@ class Patch:
                 print(f"Modified file: {i}")
             except Exception as e:
                 print(f"Failed to apply patch to file {i}: {e}")
+                exit()
+                
+    def close(self):
+        self.patch_data.close()
             
     def run(self):
         # 执行所有补丁操作
