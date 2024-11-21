@@ -115,10 +115,11 @@
 
     <el-scrollbar class="content">
         <settingItem label="云存档">
-            <sbutton type="primary" @click="show_upload_data = true">上传数据</sbutton>
-            <sbutton type="primary" @click="show_load_data = true">加载数据</sbutton>
-            <sbutton type="primary" @click="show_reg_data = true">注册账户</sbutton>
-            <p style="font-size:11px;">由Sqlpub和Render提供支持</p>
+            <h4>服务器正在维护</h4>
+            <sbutton type="primary" @click="show_upload_data = true" disabled>上传数据</sbutton>
+            <sbutton type="primary" @click="show_load_data = true" disabled>加载数据</sbutton>
+            <sbutton type="primary" @click="show_reg_data = true" disabled>注册账户</sbutton>
+            <p style="font-size:11px;">由Websockets强力驱动</p>
         </settingItem>
 
         <settingItem label="危险操作">
