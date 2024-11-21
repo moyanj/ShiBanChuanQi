@@ -9,6 +9,7 @@ import icon_down from "../assets/icon/down.svg";
 import icon_skip from "../assets/icon/skip.svg";
 import icon_online from "../assets/icon/online.svg";
 import icon_menu from "../assets/icon/menu.svg";
+import icon_sword from "../assets/icon/sword.svg";
 import icon_element_fire from "../assets/icon/element-fire.png";
 import icon_element_water from "../assets/icon/element-water.png";
 import icon_element_thunder from "../assets/icon/element-thunder.png";
@@ -31,6 +32,7 @@ export const icons = {
     skip: icon_skip,
     online: icon_online,
     menu: icon_menu,
+    sword: icon_sword,
     element: {
         fire: icon_element_fire,
         water: icon_element_water,
