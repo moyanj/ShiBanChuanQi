@@ -2,7 +2,7 @@
 
 @font-face {
     font-family: "MiSans";
-    src: url("../assets/MiSans-Normal.woff2");
+    src: url("../assets/MiSans-Medium.woff2");
 }
 
 @font-face {
@@ -14,7 +14,7 @@ body {
     margin: 15px 15px 15px 15px;
     overflow: hidden;
     background-color: $black;
-    
+    font-weight: blod;
     font-family: "MiSans", "Helvetica Neue", Helvetica, Arial, "PingFang SC", "Hiragino Sans GB", "Heiti SC", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif;
 }
 
