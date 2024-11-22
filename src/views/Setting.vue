@@ -2,11 +2,13 @@
     import { ref } from 'vue';
     import { ElScrollbar, ElMessageBox, ElMessage, ElDialog, ElForm, ElFormItem, ElInput, ElLoading } from 'element-plus';
     import { useSaveStore, useDataStore } from '../js/store';
-    import { SaveServer } from '../js/utils';
+    import { SaveServer, MersenneTwister } from '../js/utils';
+    import { randomName } from '../js/lib/name';
     import sbutton from '../components/sbutton.vue'
     import settingItem from '../components/setting-item.vue'
 
     const saveStore = useSaveStore();
+    const random = new MersenneTwister()
     var show_upload_data = ref(false);
     var show_reg_data = ref(false);
     var show_load_data = ref(false);
@@ -108,6 +110,16 @@
             })
         })
     }
+
+    function reset_username() {
+        saveStore.user_name = randomName.getNickName();
+        ElMessageBox.alert(`新用户名为：${saveStore.user_name}`)
+    }
+
+    function reset_avatar() {
+        saveStore.user_avatar = `avatars/${random.randint(1, 100)}.png`;;
+        ElMessage.success("修改完毕")
+    }
 </script>
 
 <template>
@@ -121,6 +133,12 @@
             <sbutton type="primary" @click="show_reg_data = true" disabled>注册账户</sbutton>
             <p style="font-size:11px;">由Websockets强力驱动</p>
         </settingItem>
+
+        <settingItem label="用户信息">
+            <sbutton @click="reset_username">更换用户名</sbutton>
+            <sbutton @click="reset_avatar">更换头像</sbutton>
+        </settingItem>
+
 
         <settingItem label="危险操作">
             <sbutton type="danger" @click="reset">重置全部游戏数据</sbutton>
