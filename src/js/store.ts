@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ThingsManager } from './things';
-import { CharacterManager } from './character';
+import { CharacterManager, Character } from './character';
 import { AudioPlayer } from './utils';
 import { HistoryManager } from './lib/ai';
 import { randomName } from './lib/name';
@@ -33,7 +33,13 @@ export interface SaveStoreState {
 }
 
 export interface ChatStoreState {
-    d : HistoryManager
+    d: HistoryManager
+}
+
+export interface FightStoreState {
+    enemy: Character[];
+    our: Character[];
+    ai: boolean;
 }
 
 export const useDataStore = defineStore('data', {
@@ -63,6 +69,14 @@ export const useChatStore = defineStore("chat", {
     persist: true,
     state: (): ChatStoreState => ({
         d: new HistoryManager()
+    }),
+})
+
+export const useFightStore = defineStore("fight", {
+    state: (): FightStoreState => ({
+        enemy: [],
+        our: [],
+        ai: true
     }),
 })
 
