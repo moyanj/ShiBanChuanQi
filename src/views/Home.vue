@@ -13,25 +13,6 @@
         save.user_avatar = `avatars/${random.randint(1, 100)}.png`;
     }
 
-    function get_avatar() {
-        save.user_avatar = `avatars/${random.randint(1, 100)}.png`;
-    }
-
-    function change_name() {
-        ElMessageBox.prompt('请输入新的用户名', '修改用户名', {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            inputPlaceholder: save.user_name,
-        }).then(({ value }) => {
-            if (!value) {
-                ElMessageBox.alert('用户名不能为空', '提示', {})
-                return
-            }
-            save.user_name = value
-            ElMessage.success('修改成功')
-        })
-    }
-
     const onclick_start = () => {
         data.page_type = 'fight'
     }
@@ -47,11 +28,11 @@
         <!-- 用户信息 -->
         <el-card class="user-info">
             <el-row>
-                <el-col :span="4" @click="get_avatar">
+                <el-col :span="4">
                     <el-avatar><img :src="save.user_avatar" id="avatar"></el-avatar> <!-- 头像 -->
                 </el-col>
                 <el-col :span="20">
-                    <a class="user-name" @click="change_name">{{ save.user_name }}</a>
+                    <a class="user-name">{{ save.user_name }}</a>
                 </el-col>
             </el-row>
         </el-card>
@@ -153,11 +134,12 @@
     .user-name {
         display: inline-block;
         vertical-align: middle;
-        margin-left: 10px;
+        margin-left: 15px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
         transition: visibility 0.3s;
         font-size: 15px;
+        line-height: 40px;
     }
 </style>
