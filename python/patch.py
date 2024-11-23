@@ -28,6 +28,7 @@ class Patch:
     def delfile(self):
         # 删除文件列表中的文件
         for i in self.info.get("delfile", []):
+            print(i)
             try:
                 if os.path.exists(i):
                     os.remove(i)
@@ -39,27 +40,23 @@ class Patch:
     def addfile(self):
         # 添加文件列表中的文件
         for i in self.info.get("addfile", []):
-            try:
-                with self.patch_data.open(i) as f:
-                    with open(i, 'wb') as out_file:
-                        out_file.write(f.read())
-                print(f"Added file: {i}")
-            except Exception as e:
-                print(f"Failed to add file {i}: {e}")
-                exit()
+            print(i)
+            with self.patch_data.open(i) as f:
+                with open(i, 'wb') as out_file:
+                    out_file.write(f.read())
+            print(f"Added file: {i}")
+            
     
     def modfile(self):
         # 修改文件（应用二进制补丁）
         for i in self.info.get("modfile", []):
-            try:
-                patch_file = i + ".diff"
-                with self.patch_data.open(patch_file) as f:
-                    patch_data = f.read()
-                bsdiff4.file_patch_inplace(i, patch_data)
-                print(f"Modified file: {i}")
-            except Exception as e:
-                print(f"Failed to apply patch to file {i}: {e}")
-                exit()
+            print(i)
+            patch_file = i + ".diff"
+            with self.patch_data.open(patch_file) as f:
+                patch_data = f.read()
+            bsdiff4.file_patch_inplace(i, patch_data)
+            print(f"Modified file: {i}")
+            
                 
     def close(self):
         self.patch_data.close()
