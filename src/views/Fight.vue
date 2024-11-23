@@ -5,6 +5,7 @@
     import { useDataStore, useSaveStore } from '../js/store';
     import { icons, MersenneTwister } from '../js/utils';
     import sbutton from '../components/sbutton.vue';
+    import card from '../components/card.vue'
 
     const data = useDataStore();
     const save = useSaveStore();
@@ -40,8 +41,18 @@
                 <el-avatar><img :src="save.user_avatar" id="avatar"></el-avatar>
             </div>
         </div>
-        <div class="enemy"></div>
+        <div class="enemy">
+            <div class="character">
+                <card character="ShuiLiFang"></card>
+                <card character="FanShiFu"></card>
+                
+            </div>
+        </div>
         <div class="our">
+            <div class="character">
+                <card character="ShuiLiFang"></card>
+                
+            </div>
             <div class="atk">
                 <div><img :src="icons.sword" id="general" /></div>
                 <div id="skill">技能</div>
@@ -90,19 +101,40 @@
         margin: 15px;
     }
 
-    .enemy {
-        width: 100vw;
-        height: 50vh;
-    }
-
-    .our {
-        width: 100vw;
-        height: 50vh;
-    }
-
     .fight-c {
         background: no-repeat url('../assets/bg/fight.jpeg');
         background-size: cover;
+
+        .enemy,
+        .our {
+            width: 100vw;
+            height: 50vh;
+            display: flex;
+            justify-items: center;
+
+            .character {
+                margin: 0 auto;
+                display: flex;
+
+                div {
+                    margin-right: 20px;
+                }
+            }
+
+        }
+
+        .our {
+            .character {
+                margin-top: 35px;
+            }
+        }
+
+        .enemy {
+            .character {
+                margin-top: 35px;
+            }
+        }
+
     }
 
     .toolbar {
@@ -147,7 +179,7 @@
             margin-right: 10px;
             line-height: 50px;
             text-align: center;
-            
+
             img {
                 width: 95%;
                 height: auto;
