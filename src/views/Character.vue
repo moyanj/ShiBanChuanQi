@@ -63,6 +63,7 @@
                     </div>
                 </el-card>
                 <div v-else class="container">
+                    <img :src="icons.empty" style="width: 100px;height: auto;"/>
                     你还没有角色
                 </div>
             </el-scrollbar>
@@ -85,7 +86,8 @@
                 </el-descriptions-item>
 
 
-                <el-descriptions-item label="介绍" :span="4">{{ now_character.desc }} <sbutton @click="show_ill= true">查看立绘</sbutton></el-descriptions-item>
+                <el-descriptions-item label="介绍" :span="4">{{ now_character.desc }} <sbutton @click="show_ill = true">
+                        查看立绘</sbutton></el-descriptions-item>
                 <el-descriptions-item label="普攻" :span="4">{{ now_character.general_name }} {{
                     now_character.general_desc }}</el-descriptions-item>
                 <el-descriptions-item label="技能" :span="4">{{ now_character.skill_name }} {{ now_character.skill_desc
@@ -95,6 +97,7 @@
             </el-descriptions>
 
             <div v-else class="container">
+                <img :src="icons.empty"  style="width: 200px;height: auto;"/>
                 <h1>你还没有角色</h1>
             </div>
 
