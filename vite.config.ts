@@ -48,9 +48,9 @@ export default defineConfig({
         }
       ],
       output: {
-        chunkFileNames: "assets/lib/[name].js",
-        entryFileNames: "assets/main.js",
-        assetFileNames: "assets/[name].[ext]",
+        chunkFileNames: "assets/lib/[name]-[hash].js",
+        entryFileNames: "assets/main-[hash].js",
+        assetFileNames: "assets/[name]-[hash].[ext]",
         manualChunks: {
           "framework": ["vue", "element-plus", "pinia"],  // 框架
           "utils": ["lodash-es", "crypto-js"],
