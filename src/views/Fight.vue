@@ -45,13 +45,13 @@
             <div class="character">
                 <card character="ShuiLiFang"></card>
                 <card character="FanShiFu"></card>
-                
+
             </div>
         </div>
         <div class="our">
             <div class="character">
                 <card character="ShuiLiFang"></card>
-                
+
             </div>
             <div class="atk">
                 <div><img :src="icons.sword" id="general" /></div>
@@ -115,22 +115,6 @@
             .character {
                 margin: 0 auto;
                 display: flex;
-
-                div {
-                    margin-right: 20px;
-                }
-            }
-
-        }
-
-        .our {
-            .character {
-                margin-top: 35px;
-            }
-        }
-
-        .enemy {
-            .character {
                 margin-top: 35px;
             }
         }
@@ -152,7 +136,6 @@
         div {
             height: 50%;
             width: 100%;
-            border: 1px solid red;
 
             .el-avatar {
                 width: 30px;
@@ -167,7 +150,6 @@
         right: 25px;
         width: 210px;
         height: 50px;
-        background-color: red;
         display: flex;
 
         div {
