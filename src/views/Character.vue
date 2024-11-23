@@ -44,11 +44,9 @@
         save.characters.update(now_character.value)
     }
     watch(now_character, () => {
-        ill.value = `/illustrations/${now_character.value.inside_name}.png`;
+        ill.value = `illustrations/${now_character.value.inside_name}.png`;
 
     })
-
-    //const module = await import(`../assets/illustrations${now_character.value.inside_name}.png`)
 
 </script>
 
