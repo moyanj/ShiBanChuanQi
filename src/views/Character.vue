@@ -1,52 +1,52 @@
 <script setup lang="ts">
-    import { ElCard, ElRow, ElCol, ElScrollbar, ElImage, ElDescriptions, ElDescriptionsItem, ElDialog, ElForm, ElFormItem, ElSlider } from 'element-plus';
-    import { CharacterType } from '../js/character';
-    import { useSaveStore } from '../js/store';
-    import { icons } from '../js/utils';
-    import { ref, watch } from 'vue';
-    import sbutton from '../components/sbutton.vue'
+import { ElCard, ElRow, ElCol, ElScrollbar, ElImage, ElDescriptions, ElDescriptionsItem, ElDialog, ElForm, ElFormItem, ElSlider } from 'element-plus';
+import { CharacterType } from '../js/character';
+import { useSaveStore } from '../js/store';
+import { icons } from '../js/utils';
+import { ref, watch } from 'vue';
+import sbutton from '../components/sbutton.vue'
 
 
-    const save = useSaveStore();
-    var show_info = ref(false);
-    var show_up_character = ref(false);
-    var show_ill = ref(false);
-    var n = ref(0);
-    var ill = ref();
+const save = useSaveStore();
+var show_info = ref(false);
+var show_up_character = ref(false);
+var show_ill = ref(false);
+var n = ref(0);
+var ill = ref();
 
-    const c2e = {
-        [CharacterType.Fire]: icons.element.fire,
-        [CharacterType.Grass]: icons.element.grass,
-        [CharacterType.LiangZi]: icons.element.liangzi,
-        [CharacterType.Nihility]: icons.element.nihility,
-        [CharacterType.Physics]: icons.element.physics,
-        [CharacterType.Thunder]: icons.element.thunder,
-        [CharacterType.Water]: icons.element.water,
-    }
+const c2e = {
+    [CharacterType.Fire]: icons.element.fire,
+    [CharacterType.Grass]: icons.element.grass,
+    [CharacterType.LiangZi]: icons.element.liangzi,
+    [CharacterType.Nihility]: icons.element.nihility,
+    [CharacterType.Physics]: icons.element.physics,
+    [CharacterType.Thunder]: icons.element.thunder,
+    [CharacterType.Water]: icons.element.water,
+}
 
-    var data = save.characters.get_all();
+var data = save.characters.get_all();
+data.reverse();
+
+var now_character = ref(data[0]);
+
+watch(save.characters.characters, () => {
+    data = save.characters.get_all();
     data.reverse();
+});
 
-    var now_character = ref(data[0]);
+const change_character = (content) => {
+    now_character.value = content;
+};
 
-    watch(save.characters.characters, () => {
-        data = save.characters.get_all();
-        data.reverse();
-    });
+const level_up = () => {
+    save.things.remove("EXP", n.value)
+    now_character.value.level_up(n.value);
+    save.characters.update(now_character.value)
+}
+watch(now_character, () => {
+    ill.value = `illustrations/${now_character.value.inside_name}.png`;
 
-    const change_character = (content) => {
-        now_character.value = content;
-    };
-
-    const level_up = () => {
-        save.things.remove("EXP", n.value)
-        now_character.value.level_up(n.value);
-        save.characters.update(now_character.value)
-    }
-    watch(now_character, () => {
-        ill.value = `illustrations/${now_character.value.inside_name}.png`;
-
-    })
+})
 
 </script>
 
@@ -61,7 +61,7 @@
                     </div>
                 </el-card>
                 <div v-else class="container">
-                    <img :src="icons.empty" style="width: 100px;height: auto;"/>
+                    <img :src="icons.empty" style="width: 100px;height: auto;" />
                     你还没有角色
                 </div>
             </el-scrollbar>
@@ -89,13 +89,13 @@
                 <el-descriptions-item label="普攻" :span="4">{{ now_character.general_name }} {{
                     now_character.general_desc }}</el-descriptions-item>
                 <el-descriptions-item label="技能" :span="4">{{ now_character.skill_name }} {{ now_character.skill_desc
-                    }}</el-descriptions-item>
+                }}</el-descriptions-item>
                 <el-descriptions-item label="爆发技" :span="4">{{ now_character.super_skill_name }} {{
                     now_character.super_skill_desc }}</el-descriptions-item>
             </el-descriptions>
 
             <div v-else class="container">
-                <img :src="icons.empty"  style="width: 200px;height: auto;"/>
+                <img :src="icons.empty" style="width: 200px;height: auto;" />
                 <h1>你还没有角色</h1>
             </div>
 
@@ -143,67 +143,67 @@
 
 </template>
 
-<style scoped lang="scss">
-    .menu {
-        height: 95vh;
-        width: 100%;
-    }
+<style scoped>
+.menu {
+    height: 95vh;
+    width: 100%;
+}
 
-    .item {
-        margin-right: 10px;
-        background-color: #26272b;
-        margin-bottom: 10px;
+.item {
+    margin-right: 10px;
+    background-color: #26272b;
+    margin-bottom: 10px;
 
-    }
+}
 
-    .verticalBar {
-        width: 1px;
-        height: 95vh;
-        background: #a9a9a9;
-        display: inline-block;
-        margin-left: 5px;
-        margin-right: calc(10px + 5px);
-    }
+.verticalBar {
+    width: 1px;
+    height: 95vh;
+    background: #a9a9a9;
+    display: inline-block;
+    margin-left: 5px;
+    margin-right: calc(10px + 5px);
+}
 
-    .item-content {
-        display: flex;
-        align-items: center;
-    }
+.item-content {
+    display: flex;
+    align-items: center;
+}
 
-    .content {
-        display: flex;
-    }
+.content {
+    display: flex;
+}
 
-    .container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        min-height: 100vh;
-        width: 100%;
-    }
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    width: 100%;
+}
 
-    .el-descriptions {
-        width: 100%;
-    }
+.el-descriptions {
+    width: 100%;
+}
 
-    .show_info {
-        width: 100%;
-        height: 100%;
-    }
+.show_info {
+    width: 100%;
+    height: 100%;
+}
 
-    .el-popper {
-        color: #000;
-    }
+.el-popper {
+    color: #000;
+}
 
-    .type {
-        width: 25px;
-        height: 25px;
-        margin-right: 10px;
-    }
+.type {
+    width: 25px;
+    height: 25px;
+    margin-right: 10px;
+}
 
-    .ill {
-        width: auto;
-        height: 75vh;
-    }
+.ill {
+    width: auto;
+    height: 75vh;
+}
 </style>

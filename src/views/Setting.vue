@@ -1,125 +1,125 @@
 <script setup lang="ts">
-    import { ref } from 'vue';
-    import { ElScrollbar, ElMessageBox, ElMessage, ElDialog, ElForm, ElFormItem, ElInput, ElLoading } from 'element-plus';
-    import { useSaveStore, useDataStore } from '../js/store';
-    import { SaveServer, MersenneTwister } from '../js/utils';
-    import { randomName } from '../js/lib/name';
-    import sbutton from '../components/sbutton.vue'
-    import settingItem from '../components/setting-item.vue'
+import { ref } from 'vue';
+import { ElScrollbar, ElMessageBox, ElMessage, ElDialog, ElForm, ElFormItem, ElInput, ElLoading } from 'element-plus';
+import { useSaveStore, useDataStore } from '../js/store';
+import { SaveServer, MersenneTwister } from '../js/utils';
+import { randomName } from '../js/lib/name';
+import sbutton from '../components/sbutton.vue'
+import settingItem from '../components/setting-item.vue'
 
-    const saveStore = useSaveStore();
-    const random = new MersenneTwister()
-    var show_upload_data = ref(false);
-    var show_reg_data = ref(false);
-    var show_load_data = ref(false);
-    var password = ref('');
-    var username = ref('');
+const saveStore = useSaveStore();
+const random = new MersenneTwister()
+var show_upload_data = ref(false);
+var show_reg_data = ref(false);
+var show_load_data = ref(false);
+var password = ref('');
+var username = ref('');
 
-    function reset() {
-        ElMessageBox.confirm("确定删除吗？", {
-            type: "warning"
-        }).then(() => {
-            saveStore.$reset();
-            useDataStore().$reset();
-            ElMessage.success("删除成功")
-        })
+function reset() {
+    ElMessageBox.confirm("确定删除吗？", {
+        type: "warning"
+    }).then(() => {
+        saveStore.$reset();
+        useDataStore().$reset();
+        ElMessage.success("删除成功")
+    })
 
-    }
+}
 
-    function reg() {
-        window.initGeetest4({
-            product: "bind",
-            captchaId: "6acf3658d1b41039662abc436d70e412"
-        }, (captcha) => {
-            captcha.showCaptcha();
-            captcha.onSuccess(() => {
-                let s = new SaveServer();
-                console.log(captcha.getValidate())
-                var loading = ElLoading.service();
-                s.register(username.value, password.value, captcha.getValidate()).then((xhr: XMLHttpRequest) => {
-                    loading.close()
-                    if (xhr.status == 201) {
-                        show_reg_data.value = false;
-                        ElMessage.success("注册成功");
-                    } else if (xhr.status == 409) {
-                        ElMessage.error("用户已存在");
-                    } else {
-                        ElMessage.error("服务器错误");
-                    }
-                }).finally(() => {
-                    captcha.destroy();
-                })
+function reg() {
+    window.initGeetest4({
+        product: "bind",
+        captchaId: "6acf3658d1b41039662abc436d70e412"
+    }, (captcha) => {
+        captcha.showCaptcha();
+        captcha.onSuccess(() => {
+            let s = new SaveServer();
+            console.log(captcha.getValidate())
+            var loading = ElLoading.service();
+            s.register(username.value, password.value, captcha.getValidate()).then((xhr: XMLHttpRequest) => {
+                loading.close()
+                if (xhr.status == 201) {
+                    show_reg_data.value = false;
+                    ElMessage.success("注册成功");
+                } else if (xhr.status == 409) {
+                    ElMessage.error("用户已存在");
+                } else {
+                    ElMessage.error("服务器错误");
+                }
+            }).finally(() => {
+                captcha.destroy();
             })
         })
-    }
+    })
+}
 
-    function load() {
-        window.initGeetest4({
-            product: "bind",
-            captchaId: "6acf3658d1b41039662abc436d70e412"
-        }, (captcha) => {
-            captcha.showCaptcha();
-            captcha.onSuccess(() => {
-                let s = new SaveServer();
-                var loading = ElLoading.service();
-                s.download(username.value, password.value).then((xhr: XMLHttpRequest) => {
-                    loading.close()
-                    if (xhr.status == 200) {
-                        show_load_data.value = false;
-                        let data = JSON.parse(xhr.responseText);
-                        saveStore.$patch(JSON.parse(data.data))
-                        ElMessage.success("加载成功");
-                    } else if (xhr.status == 401) {
-                        ElMessage.error("用户名或密码错误");
-                    } else {
-                        ElMessage.error("服务器错误");
-                    }
-                }).finally(() => {
-                    captcha.destroy();
-                })
+function load() {
+    window.initGeetest4({
+        product: "bind",
+        captchaId: "6acf3658d1b41039662abc436d70e412"
+    }, (captcha) => {
+        captcha.showCaptcha();
+        captcha.onSuccess(() => {
+            let s = new SaveServer();
+            var loading = ElLoading.service();
+            s.download(username.value, password.value).then((xhr: XMLHttpRequest) => {
+                loading.close()
+                if (xhr.status == 200) {
+                    show_load_data.value = false;
+                    let data = JSON.parse(xhr.responseText);
+                    saveStore.$patch(JSON.parse(data.data))
+                    ElMessage.success("加载成功");
+                } else if (xhr.status == 401) {
+                    ElMessage.error("用户名或密码错误");
+                } else {
+                    ElMessage.error("服务器错误");
+                }
+            }).finally(() => {
+                captcha.destroy();
             })
         })
-    }
+    })
+}
 
-    function upload() {
-        window.initGeetest4({
-            product: "bind",
-            captchaId: "6acf3658d1b41039662abc436d70e412"
-        }, (captcha) => {
-            captcha.showCaptcha();
-            captcha.onSuccess(() => {
+function upload() {
+    window.initGeetest4({
+        product: "bind",
+        captchaId: "6acf3658d1b41039662abc436d70e412"
+    }, (captcha) => {
+        captcha.showCaptcha();
+        captcha.onSuccess(() => {
 
-                let s = new SaveServer();
-                var loading = ElLoading.service();
-                s.upload(username.value, password.value, saveStore.$state, captcha.getValidate()).then((xhr: XMLHttpRequest) => {
-                    loading.close()
-                    if (xhr.status == 200) {
-                        show_upload_data.value = false;
-                        ElMessage.success("上传成功");
-                    } else if (xhr.status == 401) {
-                        ElMessage.error("用户名或密码错误");
-                    } else {
-                        ElMessage.error("服务器错误");
-                    }
+            let s = new SaveServer();
+            var loading = ElLoading.service();
+            s.upload(username.value, password.value, saveStore.$state, captcha.getValidate()).then((xhr: XMLHttpRequest) => {
+                loading.close()
+                if (xhr.status == 200) {
+                    show_upload_data.value = false;
+                    ElMessage.success("上传成功");
+                } else if (xhr.status == 401) {
+                    ElMessage.error("用户名或密码错误");
+                } else {
+                    ElMessage.error("服务器错误");
+                }
 
-                }).catch((e) => {
-                    console.log(e)
-                }).finally(() => {
-                    captcha.destroy();
-                })
+            }).catch((e) => {
+                console.log(e)
+            }).finally(() => {
+                captcha.destroy();
             })
         })
-    }
+    })
+}
 
-    function reset_username() {
-        saveStore.user_name = randomName.getNickName();
-        ElMessageBox.alert(`新用户名为：${saveStore.user_name}`)
-    }
+function reset_username() {
+    saveStore.user_name = randomName.getNickName();
+    ElMessageBox.alert(`新用户名为：${saveStore.user_name}`)
+}
 
-    function reset_avatar() {
-        saveStore.user_avatar = `avatars/${random.randint(1, 100)}.png`;;
-        ElMessage.success("修改完毕")
-    }
+function reset_avatar() {
+    saveStore.user_avatar = `avatars/${random.randint(1, 100)}.png`;;
+    ElMessage.success("修改完毕")
+}
 </script>
 
 <template>
@@ -185,7 +185,7 @@
             </el-form-item>
             <p>云端数据将会与本地数据合并</p>
             <el-form-item>
-                
+
                 <sbutton type="primary" @click="load">加载</sbutton>
             </el-form-item>
         </el-form>
@@ -193,12 +193,11 @@
 
 </template>
 
-<style scoped lang="scss">
-    .content {
-        height: 100vh;
-        width: 100vw;
-        padding-left: 10px;
-        padding-right: 10px;
-    }
-
+<style scoped>
+.content {
+    height: 100vh;
+    width: 100vw;
+    padding-left: 10px;
+    padding-right: 10px;
+}
 </style>

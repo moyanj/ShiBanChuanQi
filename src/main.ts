@@ -4,7 +4,7 @@ import { createPersistedState } from 'pinia-plugin-persistedstate';
 
 import 'element-plus/dist/index.css';
 import 'element-plus/theme-chalk/dark/css-vars.css';
-import './style/style.scss';
+import './style/style.css';
 import App from './App.vue';
 import './js/lib/gt4';
 

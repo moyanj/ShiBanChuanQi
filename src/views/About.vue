@@ -1,40 +1,40 @@
 <script setup lang="ts">
-    import { ref } from 'vue';
-    import { ElRow, ElCol, ElScrollbar, ElCard, ElDialog } from 'element-plus'
-    import { useDataStore, DataStoreState } from '../js/store';
-    import { getExplore } from '../js/utils';
-    import svideo from '../components/svideo.vue';
-    import 'video.js/dist/video-js.css';
+import { ref } from 'vue';
+import { ElRow, ElCol, ElScrollbar, ElCard, ElDialog } from 'element-plus'
+import { useDataStore, DataStoreState } from '../js/store';
+import { getExplore } from '../js/utils';
+import svideo from '../components/svideo.vue';
+import 'video.js/dist/video-js.css';
 
-    const data: DataStoreState = useDataStore();
-    const electron = window.electron;
+const data: DataStoreState = useDataStore();
+const electron = window.electron;
 
-    const player = {
-        controls: true,
-        fluid: true
-    }
-    const show_cg = ref(false);
+const player = {
+    controls: true,
+    fluid: true
+}
+const show_cg = ref(false);
 
-    const zx_list = [
-        "小米科技有限公司",
-        "北京北大方正电子有限公司",
-        "北京字节跳动科技有限公司",
-        "上海米哈游科技有限公司",
-        "Google Inc.",
-        "微软科技",
-        "VueJS团队",
-        "Github",
-        "北京阿里云计算科技",
-        "Suno AI",
-        "Stable Diffusion团队",
-        "Electron团队",
-        "Flask团队",
-        "重庆市凤鸣山中学全体教职工人员以及学生"
-    ]
+const zx_list = [
+    "小米科技有限公司",
+    "北京北大方正电子有限公司",
+    "北京字节跳动科技有限公司",
+    "上海米哈游科技有限公司",
+    "Google Inc.",
+    "微软科技",
+    "VueJS团队",
+    "Github",
+    "北京阿里云计算科技",
+    "Suno AI",
+    "Stable Diffusion团队",
+    "Electron团队",
+    "Flask团队",
+    "重庆市凤鸣山中学全体教职工人员以及学生"
+]
 
-    function play() {
-        show_cg.value = true;
-    }
+function play() {
+    show_cg.value = true;
+}
 
 </script>
 
@@ -75,7 +75,8 @@
                 <el-card class="zx">
                     <el-scrollbar style="height: 25vh;">
                         <li v-for="item in zx_list"><span>{{ item }}</span></li>
-                        <p>（排名不分先后）<br>我们在此衷心感谢每一位支持者，正是因为你们的帮助和鼓励，我们的项目才能不断向前推进。在这个过程中，您们的信任与支持是我们不断进步的动力。期待与大家共同见证更多的成就与精彩！</p>
+                        <p>（排名不分先后）<br>我们在此衷心感谢每一位支持者，正是因为你们的帮助和鼓励，我们的项目才能不断向前推进。在这个过程中，您们的信任与支持是我们不断进步的动力。期待与大家共同见证更多的成就与精彩！
+                        </p>
                         <p style="text-align: right;">2024年10月20日 十班全明星制作组</p>
                     </el-scrollbar>
                 </el-card>
@@ -84,42 +85,35 @@
         </el-col>
     </el-row>
 
-    <el-dialog v-model="show_cg" destroy-on-close>
-        <svideo :options="player">
-            <source src="/video/firefly.mp4" type="video/mp4">
-        </svideo>
-    </el-dialog>
-
 </template>
 
-<style lang="scss" scoped>
-    .container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        min-height: 100vh;
-    }
+<style scoped>
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+}
 
-    #title {
-        margin: 20px;
-        font-size: 90px;
-        font-weight: 455;
-        font-family: 'ZiHunJianQi'
-    }
+#title {
+    margin: 20px;
+    font-size: 90px;
+    font-weight: 455;
+    font-family: 'ZiHunJianQi'
+}
 
-    #cg {
-        width: 64vw;
-        height: 36vh;
-    }
+#cg {
+    width: 64vw;
+    height: 36vh;
+}
 
-    .zx {
-        margin-bottom: 15px;
-        width: 100%;
-    }
+.zx {
+    margin-bottom: 15px;
+    width: 100%;
+}
 
-    li {
-        font-size: 12.8px;
-    }
-
+li {
+    font-size: 12.8px;
+}
 </style>

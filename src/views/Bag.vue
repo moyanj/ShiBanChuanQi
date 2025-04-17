@@ -1,59 +1,59 @@
 <script lang="ts" setup>
-    import { watch, ref } from 'vue';
-    import { ElTable, ElTableColumn, ElDialog, ElForm, ElFormItem, ElSlider } from 'element-plus';
-    import sbutton from '../components/sbutton.vue';
-    import { useSaveStore, SaveStoreState } from '../js/store';
-    import { ThingList } from '../js/things';
+import { watch, ref } from 'vue';
+import { ElTable, ElTableColumn, ElDialog, ElForm, ElFormItem, ElSlider } from 'element-plus';
+import sbutton from '../components/sbutton.vue';
+import { useSaveStore, SaveStoreState } from '../js/store';
+import { ThingList } from '../js/things';
 
-    const save: SaveStoreState = useSaveStore();
-    var deleteDialog_show = ref(false);
-    var delete_args = ref({
-        n: 1,
-        arg: null
-    });
+const save: SaveStoreState = useSaveStore();
+var deleteDialog_show = ref(false);
+var delete_args = ref({
+    n: 1,
+    arg: null
+});
 
-    function update_data() {
-        let data = [];
-        const things = save.things.get_all();
-        for (let id in things) {
+function update_data() {
+    let data = [];
+    const things = save.things.get_all();
+    for (let id in things) {
 
-            let thing = ThingList[id];
-            if (!thing) {
-                continue;
-            }
-            thing = new thing();
-            let count = save.things.get(id);
-            if (count == 0) {
-                continue;
-            }
-            data.push({
-                id: id,
-                name: thing.name,
-                desc: thing.desc,
-                count: count,
-            });
-
+        let thing = ThingList[id];
+        if (!thing) {
+            continue;
         }
-        return data;
-    }
-
-    function remove(data) {
-        console.log(data.n);
-        let id = data.arg.row.id;
-
-        if (id) {
-            save.things.remove(id, data.n);
+        thing = new thing();
+        let count = save.things.get(id);
+        if (count == 0) {
+            continue;
         }
-        data.n = 1;
-        deleteDialog_show.value = false;
-    }
+        data.push({
+            id: id,
+            name: thing.name,
+            desc: thing.desc,
+            count: count,
+        });
 
-    // 转换为el-table的格式
-    const table_data = ref(update_data());
-    
-    watch(save.things, () => {
-        table_data.value = update_data();
-    });
+    }
+    return data;
+}
+
+function remove(data) {
+    console.log(data.n);
+    let id = data.arg.row.id;
+
+    if (id) {
+        save.things.remove(id, data.n);
+    }
+    data.n = 1;
+    deleteDialog_show.value = false;
+}
+
+// 转换为el-table的格式
+const table_data = ref(update_data());
+
+watch(save.things, () => {
+    table_data.value = update_data();
+});
 
 </script>
 
@@ -65,7 +65,7 @@
         <el-table-column prop="count" label="数量"></el-table-column>
         <el-table-column label="操作">
             <template #default="scope">
-                <sbutton @click="delete_args.arg = scope;deleteDialog_show = true" text> 删除</sbutton>
+                <sbutton @click="delete_args.arg = scope; deleteDialog_show = true" text> 删除</sbutton>
             </template>
         </el-table-column>
     </el-table>
@@ -82,15 +82,13 @@
     </el-dialog>
 </template>
 
-<style scoped lang="scss">
-    body {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        min-height: 100vh;
+<style scoped>
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
 
-    }
-
-
+}
 </style>

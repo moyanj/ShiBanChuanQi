@@ -1,122 +1,122 @@
 <script lang="ts" setup>
-    import { ElRow, ElMessage, ElDialog, ElScrollbar, ElTable, ElTableColumn, ElImage } from "element-plus";
-    import sbutton from "../components/sbutton.vue";
-    import svideo from "../components/svideo.vue";
-    import 'video.js/dist/video-js.css';
+import { ElRow, ElMessage, ElDialog, ElScrollbar, ElTable, ElTableColumn, ElImage } from "element-plus";
+import sbutton from "../components/sbutton.vue";
+import svideo from "../components/svideo.vue";
+import 'video.js/dist/video-js.css';
 
-    import { useSaveStore, useDataStore, APM } from "../js/store";
-    import { MersenneTwister, icons } from "../js/utils";
-    import { ThingList } from "../js/things";
-    import { characters } from "../js/character";
-    import { ref } from "vue";
+import { useSaveStore, useDataStore, APM } from "../js/store";
+import { MersenneTwister, icons } from "../js/utils";
+import { ThingList } from "../js/things";
+import { characters } from "../js/character";
+import { ref } from "vue";
 
 
-    const saveStore = useSaveStore();
-    const dataStore = useDataStore();
-    const player_conf = {
-        //autoplay: true,
-        muted: false,
-        controls: false,
-        //fullscreen: true
+const saveStore = useSaveStore();
+const dataStore = useDataStore();
+const player_conf = {
+    //autoplay: true,
+    muted: false,
+    controls: false,
+    //fullscreen: true
+}
+
+var player = ref();
+var show_ani = ref(false);
+var show_result = ref(false);
+var show_skip = ref(false);
+var result = ref([])
+
+const random = new MersenneTwister();
+const wish_list = []
+wish_list.push(...Object.keys(characters))
+
+function f(x: number): number {
+    const value = 0.0001 + (Math.exp(x / 35) / 175);
+    const r = (value / 1); // 计算结果
+
+    return r;
+}
+
+function run(n: number = 1) {
+
+    const cost = 180 * n; // 十连抽消耗的星火
+    if (saveStore.things.get("XinHuo") < cost) {
+        ElMessage({
+            message: "星火不足，无法抽奖",
+            type: "error",
+        });
+        return;
     }
 
-    var player = ref();
-    var show_ani = ref(false);
-    var show_result = ref(false);
-    var show_skip = ref(false);
-    var result = ref([])
-
-    const random = new MersenneTwister();
-    const wish_list = []
-    wish_list.push(...Object.keys(characters))
-
-    function f(x: number): number {
-        const value = 0.0001 + (Math.exp(x / 35) / 175);
-        const r = (value / 1); // 计算结果
-
-        return r;
-    }
-
-    function run(n: number = 1) {
-
-        const cost = 180 * n; // 十连抽消耗的星火
-        if (saveStore.things.get("XinHuo") < cost) {
-            ElMessage({
-                message: "星火不足，无法抽奖",
-                type: "error",
-            });
-            return;
-        }
-
-        show_ani.value = true;
-        player.value.player.play();
-        show_skip.value = true;
-        player.value.player.on("ended", () => {
-            player.value.player.off("ended")
-            show_ani.value = false;
-            show_skip.value = false;
-            wish(n);
-        })
+    show_ani.value = true;
+    player.value.player.play();
+    show_skip.value = true;
+    player.value.player.on("ended", () => {
+        player.value.player.off("ended")
+        show_ani.value = false;
+        show_skip.value = false;
+        wish(n);
+    })
 
 
-    }
+}
 
-    function wish(n: number = 1) {
+function wish(n: number = 1) {
 
-        const cost = 180 * n; // 十连抽消耗的星火
+    const cost = 180 * n; // 十连抽消耗的星火
 
-        saveStore.things.remove("XinHuo", cost);
-        saveStore.wish_number += n; // 更新抽奖次数
+    saveStore.things.remove("XinHuo", cost);
+    saveStore.wish_number += n; // 更新抽奖次数
 
-        result.value = [];
+    result.value = [];
 
 
-        for (let i = 1; i < n+1; i++) {
-            saveStore.n_wish++;
-            saveStore.wish_number++; // 更新抽奖次数
-            const n = random.random();
-            if (n <= f(saveStore.n_wish)) {
-                saveStore.n_wish = 0; // 重置连续抽奖次数
-                const wish_item = random.random_choice(wish_list);
+    for (let i = 1; i < n + 1; i++) {
+        saveStore.n_wish++;
+        saveStore.wish_number++; // 更新抽奖次数
+        const n = random.random();
+        if (n <= f(saveStore.n_wish)) {
+            saveStore.n_wish = 0; // 重置连续抽奖次数
+            const wish_item = random.random_choice(wish_list);
 
-                if (saveStore.characters.is_in(wish_item)) {
-                    result.value.push({
-                        n: i,
-                        content: `${new characters[wish_item]().name}（已存在）`
-                    });
-
-                } else {
-                    if (wish_item in characters) {
-                        let c = new characters[wish_item]();
-                        saveStore.characters.add(c);
-                        result.value.push({
-                            n: i,
-                            content: c.name
-                        });
-                    }
-
-                }
-
-            } else {
+            if (saveStore.characters.is_in(wish_item)) {
                 result.value.push({
                     n: i,
-                    content: "无"
+                    content: `${new characters[wish_item]().name}（已存在）`
                 });
-            }
-        }
-        show_result.value = true;
-    }
 
-    function skip() {
-        let end = player.value.player.duration();
-        player.value.player.currentTime(end)
+            } else {
+                if (wish_item in characters) {
+                    let c = new characters[wish_item]();
+                    saveStore.characters.add(c);
+                    result.value.push({
+                        n: i,
+                        content: c.name
+                    });
+                }
+
+            }
+
+        } else {
+            result.value.push({
+                n: i,
+                content: "无"
+            });
+        }
     }
+    show_result.value = true;
+}
+
+function skip() {
+    let end = player.value.player.duration();
+    player.value.player.currentTime(end)
+}
 
 </script>
 
 <template>
     <div class="container">
-        <sbutton id="skip" v-show="show_skip" @click="skip"><el-image :src="icons.skip" class="icon"/></sbutton>
+        <sbutton id="skip" v-show="show_skip" @click="skip"><el-image :src="icons.skip" class="icon" /></sbutton>
         <el-row>
             <sbutton type="primary" @click="run(1)">点击抽卡</sbutton>
             <sbutton type="primary" @click="run(10)">点击抽卡(十连)</sbutton>
@@ -144,33 +144,33 @@
     </div>
 </template>
 
-<style scoped lang="scss">
-    .container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        min-height: 100vh;
-    }
+<style scoped>
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+}
 
-    .ani {
-        position: fixed;
-        width: 100vw;
-        height: 100vh;
-        z-index: 1001;
-        left: 0;
-        top: 0;
-    }
+.ani {
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1001;
+    left: 0;
+    top: 0;
+}
 
-    .icon {
-        width: 20px;
-        height: 20px;
-    }
+.icon {
+    width: 20px;
+    height: 20px;
+}
 
-    #skip {
-        position: fixed;
-        top: 10px;
-        right: 10px;
-        z-index: 1002;
-    }
+#skip {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    z-index: 1002;
+}
 </style>

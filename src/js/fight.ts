@@ -1,5 +1,4 @@
 import { Character } from "./character";
-import { cloneDeep } from "lodash-es";
 
 interface ATB {
     [property: string]: number;
@@ -22,7 +21,7 @@ export class BattleCharacters {
     */
     copy_chara(c: Character[]): void {
         for (let i = 0; i < c.length; i++) {
-            let obj = cloneDeep(c[i]);
+            let obj = c[i];
             obj.env = this;
             this.characters[obj.inside_name] = obj
         }
@@ -92,6 +91,6 @@ export class Battle {
         return max;
     }
 
-    trun() {}
+    trun() { }
 
 }

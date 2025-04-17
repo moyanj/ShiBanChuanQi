@@ -90,14 +90,9 @@ class Builer:
 
         return [
             Target("linux", "x64", self.default_version, "linux"),  # Linux x64
-            Target("linux", "arm64", self.default_version, "linux"),  # Linux arm64
-            Target("linux", "armv7l", self.default_version, "linux"),  # Linux armv7l
             Target("win32", "x64", self.default_version, "win"),  # Windows x64
             Target("win32", "ia32", self.default_version, "win"),  # Windows x86
-            Target("win32", "arm64", self.default_version, "win"),  # Windows arm64
-            Target("win32", "x64", "22.3.27", "win7"),  # Windows x64 兼容版
             Target("win32", "ia32", "22.3.27", "win7"),  # Windows x86 兼容版
-            Target("win32", "arm64", "22.3.27", "win7"),  # Windows arm64 兼容版
         ]
 
     def download_file(self, target: Target, r: requests.Response):
@@ -383,7 +378,6 @@ class HtmlBuiler:
 
                     if old_md5 != new_md5:
                         out["modfile"].append(f)
-                        
 
                     old_file.remove(f)
 

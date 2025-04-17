@@ -1,21 +1,21 @@
 <script setup lang="ts">
-    import { ref } from 'vue'
-    import { ElCol, ElRow, ElCard, ElAvatar, ElMessageBox, ElMessage, ElImage } from 'element-plus'
-    import sbutton from '../components/sbutton.vue';
-    import { useSaveStore, SaveStoreState, useDataStore } from '../js/store'
-    import { MersenneTwister, icons } from '../js/utils'
+import { ref } from 'vue'
+import { ElCol, ElRow, ElCard, ElAvatar, ElMessageBox, ElMessage, ElImage } from 'element-plus'
+import sbutton from '../components/sbutton.vue';
+import { useSaveStore, SaveStoreState, useDataStore } from '../js/store'
+import { MersenneTwister, icons } from '../js/utils'
 
-    const save: SaveStoreState = useSaveStore();
-    const data = useDataStore();
-    const random = new MersenneTwister();
+const save: SaveStoreState = useSaveStore();
+const data = useDataStore();
+const random = new MersenneTwister();
 
-    if (save.user_avatar === "") {
-        save.user_avatar = `avatars/${random.randint(1, 100)}.png`;
-    }
+if (save.user_avatar === "") {
+    save.user_avatar = `avatars/${random.randint(1, 100)}.png`;
+}
 
-    const onclick_start = () => {
-        data.page_type = 'fight'
-    }
+const onclick_start = () => {
+    data.page_type = 'fight'
+}
 </script>
 
 <template>
@@ -82,64 +82,64 @@
     </div>
 </template>
 
-<style lang="scss" scoped>
-    .container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        min-height: 100vh;
-    }
+<style scoped>
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+}
 
-    #title {
-        margin: 20px;
-        font-size: 96px;
-        font-weight: 455;
-        font-family: 'ZiHunJianQi';
-    }
+#title {
+    margin: 20px;
+    font-size: 96px;
+    font-weight: 455;
+    font-family: 'ZiHunJianQi';
+}
 
-    .user-info {
-        border-radius: 25px;
-        position: fixed;
-        top: 10px;
-        left: 10px;
-        width: 200px;
-        height: 40px;
-        --el-card-padding: 0px;
-        transition: width 0.3s;
-        overflow: hidden;
-        cursor: pointer;
-    }
+.user-info {
+    border-radius: 25px;
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    width: 200px;
+    height: 40px;
+    --el-card-padding: 0px;
+    transition: width 0.3s;
+    overflow: hidden;
+    cursor: pointer;
+}
 
-    .toolbar {
-        border-radius: 25px;
-        position: fixed;
-        right: 10px;
-        top: 10px;
-        width: 35vw;
-        height: 32px;
-        --el-card-padding: 0px;
-        padding-top: 5px;
-        padding-bottom: 5px;
-        padding-left: 25px;
-        padding-right: 25px;
-    }
+.toolbar {
+    border-radius: 25px;
+    position: fixed;
+    right: 10px;
+    top: 10px;
+    width: 35vw;
+    height: 32px;
+    --el-card-padding: 0px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 25px;
+    padding-right: 25px;
+}
 
-    .el-avatar {
-        vertical-align: middle;
-        width: 40px;
-        height: 40px;
-    }
+.el-avatar {
+    vertical-align: middle;
+    width: 40px;
+    height: 40px;
+}
 
-    .user-name {
-        display: inline-block;
-        vertical-align: middle;
-        margin-left: 15px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        transition: visibility 0.3s;
-        font-size: 15px;
-        line-height: 40px;
-    }
+.user-name {
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 15px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: visibility 0.3s;
+    font-size: 15px;
+    line-height: 40px;
+}
 </style>
