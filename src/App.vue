@@ -24,7 +24,7 @@ import { useMagicKeys } from '@vueuse/core';
 const dataStore = useDataStore();
 
 if (isLandscape() === false) {
-    ElMessageBox.alert("请切换至横屏，以获得更好的体验", '警告', {
+    ElMessageBox.alert("请切换至横屏，以获得更好的游戏体验", '警告', {
         confirmButtonText: '确定',
         type: 'warning',
         showClose: false,
