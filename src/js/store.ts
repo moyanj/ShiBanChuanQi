@@ -4,6 +4,7 @@ import { CharacterManager, Character } from './character';
 import { AudioPlayer } from './utils';
 import { HistoryManager } from './lib/ai';
 import { randomName } from './lib/name';
+import { Battle } from './fight'; // 引入 Battle 类
 
 interface BuildInfoState {
     version: string;
@@ -40,6 +41,9 @@ export interface FightStoreState {
     enemy: Character[];
     our: Character[];
     ai: boolean;
+    battle_instance: Battle | null; // 新增：战斗实例
+    selected_our_character: Character | null; // 新增：当前玩家选择的行动角色
+    selected_target_character: { type: 'enemy' | 'our', character: Character } | null; // 新增：当前玩家选择的目标角色
 }
 
 export const useDataStore = defineStore('data', {
@@ -76,8 +80,11 @@ export const useFightStore = defineStore("fight", {
     state: (): FightStoreState => ({
         enemy: [],
         our: [],
-        ai: true
+        ai: true,
+        battle_instance: null,
+        selected_our_character: null,
+        selected_target_character: null,
     }),
-})
+});
 
 export const APM: AudioPlayer = new AudioPlayer();

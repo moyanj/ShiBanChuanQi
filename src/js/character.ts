@@ -75,7 +75,7 @@ export class CharacterManager {
     get_all(): Array<Character> {
         let r: Array<Character> = [];
         for (let i in this.characters) {
-            r.push(this.get(i));
+            r.push(this.get(i)!); // 确保get返回Character而非null
         }
         return r;
     }
@@ -105,11 +105,12 @@ export abstract class Character {
     type: CharacterType;
     xp: number;
     hp: number;
+    max_hp: number; // 新增：最大血量
     atk: number;
     def_: number;
     speed: number;
     attr_bonus: AttrBonusType;
-    env: BattleCharacters | null;
+    env: BattleCharacters | null; // 角色所在的战斗环境
 
     constructor() {
         this.name = "Test"; // 角色名
@@ -129,6 +130,7 @@ export abstract class Character {
         this.type = CharacterType.Water; // 角色类型
         this.xp = 0; // 经验
         this.hp = 100; // 血量
+        this.max_hp = 100; // 初始最大血量
         this.atk = 10; // 攻击力
         this.def_ = 10; // 防御
         this.speed = 100; // 速度
@@ -154,16 +156,23 @@ export abstract class Character {
         this.level_hp();
         this.level_def();
         this.level_atk();
+
+        if (this.env) { // 如果在战斗环境中，更新队伍总血量
+            this.env.update_team_hp();
+        }
     }
 
-    level_xp(level): number {
+    level_xp(level: number): number {
         // 计算升级所需经验
         return 1 + Math.abs(102 * Math.pow(level, 1.28) + 114 * Math.log(level / 0.15)) + 350;
     }
 
     level_hp(): void {
         // 计算等级对应血量
-        this.hp = 46.45 * this.level + Math.pow(this.level, 1.863) + 650 + 13.4 * this.level;
+        const new_max_hp = 46.45 * this.level + Math.pow(this.level, 1.863) + 650 + 13.4 * this.level;
+        const hp_diff = new_max_hp - this.max_hp; // 最大血量增加量
+        this.max_hp = new_max_hp;
+        this.hp += hp_diff; // 当前血量也等比例增加，或直接设置为max_hp
     }
 
     level_def(): void {
@@ -205,6 +214,7 @@ export abstract class Character {
         this.level = data.level;
         this.xp = data.xp;
         this.hp = data.hp;
+        this.level_hp(); // 重新计算最大血量
         this.atk = data.atk;
         this.def_ = data.def;
         this.attr_bonus = data.attr_bonus;
