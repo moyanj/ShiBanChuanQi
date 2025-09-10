@@ -1,4 +1,4 @@
-import { useDataStore, useSaveStore } from "./store";
+import { useDataStore, useSaveStore, useFightStore } from "./store";
 import { ElMessageBox } from 'element-plus'
 import { ThingList } from "./things";
 import { SaveServer } from "./utils";
@@ -7,6 +7,7 @@ function cmd_handler(value) {
     value = value.value;
     const dataStore = useDataStore();
     const saveStore = useSaveStore();
+    const fightStore = useFightStore();
 
     let cmds:Array<string> = value.split(" ");
     let cmd:string = cmds[0];
@@ -58,6 +59,7 @@ function cmd_handler(value) {
         case "reset":
             dataStore.$reset()
             saveStore.$reset();
+            fightStore.$reset();
             break;
 
         case "devtool":

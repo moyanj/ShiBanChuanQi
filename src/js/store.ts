@@ -44,6 +44,7 @@ export interface FightStoreState {
     battle_instance: Battle | null; // 新增：战斗实例
     selected_our_character: Character | null; // 新增：当前玩家选择的行动角色
     selected_target_character: { type: 'enemy' | 'our', character: Character } | null; // 新增：当前玩家选择的目标角色
+    selected_characters: Character[]; // 新增：用户在战斗前选择的角色
 }
 
 export const useDataStore = defineStore('data', {
@@ -76,6 +77,7 @@ export const useChatStore = defineStore("chat", {
     }),
 })
 
+
 export const useFightStore = defineStore("fight", {
     state: (): FightStoreState => ({
         enemy: [],
@@ -84,6 +86,7 @@ export const useFightStore = defineStore("fight", {
         battle_instance: null,
         selected_our_character: null,
         selected_target_character: null,
+        selected_characters: [], // 初始化为空数组
     }),
 });
 
