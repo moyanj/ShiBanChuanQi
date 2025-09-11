@@ -1,7 +1,7 @@
 {
   "name": "十班全明星",
   "private": true,
-  "version": "1.1.1alpha",
+  "version": "1.2.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
