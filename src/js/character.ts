@@ -144,6 +144,10 @@ export abstract class Character {
             [CharacterType.Thunder]: 0.0,
             [CharacterType.Water]: 0.0
         }
+
+        this.level_hp();
+        this.level_def();
+        this.level_atk();
     }
 
     level_up(exp: number) {
@@ -214,10 +218,12 @@ export abstract class Character {
         this.level = data.level;
         this.xp = data.xp;
         this.hp = data.hp;
-        this.level_hp(); // 重新计算最大血量
         this.atk = data.atk;
         this.def_ = data.def;
         this.attr_bonus = data.attr_bonus;
+        this.level_hp();
+        this.level_def();
+        this.level_atk();
         return this;
     }
 }
