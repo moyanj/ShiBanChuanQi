@@ -154,8 +154,8 @@ export class Battle {
     }
 
     // 更新所有角色的行动值
-    update_atb_all(tick_amount: number = 10): void {
-        this.tick += tick_amount;
+    update_atb_all(tick_amount: number = 1): void {
+        this.tick += tick_amount * 10;
         this.enemy.update_atb(tick_amount);
         this.our.update_atb(tick_amount);
     }

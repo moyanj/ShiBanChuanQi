@@ -1,5 +1,3 @@
-// src/views/Fight.vue
-
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
 import { onKeyStroke } from '@vueuse/core';
@@ -24,6 +22,8 @@ var battle_ended = ref(false);
 var show_character_selection = ref(true); // 新增：控制角色选择界面的显示
 var available_characters = ref<Character[]>([]); // 新增：可供选择的角色
 var errorMessage = ref(''); // 新增：错误信息
+
+const enemy_avatar = random.randint(1, 100);
 
 // 当前行动角色，用于判断是否轮到我方玩家操作
 const current_active_character = computed(() => fightStore.battle_instance?.get_now_character());
@@ -123,7 +123,7 @@ const startBattle = () => {
 
         if (!activeCharacterInfo) {
             // 没有角色达到行动点，推进时间
-            fightStore.battle_instance.update_atb_all(10);
+            fightStore.battle_instance.update_atb_all(1);
         } else {
             // 有角色准备行动
             const { type: active_party_type, character: active_character } = activeCharacterInfo;
@@ -396,7 +396,7 @@ const getEnemyAtb = (character: Character) => {
             </sbutton>
             <div class="toolbar">
                 <div>
-                    <el-avatar><img :src="`avatars/${random.randint(1, 100)}.png`" id="avatar"></el-avatar>
+                    <el-avatar><img :src="`avatars/${enemy_avatar}.png`" id="avatar"></el-avatar>
                     <div class="team-hp">敌方HP: {{ Math.round(fightStore.battle_instance?.enemy.hp || 0) }}</div>
                 </div>
                 <div>
@@ -460,7 +460,7 @@ const getEnemyAtb = (character: Character) => {
                 <br>
                 <h2>正在与{{ enemy_name }}战斗</h2>
                 <h3 v-if="battle_ended">战斗已结束</h3>
-                <h3 v-else>回合数: {{ fightStore.battle_instance?.tick }}</h3>
+                <h3 v-else>回合数: {{ fightStore.battle_instance?.tick / 10 }}</h3>
             </div>
         </div>
     </div>

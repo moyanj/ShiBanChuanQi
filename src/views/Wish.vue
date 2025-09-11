@@ -39,7 +39,7 @@ function f(x: number): number {
 
 function run(n: number = 1) {
 
-    const cost = 180 * n; // 十连抽消耗的星火
+    const cost = 280 * n; // 十连抽消耗的星火
     if (saveStore.things.get("XinHuo") < cost) {
         ElMessage({
             message: "星火不足，无法抽奖",
@@ -63,7 +63,7 @@ function run(n: number = 1) {
 
 function wish(n: number = 1) {
 
-    const cost = 180 * n; // 十连抽消耗的星火
+    const cost = 280 * n; // 十连抽消耗的星火
 
     saveStore.things.remove("XinHuo", cost);
     saveStore.wish_number += n; // 更新抽奖次数
