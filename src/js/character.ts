@@ -173,7 +173,7 @@ export abstract class Character {
 
     level_hp(): void {
         // 计算等级对应血量
-        const new_max_hp = 46.45 * this.level + Math.pow(this.level, 1.863) + 650 + 13.4 * this.level;
+        const new_max_hp = 460.45 * this.level + Math.pow(this.level, 1.863) + 650 + 13.4 * this.level;
         const hp_diff = new_max_hp - this.max_hp; // 最大血量增加量
         this.max_hp = new_max_hp;
         this.hp += hp_diff; // 当前血量也等比例增加，或直接设置为max_hp
@@ -225,6 +225,12 @@ export abstract class Character {
         this.level_def();
         this.level_atk();
         return this;
+    }
+
+    reset_status() {
+        this.level_hp();
+        this.level_def();
+        this.level_atk();
     }
 }
 

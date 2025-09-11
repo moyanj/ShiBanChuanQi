@@ -178,6 +178,9 @@ const endBattle = () => {
         message = "战斗结束。";
         ElMessage.info(message);
     }
+    for (const char of fightStore.our) {
+        char.reset_status();
+    }
     fightStore.battle_instance?.log(message);
     // 可选：显示结算界面
 };
