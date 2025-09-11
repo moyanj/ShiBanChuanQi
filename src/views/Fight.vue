@@ -8,8 +8,9 @@ import sbutton from '../components/sbutton.vue';
 import fightCard from '../components/fight-card.vue'; // 修改为 fightCard
 import card from '../components/card.vue'; // 用于选择角色界面
 import { Battle } from '../js/fight';
-import { Character, CharacterType } from '../js/character';
+import { Character, CharacterType, characters } from '../js/character';
 import { ThingList } from '../js/things';
+import cloneDeep from 'lodash-es';
 
 const data = useDataStore();
 const save = useSaveStore();
@@ -20,7 +21,7 @@ var show_manager = ref(false);
 var battle_interval: number | null = null; // 用于存储战斗循环的定时器
 var battle_ended = ref(false);
 var show_character_selection = ref(true); // 新增：控制角色选择界面的显示
-var available_characters = ref<Character[]>([]); // 新增：可供选择的角色
+var available_characters = ref<Character[]>([]); // 新增：可供选择的角色 (我方)
 var errorMessage = ref(''); // 新增：错误信息
 
 const enemy_avatar = random.randint(1, 100);
@@ -93,6 +94,10 @@ const startBattle = () => {
         if (c.hp <= 0) c.hp = c.max_hp;
         if (c.max_hp <= 0) c.level_hp(); // 重新计算最大血量
     });
+
+    // 在我方角色确定后，生成敌方角色
+    generateEnemyCharacters(); // 调用生成敌方角色的函数
+
     fightStore.enemy.forEach(c => {
         if (c.hp <= 0) c.hp = c.max_hp;
         if (c.max_hp <= 0) c.level_hp(); // 重新计算最大血量
@@ -272,7 +277,74 @@ const toggleAI = () => {
     }
 };
 
-// 在组件挂载时初始化可选角色和敌人
+/**
+ * 生成略弱于我方角色的敌方角色
+ * @param baseCharacter 我方角色作为模板
+ * @returns 略弱的敌方角色实例
+ */
+const createWeakerEnemy = (baseCharacter: Character): Character => {
+    // 1. 获取 baseCharacter 的构造函数
+    //    这里需要从 `characters` 映射中找到对应的构造函数
+    const CharacterConstructor = characters[baseCharacter.inside_name];
+    const weakerEnemy = new CharacterConstructor();
+    console.log("创建略弱敌方角色：", weakerEnemy);
+    weakerEnemy.load(baseCharacter.dump()); // 加载基础角色的数据，包括等级、XP、HP等
+    // 4. 调整属性进行削弱
+    weakerEnemy.level = Math.max(1, baseCharacter.level - random.randint(1, 3)); // 等级降低1-3级，至少为1级
+    weakerEnemy.level_hp();
+    weakerEnemy.level_atk();
+    weakerEnemy.level_def();
+    // 如果想在 level_hp/atk/def 之后再进行百分比削弱，可以这样：
+    weakerEnemy.atk = Math.round(weakerEnemy.atk * random.randfloat(0.7, 0.9)); // 攻击力在计算后降低10%-30%
+    weakerEnemy.def_ = Math.round(weakerEnemy.def_ * random.randfloat(0.7, 0.9)); // 防御力在计算后降低10%-30%
+    weakerEnemy.hp = weakerEnemy.max_hp; // 确保满血状态
+    weakerEnemy.name = `[敌]${baseCharacter.name}`; // 敌方角色名称标记
+    return weakerEnemy;
+};
+
+/**
+ * 随机生成敌方角色队伍
+ */
+const generateEnemyCharacters = () => {
+    // 获取我方选择的角色，作为敌方选择的模板池
+    const ourCharacters = fightStore.our;
+    if (ourCharacters.length === 0) {
+        ElMessage.error("我方没有选择角色，无法生成敌方！");
+        return;
+    }
+
+    // 清空现有的敌方队伍
+    fightStore.enemy = [];
+
+    // 从我方角色池中随机抽取N个角色作为敌方模板
+    // 为了简单起见，我们让敌方角色数量和我方一样，都为3个
+    const numEnemies = 3;
+    const availableEnemyTemplates = [...ourCharacters]; // 复制一份，避免修改原始我方队伍
+
+    for (let i = 0; i < numEnemies; i++) {
+        if (availableEnemyTemplates.length === 0) {
+            // 如果模板不够，就重复使用已有的，或者从所有角色中随机选
+            const allAvailableGameCharacters = save.characters.get_all();
+            if (allAvailableGameCharacters.length > 0) {
+                const randomIndex = random.randint(0, allAvailableGameCharacters.length - 1);
+                const randomTemplate = allAvailableGameCharacters[randomIndex];
+                fightStore.enemy.push(createWeakerEnemy(randomTemplate));
+            } else {
+                ElMessage.error("游戏中没有任何可用的角色来生成敌方！");
+                break;
+            }
+        } else {
+            const randomIndex = random.randint(0, availableEnemyTemplates.length - 1);
+            const selectedTemplate = availableEnemyTemplates.splice(randomIndex, 1)[0]; // 抽取并移除，保证不重复
+            fightStore.enemy.push(createWeakerEnemy(selectedTemplate));
+        }
+    }
+
+    ElMessage.info(`敌方队伍已生成：${fightStore.enemy.map(e => e.name).join(', ')}`);
+};
+
+
+// 在组件挂载时初始化可选角色 (我方)
 onMounted(() => {
     // 获取所有可用角色
     available_characters.value = save.characters.get_all();
@@ -284,22 +356,6 @@ onMounted(() => {
         data.page_type = 'main';
         return;
     }
-
-    // 示例敌人
-    const enemy_char1 = save.characters.get('FanShiFu');
-    const enemy_char2 = save.characters.get('ShuiLiFang');
-    const enemy_char3 = save.characters.get('ZongTong');
-
-    fightStore.enemy = [];
-    if (enemy_char1) fightStore.enemy.push(enemy_char1);
-    if (enemy_char2) fightStore.enemy.push(enemy_char2);
-    if (enemy_char3) fightStore.enemy.push(enemy_char3);
-
-    // 确保所有角色在战斗开始时是满血
-    fightStore.enemy.forEach(c => {
-        c.level_hp(); // 重新计算最大血量
-        c.hp = c.max_hp;
-    });
 
     // 角色选择界面默认显示
     show_character_selection.value = true;
@@ -314,6 +370,8 @@ onUnmounted(() => {
     APM.play("background_music");
     // 清空选择的角色，避免下次进入战斗时残留
     fightStore.selected_characters = [];
+    fightStore.our = []; // 清空我方队伍
+    fightStore.enemy = []; // 清空敌方队伍
     fightStore.selected_our_character = null;
     fightStore.selected_target_character = null;
     fightStore.battle_instance = null; // 清除战斗实例

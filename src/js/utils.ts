@@ -177,6 +177,10 @@ export class MersenneTwister {
         return Math.floor(this.random() * (max - min + 1)) + min;
     }
 
+    public randfloat(min: number, max: number): number {
+        return min + this.random() * (max - min);
+    }
+
     public random_choice(choices: any[]): any {
         return choices[this.randint(0, choices.length - 1)];
     }
