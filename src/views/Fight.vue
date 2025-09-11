@@ -1,3 +1,5 @@
+// src/views/Fight.vue
+
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
 import { onKeyStroke } from '@vueuse/core';
@@ -111,37 +113,38 @@ const startBattle = () => {
     battle_interval = setInterval(async () => {
         if (!fightStore.battle_instance) return;
 
-        const activeCharacterInfo = fightStore.battle_instance.get_now_character();
+        // 检查战斗是否已经结束，如果结束则停止循环
+        if (fightStore.battle_instance.enemy.hp <= 0 || fightStore.battle_instance.our.hp <= 0) {
+            endBattle();
+            return; // 结束当前循环迭代
+        }
+
+        let activeCharacterInfo = fightStore.battle_instance.get_now_character();
 
         if (!activeCharacterInfo) {
-            // 没有角色行动，推进时间
+            // 没有角色达到行动点，推进时间
             fightStore.battle_instance.update_atb_all(10);
         } else {
-            // 有角色行动
+            // 有角色准备行动
             const { type: active_party_type, character: active_character } = activeCharacterInfo;
 
             if (active_party_type === 'our' && fightStore.ai === false) {
                 // 轮到我方玩家角色行动，且处于手动模式
-                // 此时不推进回合，等待玩家操作，通过 UI 调用 playerAttack
-                // 确保 selected_our_character 始终指向当前行动的我方角色
+                // 如果当前没有选定角色，或者选定的不是当前行动角色，则更新选定角色
                 if (!fightStore.selected_our_character || fightStore.selected_our_character.inside_name !== active_character.inside_name) {
                     fightStore.selected_our_character = active_character;
                     fightStore.selected_target_character = null; // 重置目标选择
                     fightStore.battle_instance.log(`轮到 ${active_character.name} 行动！请选择技能和目标。`);
                 }
-                return; // 等待玩家操作
+                // 此时不推进回合，等待玩家操作
             } else {
                 // 轮到敌方角色行动，或者我方AI自动行动
+                // 玩家手动模式下，如果我方角色已行动，这里也会被执行，但因为是AI或敌方，不会等待玩家。
                 const ended = await fightStore.battle_instance.next_turn();
                 if (ended) {
                     endBattle();
                 }
             }
-        }
-
-        // 检查战斗是否结束
-        if (fightStore.battle_instance.enemy.hp <= 0 || fightStore.battle_instance.our.hp <= 0) {
-            endBattle();
         }
     }, 100) as unknown as number; // 每次主循环间隔100ms
 };
@@ -149,6 +152,7 @@ const startBattle = () => {
 const endBattle = () => {
     if (battle_interval) {
         clearInterval(battle_interval);
+        battle_interval = null; // 清除定时器句柄
     }
     battle_ended.value = true;
     APM.stop("battle_music");
@@ -251,19 +255,9 @@ const playerAttack = async (attack_type: 'general' | 'skill' | 'super_skill') =>
     fightStore.selected_our_character = null;
     fightStore.selected_target_character = null;
 
-    // 战斗结束判断
-    if (fightStore.battle_instance.enemy.hp <= 0 || fightStore.battle_instance.our.hp <= 0) {
-        endBattle();
-    } else {
-        // 推进一回合，让下一个角色行动
-        const ended = await fightStore.battle_instance.next_turn();
-        if (ended) {
-            endBattle();
-        }
-    }
+    // 战斗结束判断将在主循环的下一次迭代中进行检查
+    // 这里不再直接调用 next_turn，让主循环自己处理。
 };
-
-// 移除 playerAction，因为玩家现在将通过 UI 按钮直接调用 playerAttack
 
 const toggleAI = () => {
     fightStore.ai = !fightStore.ai;
@@ -274,12 +268,7 @@ const toggleAI = () => {
     } else {
         ElMessage.info("已切换为手动战斗");
         // 如果切换到手动模式，并且有我方角色正在行动，则立即选中它
-        const activeChar = current_active_character.value;
-        if (activeChar?.type === 'our') {
-            fightStore.selected_our_character = activeChar.character;
-            fightStore.selected_target_character = null; // 重置目标选择
-            fightStore.battle_instance?.log(`轮到 ${activeChar.character.name} 行动！请选择技能和目标。`);
-        }
+        // 这里不需要主动设置 activeChar，因为主循环会重新检查并设置
     }
 };
 
@@ -441,7 +430,7 @@ const getEnemyAtb = (character: Character) => {
                         <p class="attack-name">{{ selected_our_character.general_name }}</p>
                     </div>
                     <div @click="playerAttack('skill')">
-                        <img :src="icons.tachometer" id="skill-icon" /> <!-- 假设 tachometer 作为技能图标 -->
+                        <img :src="icons.sword" id="skill-icon" /> <!-- 假设 tachometer 作为技能图标 -->
                         <p class="attack-name">{{ selected_our_character.skill_name }}</p>
                     </div>
                     <div @click="playerAttack('super_skill')">
@@ -478,6 +467,7 @@ const getEnemyAtb = (character: Character) => {
 </template>
 
 <style scoped>
+/* ... 样式保持不变 ... */
 .content {
     position: fixed;
     left: 0;

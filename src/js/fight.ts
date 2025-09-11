@@ -119,30 +119,30 @@ export class Battle {
 
     // 获取当前行动的角色
     get_now_character(): { type: 'enemy' | 'our', character: Character } | null {
-        // 找到行动值最高的角色
-        let max_atb = -1;
-        let active_character_info: { type: 'enemy' | 'our', character: Character } | null = null;
+        let ready_characters: { type: 'enemy' | 'our', character: Character }[] = [];
 
         // 检查我方角色
         for (const name in this.our.atb) {
             const chara = this.our.characters[name];
-            if (chara.hp > 0 && this.our.atb[name] > max_atb) {
-                max_atb = this.our.atb[name];
-                active_character_info = { type: 'our', character: chara };
+            if (chara.hp > 0 && this.our.atb[name] >= 100) {
+                ready_characters.push({ type: 'our', character: chara });
             }
         }
 
         // 检查敌方角色
         for (const name in this.enemy.atb) {
             const chara = this.enemy.characters[name];
-            if (chara.hp > 0 && this.enemy.atb[name] > max_atb) {
-                max_atb = this.enemy.atb[name];
-                active_character_info = { type: 'enemy', character: chara };
+            if (chara.hp > 0 && this.enemy.atb[name] >= 100) {
+                ready_characters.push({ type: 'enemy', character: chara });
             }
         }
 
-        // 如果有角色的ATB达到100或更高，就返回该角色
-        if (active_character_info && max_atb >= 100) {
+        // 如果有角色准备行动
+        if (ready_characters.length > 0) {
+            // 根据速度进行排序，速度越快越优先行动
+            ready_characters.sort((a, b) => b.character.speed - a.character.speed);
+
+            const active_character_info = ready_characters[0];
             this.now_character = {
                 type: active_character_info.type,
                 name: active_character_info.character.inside_name

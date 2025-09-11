@@ -133,7 +133,7 @@ export abstract class Character {
         this.max_hp = 100; // 初始最大血量
         this.atk = 10; // 攻击力
         this.def_ = 10; // 防御
-        this.speed = 100; // 速度
+        this.speed = 10; // 速度
 
         this.attr_bonus = {
             [CharacterType.Fire]: 0.0,

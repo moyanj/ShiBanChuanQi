@@ -82,7 +82,7 @@ export const useFightStore = defineStore("fight", {
     state: (): FightStoreState => ({
         enemy: [],
         our: [],
-        ai: true,
+        ai: false,
         battle_instance: null,
         selected_our_character: null,
         selected_target_character: null,
