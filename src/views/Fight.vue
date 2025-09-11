@@ -1,16 +1,16 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
 import { onKeyStroke } from '@vueuse/core';
-import { ElImage, ElAvatar, ElScrollbar, ElMessage, ElDialog } from 'element-plus'; // 导入 ElDialog
+import { ElImage, ElAvatar, ElScrollbar, ElMessage, ElDialog } from 'element-plus';
 import { useDataStore, useSaveStore, useFightStore, APM } from '../js/store';
 import { icons, MersenneTwister } from '../js/utils';
 import sbutton from '../components/sbutton.vue';
-import fightCard from '../components/fight-card.vue'; // 修改为 fightCard
-import card from '../components/card.vue'; // 用于选择角色界面
+import fightCard from '../components/fight-card.vue';
+import card from '../components/card.vue'; // 用于选择角色界面 (虽然这里没用card组件，但保留了import)
 import { Battle } from '../js/fight';
 import { Character, CharacterType, characters } from '../js/character';
 import { ThingList } from '../js/things';
-import cloneDeep from 'lodash-es';
+// import cloneDeep from 'lodash-es'; // 未使用，可以移除
 
 const data = useDataStore();
 const save = useSaveStore();
@@ -20,9 +20,9 @@ const random = new MersenneTwister();
 var show_manager = ref(false);
 var battle_interval: number | null = null; // 用于存储战斗循环的定时器
 var battle_ended = ref(false);
-var show_character_selection = ref(true); // 新增：控制角色选择界面的显示
-var available_characters = ref<Character[]>([]); // 新增：可供选择的角色 (我方)
-var errorMessage = ref(''); // 新增：错误信息
+var show_character_selection = ref(true); // 控制角色选择界面的显示
+var available_characters = ref<Character[]>([]); // 可���选择的角色 (我方)
+var errorMessage = ref(''); // 错误信息
 
 const enemy_avatar = random.randint(1, 100);
 
@@ -104,6 +104,11 @@ const startBattle = () => {
     });
 
     fightStore.battle_instance = new Battle(fightStore.enemy, fightStore.our);
+    // !!! 关键修改点：将AI模式状态传递给战斗实例 !!!
+    if (fightStore.battle_instance) {
+        fightStore.battle_instance.ai_mode = fightStore.ai;
+    }
+
     battle_ended.value = false;
     fightStore.selected_our_character = null;
     fightStore.selected_target_character = null;
@@ -132,26 +137,29 @@ const startBattle = () => {
         } else {
             // 有角色准备行动
             const { type: active_party_type, character: active_character } = activeCharacterInfo;
+            console.log(`当前行动角色: ${active_character.name} (${active_party_type}), AI模式: ${fightStore.ai}`);
 
+            // 如果轮到我方玩家角色行动，且处于手动模式
             if (active_party_type === 'our' && fightStore.ai === false) {
-                // 轮到我方玩家角色行动，且处于手动模式
                 // 如果当前没有选定角色，或者选定的不是当前行动角色，则更新选定角色
                 if (!fightStore.selected_our_character || fightStore.selected_our_character.inside_name !== active_character.inside_name) {
                     fightStore.selected_our_character = active_character;
                     fightStore.selected_target_character = null; // 重置目标选择
                     fightStore.battle_instance.log(`轮到 ${active_character.name} 行动！请选择技能和目标。`);
+                    console.log(`[手动] 等待玩家操作 ${active_character.name}`);
                 }
-                // 此时不推进回合，等待玩家操作
+                // 此时不推进回合，等待玩家操作。next_turn不会被调用。
             } else {
                 // 轮到敌方角色行动，或者我方AI自动行动
-                // 玩家手动模式下，如果我方角色已行动，这里也会被执行，但因为是AI或敌方，不会等待玩家。
+                // 在fight.ts的next_turn中会根据this.ai_mode判断是否执行我方AI逻辑
+                console.log(`[AI/敌方] 推进回合或我方AI自动行动`);
                 const ended = await fightStore.battle_instance.next_turn();
                 if (ended) {
                     endBattle();
                 }
             }
         }
-    }, 100) as unknown as number; // 每次主循环间隔100ms
+    }, 50) as unknown as number; // 每次主循环间隔50ms
 };
 
 const endBattle = () => {
@@ -187,7 +195,7 @@ const endBattle = () => {
 
 // 玩家选择我方角色进行操作
 const selectOurCharacter = (character: Character) => {
-    // 只有当是该角色行动，且处于手动模式时才允许选择
+    // 只有当是该角色行动，���处于手动模式时才允许选择
     if (current_active_character.value?.type === 'our' && current_active_character.value.character.inside_name === character.inside_name && fightStore.ai === false) {
         fightStore.selected_our_character = character;
         fightStore.selected_target_character = null; // 重置目标选择
@@ -226,7 +234,7 @@ const playerAttack = async (attack_type: 'general' | 'skill' | 'super_skill') =>
     const target = fightStore.selected_target_character.character;
     const target_party_type = fightStore.selected_target_character.type;
 
-    // 再次确认当前行动角色是否是玩家选择的这个角色
+    // 再次确认当前行动角色是否是玩家选择的这个��色
     if (current_active_character.value?.type !== 'our' || current_active_character.value.character.inside_name !== attacker.inside_name) {
         ElMessage.error("现在不是该角色的行动回合。");
         // 清除玩家选择状态，等待正确回合
@@ -269,14 +277,17 @@ const playerAttack = async (attack_type: 'general' | 'skill' | 'super_skill') =>
 
 const toggleAI = () => {
     fightStore.ai = !fightStore.ai;
+    if (fightStore.battle_instance) {
+        fightStore.battle_instance.ai_mode = fightStore.ai; // 更新战斗实例的AI模式
+        console.log("切换AI模式，战斗实例AI模式为:", fightStore.battle_instance.ai_mode);
+    }
+
     if (fightStore.ai) {
         ElMessage.info("已切换为AI自动战斗");
         fightStore.selected_our_character = null;
         fightStore.selected_target_character = null;
     } else {
         ElMessage.info("已切换为手动战斗");
-        // 如果切换到手动模式，并且有我方角色正在行动，则立即选中它
-        // 这里不需要主动设置 activeChar，因为主循环会重新检查并设置
     }
 };
 
@@ -286,18 +297,13 @@ const toggleAI = () => {
  * @returns 略弱的敌方角色实例
  */
 const createWeakerEnemy = (baseCharacter: Character): Character => {
-    // 1. 获取 baseCharacter 的构造函数
-    //    这里需要从 `characters` 映射中找到对应的构造函数
     const CharacterConstructor = characters[baseCharacter.inside_name];
     const weakerEnemy = new CharacterConstructor();
-    console.log("创建略弱敌方角色：", weakerEnemy);
     weakerEnemy.load(baseCharacter.dump()); // 加载基础角色的数据，包括等级、XP、HP等
-    // 4. 调整属性进行削弱
     weakerEnemy.level = Math.max(1, baseCharacter.level - random.randint(1, 3)); // 等级降低1-3级，至少为1级
     weakerEnemy.level_hp();
     weakerEnemy.level_atk();
     weakerEnemy.level_def();
-    // 如果想在 level_hp/atk/def 之后再进行百分比削弱，可以这样：
     weakerEnemy.atk = Math.round(weakerEnemy.atk * random.randfloat(0.7, 0.9)); // 攻击力在计算后降低10%-30%
     weakerEnemy.def_ = Math.round(weakerEnemy.def_ * random.randfloat(0.7, 0.9)); // 防御力在计算后降低10%-30%
     weakerEnemy.hp = weakerEnemy.max_hp; // 确保满血状态
@@ -309,24 +315,19 @@ const createWeakerEnemy = (baseCharacter: Character): Character => {
  * 随机生成敌方角色队伍
  */
 const generateEnemyCharacters = () => {
-    // 获取我方选择的角色，作为敌方选择的模板池
     const ourCharacters = fightStore.our;
     if (ourCharacters.length === 0) {
         ElMessage.error("我方没有选择角色，无法生成敌方！");
         return;
     }
 
-    // 清空现有的敌方队伍
     fightStore.enemy = [];
 
-    // 从我方角色池中随机抽取N个角色作为敌方模板
-    // 为了简单起见，我们让敌方角色数量和我方一样，都为3个
     const numEnemies = 3;
-    const availableEnemyTemplates = [...ourCharacters]; // 复制一份，避免修改原始我方队伍
+    const availableEnemyTemplates = [...ourCharacters];
 
     for (let i = 0; i < numEnemies; i++) {
         if (availableEnemyTemplates.length === 0) {
-            // 如果模板不够，就重复使用已有的，或者从所有角色中随机选
             const allAvailableGameCharacters = save.characters.get_all();
             if (allAvailableGameCharacters.length > 0) {
                 const randomIndex = random.randint(0, allAvailableGameCharacters.length - 1);
@@ -338,7 +339,7 @@ const generateEnemyCharacters = () => {
             }
         } else {
             const randomIndex = random.randint(0, availableEnemyTemplates.length - 1);
-            const selectedTemplate = availableEnemyTemplates.splice(randomIndex, 1)[0]; // 抽取并移除，保证不重复
+            const selectedTemplate = availableEnemyTemplates.splice(randomIndex, 1)[0];
             fightStore.enemy.push(createWeakerEnemy(selectedTemplate));
         }
     }
@@ -349,18 +350,15 @@ const generateEnemyCharacters = () => {
 
 // 在组件挂载时初始化可选角色 (我方)
 onMounted(() => {
-    // 获取所有可用角色
     available_characters.value = save.characters.get_all();
 
     if (available_characters.value.length === 0) {
         errorMessage.value = "你还没有任何角色！请去抽卡。";
         ElMessage.error(errorMessage.value);
-        // 可以选择在这里直接跳转到抽卡页面或者主页
         data.page_type = 'main';
         return;
     }
 
-    // 角色选择界面默认显示
     show_character_selection.value = true;
 });
 
@@ -373,11 +371,11 @@ onUnmounted(() => {
     APM.play("background_music");
     // 清空选择的角色，避免下次进入战斗时残留
     fightStore.selected_characters = [];
-    fightStore.our = []; // 清空我方队伍
-    fightStore.enemy = []; // 清空敌方队伍
+    fightStore.our = [];
+    fightStore.enemy = [];
     fightStore.selected_our_character = null;
     fightStore.selected_target_character = null;
-    fightStore.battle_instance = null; // 清除战斗实例
+    fightStore.battle_instance = null;
 });
 
 // 模拟一个随机的敌人名称，可以根据实际情况替换
@@ -388,24 +386,10 @@ const enemy_name = computed(() => {
     return '未知敌人';
 });
 
-const getCharacterHp = (character: Character) => {
-    return character.hp;
-}
-
-const getCharacterMaxHp = (character: Character) => {
-    return character.max_hp;
-}
-
+// 计算ATB值，用于显示
 const getCharacterAtb = (character: Character) => {
     if (fightStore.battle_instance) {
         return fightStore.battle_instance.our.atb[character.inside_name];
-    }
-    return 0;
-}
-
-const getEnemyAtb = (character: Character) => {
-    if (fightStore.battle_instance) {
-        return fightStore.battle_instance.enemy.atb[character.inside_name];
     }
     return 0;
 }
@@ -484,6 +468,7 @@ const getEnemyAtb = (character: Character) => {
                         :is_selected="selected_our_character?.inside_name === char.inside_name"
                         @click="selectOurCharacter(char)"></fightCard>
                 </div>
+                <!-- 玩家手动攻击按钮，仅在手动模式、有行动角色、有目标时显示 -->
                 <div class="atk"
                     v-if="!fightStore.ai && selected_our_character && current_active_character?.type === 'our' && current_active_character.character.inside_name === selected_our_character.inside_name && selected_target_character">
                     <div @click="playerAttack('general')">
@@ -491,11 +476,11 @@ const getEnemyAtb = (character: Character) => {
                         <p class="attack-name">{{ selected_our_character.general_name }}</p>
                     </div>
                     <div @click="playerAttack('skill')">
-                        <img :src="icons.sword" id="skill-icon" /> <!-- 假设 tachometer 作为技能图标 -->
+                        <img :src="icons.sword" id="skill-icon" />
                         <p class="attack-name">{{ selected_our_character.skill_name }}</p>
                     </div>
                     <div @click="playerAttack('super_skill')">
-                        <img :src="icons.wish" id="super-skill-icon" /> <!-- 假设 wish 作为爆发技图标 -->
+                        <img :src="icons.wish" id="super-skill-icon" />
                         <p class="attack-name">{{ selected_our_character.super_skill_name }}</p>
                     </div>
                 </div>
@@ -528,7 +513,7 @@ const getEnemyAtb = (character: Character) => {
 </template>
 
 <style scoped>
-/* ... 样式保持不变 ... */
+/* 保持所有样式不变，因为主要改动在逻辑层 */
 .content {
     position: fixed;
     left: 0;
@@ -573,11 +558,9 @@ const getEnemyAtb = (character: Character) => {
 .our {
     width: 100vw;
     height: 40vh;
-    /* 调整高度 */
     display: flex;
     justify-content: center;
     align-items: center;
-    /* 垂直居中 */
     padding: 10px 0;
 }
 
@@ -586,7 +569,6 @@ const getEnemyAtb = (character: Character) => {
     display: flex;
     justify-content: center;
     gap: 20px;
-    /* 增加卡片间距 */
 }
 
 .toolbar {
@@ -616,7 +598,6 @@ const getEnemyAtb = (character: Character) => {
 
 .toolbar .el-avatar {
     width: 40px;
-    /* 调整头像大小 */
     height: 40px;
     margin-bottom: 5px;
 }
@@ -632,9 +613,7 @@ const getEnemyAtb = (character: Character) => {
     bottom: 25px;
     right: 25px;
     width: auto;
-    /* 自动调整宽度 */
     height: 70px;
-    /* 调整高度 */
     display: flex;
     align-items: center;
     background-color: rgba(0, 0, 0, 0.6);
@@ -644,9 +623,7 @@ const getEnemyAtb = (character: Character) => {
 
 .atk div {
     background-color: #4CAF50;
-    /* 默认绿色 */
     width: 60px;
-    /* 调整按钮大小 */
     height: 60px;
     border-radius: 50%;
     margin: 0 10px;
@@ -658,7 +635,6 @@ const getEnemyAtb = (character: Character) => {
     transition: background-color 0.3s, transform 0.2s;
     position: relative;
     overflow: hidden;
-    /* 确保文字不溢出 */
 }
 
 .atk div:hover {
@@ -667,26 +643,21 @@ const getEnemyAtb = (character: Character) => {
 
 .atk div img {
     width: 60%;
-    /* 调整图标大小 */
     height: auto;
     filter: invert(1);
-    /* 使图标变为白色 */
 }
 
 .atk div:nth-child(2) {
     background-color: #2196F3;
-    /* 技能蓝色 */
 }
 
 .atk div:nth-child(3) {
     background-color: #FFC107;
-    /* 爆发技黄色 */
 }
 
 .attack-name {
     position: absolute;
     bottom: 0px;
-    /* 调整文字位置 */
     font-size: 10px;
     color: white;
     text-align: center;
@@ -695,7 +666,6 @@ const getEnemyAtb = (character: Character) => {
     overflow: hidden;
     text-overflow: ellipsis;
     background-color: rgba(0, 0, 0, 0.5);
-    /* 文字背景 */
     padding-top: 2px;
 }
 
@@ -703,7 +673,6 @@ const getEnemyAtb = (character: Character) => {
 #skill-icon,
 #super-skill-icon {
     margin-top: -5px;
-    /* 向上微调图标位置 */
 }
 
 .battle-log {
@@ -725,7 +694,6 @@ const getEnemyAtb = (character: Character) => {
     line-height: 1.2;
 }
 
-/* 角色选择界面样式 */
 .character-selection-overlay {
     position: fixed;
     top: 0;
@@ -817,7 +785,6 @@ const getEnemyAtb = (character: Character) => {
     text-align: center;
     position: relative;
     padding-bottom: 5px;
-    /* 留出底部信息的高度 */
 }
 
 .character-selection-card:hover {
@@ -834,7 +801,6 @@ const getEnemyAtb = (character: Character) => {
 .character-card-image {
     width: 100%;
     height: 180px;
-    /* 固定图片高度 */
     object-fit: cover;
     display: block;
 }
