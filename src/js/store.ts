@@ -48,7 +48,6 @@ export interface FightStoreState {
 }
 
 export const useDataStore = defineStore('data', {
-    persist: true,
     state: (): DataStoreState => ({
         page_type: 'main',
         is_electron: false,

@@ -123,6 +123,7 @@ function skip() {
         <el-row>
             <sbutton type="primary" @click="run(1)">点击抽卡</sbutton>
             <sbutton type="primary" @click="run(10)">点击抽卡(十连)</sbutton>
+            <sbutton type="primary" @click="run(100)">点击抽卡(百连)</sbutton>
             <sbutton type="primary" @click="run(2500)" v-if='dataStore.is_dev'>点击抽卡(二千五百连)</sbutton>
         </el-row>
 
