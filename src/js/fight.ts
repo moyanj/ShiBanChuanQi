@@ -295,16 +295,6 @@ export class Battle {
             }
         }
 
-        // 应用好感度加成 (示例：好感度越高，伤害/治疗越高)
-        // 假设每100好感度提供1%的额外效果
-        if (skill.type === SkillType.Damage || skill.type === SkillType.Heal) {
-            const favorability_bonus = attacker_character.favorability / 10000; // 100好感度 = 1% (0.01)
-            final_skill_value *= (1 + favorability_bonus);
-            if (favorability_bonus > 0) {
-                this.log(`${attacker_character.name} 的好感度提供了 ${Math.round(favorability_bonus * 100)}% 的额外效果！`);
-            }
-        }
-
         // 创建一个临时技能对象，包含最终计算后的value
         const executed_skill: Skill = { ...skill, value: final_skill_value };
 

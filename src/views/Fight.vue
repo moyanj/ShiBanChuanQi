@@ -189,6 +189,10 @@ const endBattle = () => {
         save.things.add(new (ThingList["XinHuo"] as any)(), xinhuo_reward);
         ElMessage.success(`${message} 获得 ${exp_reward} EXP, ${xinhuo_reward} 星火`);
 
+        for (const char of fightStore.our) {
+            char.favorability += 5;
+        }
+
     } else if (fightStore.battle_instance?.our.hp <= 0) {
         message = "很遗憾，战斗失败！";
         ElMessage.error(message);
@@ -311,12 +315,10 @@ const createWeakerEnemy = (baseCharacter: Character): Character => {
     const CharacterConstructor = characters[baseCharacter.inside_name];
     const weakerEnemy = new CharacterConstructor();
     weakerEnemy.load(baseCharacter.dump()); // 加载基础角色的数据，包括等级、XP、HP等
-    weakerEnemy.level = Math.max(1, baseCharacter.level - random.randint(1, 3)); // 等级降低1-3级，至少为1级
+    weakerEnemy.level = Math.max(1, baseCharacter.level - random.randint(-3, 3)); // 等级降低1-3级，至少为1级
     weakerEnemy.level_hp();
     weakerEnemy.level_atk();
     weakerEnemy.level_def();
-    weakerEnemy.atk = Math.round(weakerEnemy.atk * random.randfloat(0.7, 0.9)); // 攻击力在计算后降低10%-30%
-    weakerEnemy.def_ = Math.round(weakerEnemy.def_ * random.randfloat(0.7, 0.9)); // 防御力在计算后降低10%-30%
     weakerEnemy.hp = weakerEnemy.max_hp; // 确保满血状态
     weakerEnemy.name = `[敌]${baseCharacter.name}`; // 敌方角色名称标记
     return weakerEnemy;
