@@ -89,9 +89,7 @@ class Builer:
             return [Target(system, arch, v, name)]
 
         return [
-            Target("linux", "x64", self.default_version, "linux"),  # Linux x64
             Target("win32", "x64", self.default_version, "win"),  # Windows x64
-            Target("win32", "ia32", self.default_version, "win"),  # Windows x86
             Target("win32", "ia32", "22.3.27", "win7"),  # Windows x86 兼容版
         ]
 
@@ -451,7 +449,7 @@ if __name__ == "__main__":
     parser.add_argument("--no-build-html", action="store_true", help="build html")
     parser.add_argument("--no-zip", action="store_true", help="no zip")
     parser.add_argument("--no-check", action="store_true", help="no check")
-    parser.add_argument("--default-version", help="default version", default="30.5.1")
+    parser.add_argument("--default-version", help="default version", default="38.1.0")
     parser.add_argument("--no-clean", action="store_true", help="no clean")
     parser.add_argument("--no-ele", action="store_true", help="no clean")
     args = parser.parse_args()
