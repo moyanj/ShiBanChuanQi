@@ -25,6 +25,7 @@ var show_ani = ref(false);
 var show_result = ref(false);
 var show_skip = ref(false);
 var result = ref([])
+var count_XinHuo = ref(saveStore.things.get("XinHuo"));
 
 const random = new MersenneTwister();
 const wish_list = []
@@ -69,6 +70,8 @@ function wish(n: number = 1) {
     saveStore.wish_number += n; // 更新抽奖次数
 
     result.value = [];
+
+    count_XinHuo.value = saveStore.things.get("XinHuo");
 
 
     for (let i = 1; i < n + 1; i++) {
@@ -125,6 +128,9 @@ function skip() {
 
         <p>据上一次出货的抽数：{{ saveStore.n_wish }}</p>
         <p>总抽数：{{ saveStore.wish_number }}</p>
+        <p>星火数量：{{ count_XinHuo }} 约{{ Math.floor(count_XinHuo / 280) }}抽</p>
+        <p></p>
+
         <div id="captcha"></div>
 
         <!-- 抽卡动画 -->
