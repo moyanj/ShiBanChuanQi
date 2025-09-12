@@ -32,6 +32,11 @@ var now_character = ref(data[0]);
 watch(save.characters.characters, () => {
     data = save.characters.get_all();
     data.reverse();
+    if (data.length > 0) {
+        now_character.value = data[0];
+    } else {
+        now_character.value = null;
+    }
 });
 
 const change_character = (content) => {
