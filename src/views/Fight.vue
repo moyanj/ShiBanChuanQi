@@ -23,6 +23,10 @@ var battle_ended = ref(false);
 var show_character_selection = ref(true); // 控制角色选择界面的显示
 var available_characters = ref<Character[]>([]); // 可���选择的角色 (我方)
 var errorMessage = ref(''); // 错误信息
+var show_settlement_dialog = ref(false); // 控制结算界面的显示
+var battle_result = ref("");
+var battle_exp_reward = ref(0);
+var battle_xinhuo_reward = ref(0);
 
 const enemy_avatar = random.randint(1, 100);
 
@@ -172,12 +176,18 @@ const endBattle = () => {
     APM.play("background_music"); // 恢复主页背景音乐
 
     let message = '';
+    let exp_reward = 0;
+    let xinhuo_reward = 0;
+
     if (fightStore.battle_instance?.enemy.hp <= 0) {
         message = "恭喜你，战斗胜利！";
         // 给予经验值奖励
-        const exp_reward = fightStore.enemy.reduce((sum, char) => sum + Math.round(char.level_xp(char.level) / 5), 0);
+        exp_reward = fightStore.enemy.reduce((sum, char) => sum + Math.round(char.level_xp(char.level) / 5), 0);
         save.things.add(new (ThingList["EXP"] as any)(), exp_reward);
-        ElMessage.success(`${message} 获得 ${exp_reward} EXP`);
+        // 给予星火奖励
+        xinhuo_reward = random.randint(175, 840);
+        save.things.add(new (ThingList["XinHuo"] as any)(), xinhuo_reward);
+        ElMessage.success(`${message} 获得 ${exp_reward} EXP, ${xinhuo_reward} 星火`);
 
     } else if (fightStore.battle_instance?.our.hp <= 0) {
         message = "很遗憾，战斗失败！";
@@ -190,7 +200,10 @@ const endBattle = () => {
         char.reset_status();
     }
     fightStore.battle_instance?.log(message);
-    // 可选：显示结算界面
+    battle_result.value = fightStore.battle_instance?.enemy.hp <= 0 ? 'win' : 'lose';
+    battle_exp_reward.value = exp_reward;
+    battle_xinhuo_reward.value = xinhuo_reward;
+    show_settlement_dialog.value = true; // 显示结算界面
 };
 
 // 玩家选择我方角色进行操作
@@ -315,7 +328,7 @@ const createWeakerEnemy = (baseCharacter: Character): Character => {
  * 随机生成敌方角色队伍
  */
 const generateEnemyCharacters = () => {
-    const ourCharacters = fightStore.our;
+    const ourCharacters = save.characters.get_all();
     if (ourCharacters.length === 0) {
         ElMessage.error("我方没有选择角色，无法生成敌方！");
         return;
@@ -509,6 +522,23 @@ const getCharacterAtb = (character: Character) => {
                 <h3 v-else>回合数: {{ fightStore.battle_instance?.tick / 10 }}</h3>
             </div>
         </div>
+
+        <!-- 结算界面 -->
+        <el-dialog v-model="show_settlement_dialog" title="战斗结算" width="500px" :close-on-click-modal="false"
+            :close-on-press-escape="false" :show-close="false">
+            <div class="settlement-content">
+                <h2 v-if="battle_result === 'win'" style="color: #67c23a;">战斗胜利！</h2>
+                <h2 v-else style="color: #f56c6c;">战斗失败！</h2>
+
+                <div v-if="battle_result === 'win'" class="rewards-section">
+                    <h3>奖励：</h3>
+                    <p>经验值: {{ battle_exp_reward }}</p>
+                    <p>星火: {{ battle_xinhuo_reward }}</p>
+                </div>
+
+                <sbutton type="primary" @click="data.page_type = 'main'">返回主页</sbutton>
+            </div>
+        </el-dialog>
     </div>
 </template>
 

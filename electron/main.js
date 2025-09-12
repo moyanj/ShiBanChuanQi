@@ -5,12 +5,12 @@ function createWindow() {
   const win = new BrowserWindow({
     width: 1366,
     height: 720,
-    title: "十班传奇",
+    title: "十班全明星",
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js')
-    }
+      preload: path.join(__dirname, "preload.js"),
+    },
   });
-    // 注意：
+  // 注意：
   //  因为我们加载的是Vue 构建后的dist 目录，所以我们需要改一下， load
   //  的文件地址。
   win.loadFile("html/index.html");
