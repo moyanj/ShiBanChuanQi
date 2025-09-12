@@ -4,7 +4,8 @@ import { CharacterManager, Character } from './character';
 import { AudioPlayer } from './utils';
 import { HistoryManager } from './lib/ai';
 import { randomName } from './lib/name';
-import { Battle } from './fight'; // 引入 Battle 类
+import { Battle, SkillType } from './fight'; // 引入 Battle 类
+import { AnimationData } from '../types/app.d'; // 引入 AnimationData
 
 interface BuildInfoState {
     version: string;
@@ -87,6 +88,14 @@ export const useFightStore = defineStore("fight", {
         selected_target_character: null,
         selected_characters: [], // 初始化为空数组
     }),
+    actions: {
+        triggerAnimation(animationData: AnimationData) {
+            this.current_animation = animationData;
+        },
+        clearAnimation() {
+            this.current_animation = null;
+        }
+    }
 });
 
 export const APM: AudioPlayer = new AudioPlayer();

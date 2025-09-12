@@ -1,4 +1,5 @@
 import { Character, CharacterType, ActiveEffect } from "./character";
+import { useFightStore } from './store';
 
 export enum SkillType {
     Damage = "伤害",
@@ -13,6 +14,7 @@ export interface Skill {
     name: string;
     type: SkillType;
     value: number;
+    cost: number; // 新增：战技点消耗
     targetScope: 'single' | 'all_allies' | 'all_enemies';
     attribute?: 'atk' | 'def_' | 'speed' | 'hp'; // For buffs/debuffs
     duration?: number; // For buffs/debuffs, in turns
@@ -162,6 +164,8 @@ export class Battle {
     tick: number;
     battle_log: string[]; // 战斗日志
     ai_mode: boolean; // 新增：战斗是否处于AI模式
+    battle_points: number; // 战技点
+    fightStore: ReturnType<typeof useFightStore>; // 新增：Pinia fight store 实例
 
     constructor(enemy_characters: Character[], our_characters: Character[]) {
         this.enemy = new BattleCharacters(enemy_characters);
@@ -170,13 +174,15 @@ export class Battle {
         this.now_character = null;
         this.battle_log = [];
         this.ai_mode = false; // 默认为手动模式
+        this.battle_points = 5; // 初始化战技点为5
+        this.fightStore = useFightStore(); // 初始化 fight store
 
         this.log("战斗开始！");
     }
 
     // 记录战斗日志
     log(message: string) {
-        this.battle_log.push(`[${this.tick}] ${message}`);
+        this.battle_log.push(`[${this.tick / 100}] ${message}`);
         if (this.battle_log.length > 10) { // 保持日志长度，只显示最新几条
             this.battle_log.shift();
         }
@@ -259,6 +265,17 @@ export class Battle {
             return 0;
         }
 
+        // 战技点消耗逻辑
+        if (attacker_character.is_our && skill.cost > 0) {
+            if (this.battle_points >= skill.cost) {
+                this.battle_points -= skill.cost;
+                this.log(`${attacker_character.name} 使用 ${skill.name} 消耗 ${skill.cost} 战技点，当前战技点：${this.battle_points}`);
+            } else {
+                this.log(`${attacker_character.name} 战技点不足，无法使用 ${skill.name}！`);
+                return 0; // 战技点不足，技能无法执行
+            }
+        }
+
         let final_skill_value = skill.value;
 
         // 计算属性克制/抵抗 (仅对伤害和治疗有效)
@@ -319,7 +336,6 @@ export class Battle {
             actual_value_dealt = target_battle_characters.apply_effect(target_character_name, executed_skill, attacker_character);
         }
 
-
         if (skill.type === SkillType.Damage) {
             this.log(`${attacker_character.name} 对 ${target_character.name} 造成了 ${Math.round(actual_value_dealt)} 点伤害。`);
         } else if (skill.type === SkillType.Heal) {
@@ -337,6 +353,12 @@ export class Battle {
 
         if (target_character.hp <= 0 && (skill.type === SkillType.Damage || skill.type === SkillType.Heal)) { // Only log death for damage/heal
             this.log(`${target_character.name} 已阵亡！`);
+        }
+
+        // Battle points logic
+        if (target_party === 'enemy' && skill.name === attacker_character.general_name) {
+            this.battle_points = Math.min(5, this.battle_points + 1);
+            this.log(`${attacker_character.name} 使用普通攻击，战技点回复1点，当前战技点：${this.battle_points}`);
         }
 
         return actual_value_dealt;

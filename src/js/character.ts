@@ -96,6 +96,7 @@ export abstract class Character {
     name: string;
     inside_name: string;
     desc: string;
+    is_our: boolean; // 新增：是否是我方角色
 
     general_name: string;
     skill_name: string;
@@ -122,6 +123,7 @@ export abstract class Character {
         this.name = "Test"; // 角色名
         this.inside_name = "Test";
         this.desc = "这是一个测试角色";
+        this.is_our = false; // 默认为敌方角色
 
         this.skill_name = "技能";
         this.general_name = "普通攻击";
@@ -284,6 +286,7 @@ export abstract class Character {
             name: this.general_name,
             type: SkillType.Damage,
             value: this.general(),
+            cost: 0, // 普通攻击不消耗战技点
             targetScope: 'single',
             description: this.general_desc,
         };
@@ -295,6 +298,7 @@ export abstract class Character {
             name: this.skill_name,
             type: SkillType.Damage,
             value: this.skill(),
+            cost: 1, // 技能消耗1点战技点
             targetScope: 'single',
             description: this.skill_desc,
         };
@@ -306,6 +310,7 @@ export abstract class Character {
             name: this.super_skill_name,
             type: SkillType.Damage,
             value: this.super_skill(),
+            cost: 3, // 大招消耗3点战技点
             targetScope: 'single',
             description: this.super_skill_desc,
         };

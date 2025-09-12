@@ -95,10 +95,11 @@ const startBattle = () => {
     fightStore.our = fightStore.selected_characters;
     show_character_selection.value = false; // 关闭角色选择界面
 
-    // 确保所有角色都有初始血量和最大血量
+    // 确保所有角色都有初始血量和最大血量，并设置is_our为true
     fightStore.our.forEach(c => {
         if (c.hp <= 0) c.hp = c.max_hp;
         if (c.max_hp <= 0) c.level_hp(); // 重新计算最大血量
+        c.is_our = true; // 明确标记为我方角色
     });
 
     // 在我方角色确定后，生成敌方角色
@@ -284,6 +285,12 @@ const playerAttack = async (attack_type: 'general' | 'skill' | 'super_skill') =>
     // 执行技能
     const dealt_value = fightStore.battle_instance.execute_skill(target_party_type, target.inside_name, skill_to_execute, attacker);
 
+    // 如果技能消耗了战技点但未能成功执行 (dealt_value 为 0 且技能有消耗)，则提示用户并等待重新选择
+    if (skill_to_execute.cost > 0 && dealt_value === 0) {
+        ElMessage.warning("战技点不足，请重新选择技能！");
+        return; // 不重置ATB和选择状态，等待玩家重新操作
+    }
+
     // 重置当前行动角色的ATB，因为已经执行了操作
     fightStore.battle_instance.our.reset_atb(attacker.inside_name);
 
@@ -458,11 +465,10 @@ const getCharacterAtb = (character: Character) => {
             <div class="toolbar">
                 <div>
                     <el-avatar><img :src="`avatars/${enemy_avatar}.png`" id="avatar"></el-avatar>
-                    <div class="team-hp">敌方HP: {{ Math.round(fightStore.battle_instance?.enemy.hp || 0) }}</div>
                 </div>
                 <div>
                     <el-avatar><img :src="save.user_avatar" id="avatar"></el-avatar>
-                    <div class="team-hp">我方HP: {{ Math.round(fightStore.battle_instance?.our.hp || 0) }}</div>
+                    <div class="battle-points">战技点: {{ fightStore.battle_instance?.battle_points || 0 }}/5</div>
                 </div>
             </div>
             <div class="enemy">
@@ -522,7 +528,7 @@ const getCharacterAtb = (character: Character) => {
                 <br>
                 <h2>正在与{{ enemy_name }}战斗</h2>
                 <h3 v-if="battle_ended">战斗已结束</h3>
-                <h3 v-else>回合数: {{ fightStore.battle_instance?.tick / 10 }}</h3>
+                <h3 v-else>回合数: {{ fightStore.battle_instance?.tick / 100 }}</h3>
             </div>
         </div>
 
@@ -639,6 +645,14 @@ const getCharacterAtb = (character: Character) => {
     font-size: 10px;
     color: white;
     text-align: center;
+}
+
+.battle-points {
+    font-size: 10px;
+    color: white;
+    text-align: center;
+    margin-top: 2px;
+    /* Add a small margin for separation */
 }
 
 .atk {
