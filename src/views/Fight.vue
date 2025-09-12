@@ -421,7 +421,7 @@ const getCharacterAtb = (character: Character) => {
                 <div class="selected-characters-preview">
                     <div v-for="char in fightStore.selected_characters" :key="char.inside_name"
                         class="selected-char-item">
-                        <img :src="`illustrations/${char.inside_name}.png`" :alt="char.name"
+                        <img :src="`illustrations/${char.inside_name}.jpg`" :alt="char.name"
                             class="selected-char-avatar" />
                         <p>{{ char.name }}</p>
                     </div>
@@ -436,7 +436,7 @@ const getCharacterAtb = (character: Character) => {
                         <div v-for="char in available_characters" :key="char.inside_name"
                             class="character-selection-card" :class="{ 'selected': isCharacterSelected(char) }"
                             @click="toggleCharacterSelection(char)">
-                            <img :src="`illustrations/${char.inside_name}.png`" :alt="char.name"
+                            <img :src="`illustrations/${char.inside_name}.jpg`" :alt="char.name"
                                 class="character-card-image" />
                             <div class="character-card-info">
                                 <img :src="c2e[char.type]" class="character-type-icon" />

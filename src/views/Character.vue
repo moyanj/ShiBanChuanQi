@@ -3,7 +3,7 @@ import { ElCard, ElRow, ElCol, ElScrollbar, ElImage, ElDescriptions, ElDescripti
 import { CharacterType } from '../js/character';
 import { useSaveStore } from '../js/store';
 import { icons } from '../js/utils';
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue'; // 引入 computed
 import sbutton from '../components/sbutton.vue'
 
 
@@ -49,9 +49,15 @@ const level_up = () => {
     save.characters.update(now_character.value)
 }
 watch(now_character, () => {
-    ill.value = `illustrations/${now_character.value.inside_name}.jpg`;
+    if (now_character.value) { // 确保 now_character.value 不为空
+        ill.value = `illustrations/${now_character.value.inside_name}.jpg`;
+    }
+});
 
-})
+// 计算属性，判断当前角色卡片是否被选中
+const isSelected = (item) => {
+    return now_character.value && now_character.value.inside_name === item.inside_name; // 假设每个角色都有一个唯一的id
+};
 
 </script>
 
@@ -59,7 +65,8 @@ watch(now_character, () => {
     <el-row>
         <el-col :span="3">
             <el-scrollbar class="menu">
-                <el-card class="item" v-for="item in data" @click="change_character(item)" v-if="data.length > 0">
+                <el-card class="item" v-for="item in data" :key="item.inside_name" @click="change_character(item)"
+                    :class="{ 'selected': isSelected(item) }" v-if="data.length > 0">
                     <div class="item-content">
                         <el-image :src="c2e[item.type]" style="margin-right: 10px;" class="type"></el-image>
                         <h4 class="name" style="margin: 0;">{{ item.name }}</h4>
@@ -163,7 +170,8 @@ watch(now_character, () => {
     margin-right: 10px;
     background-color: #26272b;
     margin-bottom: 10px;
-
+    /* 新增：添加过渡效果，使选中状态更平滑 */
+    transition: border 0.3s ease-in-out;
 }
 
 .verticalBar {
@@ -215,5 +223,12 @@ watch(now_character, () => {
 .ill {
     width: auto;
     height: 75vh;
+}
+
+.selected {
+    border: 2px solid whitesmoke;
+    /* 调整边框颜色和粗细，使其更明显 */
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    /* 添加一些阴影效果 */
 }
 </style>
