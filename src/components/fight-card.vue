@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { defineProps, computed } from 'vue';
-import { Character } from '../js/character';
+import { Character, ActiveEffect } from '../js/character';
 
 const props = defineProps({
     character: {
@@ -22,6 +22,10 @@ const props = defineProps({
     is_selected: { // 新增：是否被选中
         type: Boolean,
         default: false
+    },
+    active_effects: {
+        type: Array as () => ActiveEffect[],
+        default: () => []
     }
 })
 
@@ -58,6 +62,13 @@ const cardClass = computed(() => {
             </div>
             <div class="atb-bar-container" v-if="!is_enemy">
                 <div class="atb-bar" :style="{ width: atbPercentage }"></div>
+            </div>
+            <div class="active-effects-container" v-if="active_effects.length > 0">
+                <div v-for="effect in active_effects" :key="effect.source_skill_name + effect.attribute"
+                    :class="['effect-item', effect.type]">
+                    {{ effect.attribute.toUpperCase() }}: {{ effect.type === 'buff' ? '+' : '-' }}{{ effect.value }}
+                    ({{ effect.duration }}T)
+                </div>
             </div>
         </div>
     </div>
@@ -152,5 +163,31 @@ const cardClass = computed(() => {
     height: 100%;
     background-color: #2196F3;
     transition: width 0.3s ease-in-out;
+}
+
+.active-effects-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 3px;
+    margin-top: 5px;
+}
+
+.effect-item {
+    font-size: 9px;
+    padding: 2px 5px;
+    border-radius: 3px;
+    color: white;
+    white-space: nowrap;
+}
+
+.effect-item.buff {
+    background-color: rgba(76, 175, 80, 0.8);
+    /* Green for buffs */
+}
+
+.effect-item.debuff {
+    background-color: rgba(244, 67, 54, 0.8);
+    /* Red for debuffs */
 }
 </style>

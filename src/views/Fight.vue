@@ -7,7 +7,7 @@ import { icons, MersenneTwister } from '../js/utils';
 import sbutton from '../components/sbutton.vue';
 import fightCard from '../components/fight-card.vue';
 import card from '../components/card.vue'; // 用于选择角色界面 (虽然这里没用card组件，但保留了import)
-import { Battle } from '../js/fight';
+import { Battle, Skill } from '../js/fight';
 import { Character, CharacterType, characters } from '../js/character';
 import { ThingList } from '../js/things';
 // import cloneDeep from 'lodash-es'; // 未使用，可以移除
@@ -256,26 +256,26 @@ const playerAttack = async (attack_type: 'general' | 'skill' | 'super_skill') =>
         return;
     }
 
-    let damage = 0;
-    let attack_name = "";
-
+    let skill_to_execute: Skill | null = null;
     switch (attack_type) {
         case 'general':
-            damage = attacker.general();
-            attack_name = attacker.general_name;
+            skill_to_execute = attacker.getGeneralSkill();
             break;
         case 'skill':
-            damage = attacker.skill();
-            attack_name = attacker.skill_name;
+            skill_to_execute = attacker.getSkill();
             break;
         case 'super_skill':
-            damage = attacker.super_skill();
-            attack_name = attacker.super_skill_name;
+            skill_to_execute = attacker.getSuperSkill();
             break;
     }
 
-    fightStore.battle_instance.log(`${attacker.name} 使用 ${attack_name} 攻击 ${target.name}！`);
-    const dealt_damage = fightStore.battle_instance.take_damage(target_party_type, target.inside_name, damage, attacker);
+    if (!skill_to_execute) {
+        ElMessage.error("未能获取到技能信息。");
+        return;
+    }
+
+    // 执行技能
+    const dealt_value = fightStore.battle_instance.execute_skill(target_party_type, target.inside_name, skill_to_execute, attacker);
 
     // 重置当前行动角色的ATB，因为已经执行了操作
     fightStore.battle_instance.our.reset_atb(attacker.inside_name);
@@ -284,8 +284,6 @@ const playerAttack = async (attack_type: 'general' | 'skill' | 'super_skill') =>
     fightStore.selected_our_character = null;
     fightStore.selected_target_character = null;
 
-    // 战斗结束判断将在主循环的下一次迭代中进行检查
-    // 这里不再直接调用 next_turn，让主循环自己处理。
 };
 
 const toggleAI = () => {
@@ -469,7 +467,7 @@ const getCharacterAtb = (character: Character) => {
                         :is_active="current_active_character?.type === 'enemy' && current_active_character.character.inside_name === char.inside_name"
                         :is_enemy="true"
                         :is_selected="selected_target_character?.type === 'enemy' && selected_target_character.character.inside_name === char.inside_name"
-                        @click="selectTargetCharacter('enemy', char)"></fightCard>
+                        :active_effects="char.active_effects" @click="selectTargetCharacter('enemy', char)"></fightCard>
                 </div>
             </div>
             <div class="our">
@@ -479,7 +477,7 @@ const getCharacterAtb = (character: Character) => {
                         :is_active="current_active_character?.type === 'our' && current_active_character.character.inside_name === char.inside_name"
                         :atb_value="getCharacterAtb(char)" :is_enemy="false"
                         :is_selected="selected_our_character?.inside_name === char.inside_name"
-                        @click="selectOurCharacter(char)"></fightCard>
+                        :active_effects="char.active_effects" @click="selectOurCharacter(char)"></fightCard>
                 </div>
                 <!-- 玩家手动攻击按钮，仅在手动模式、有行动角色、有目标时显示 -->
                 <div class="atk"

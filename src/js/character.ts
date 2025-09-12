@@ -1,4 +1,4 @@
-import { Battle, BattleCharacters } from "./fight";
+import { Battle, BattleCharacters, Skill, SkillType } from "./fight";
 
 interface CharacterData {
     level: number;
@@ -7,6 +7,16 @@ interface CharacterData {
     atk: number;
     def: number;
     attr_bonus: AttrBonusType;
+    favorability: number;
+    active_effects: ActiveEffect[];
+}
+
+export interface ActiveEffect {
+    type: 'buff' | 'debuff';
+    attribute: 'atk' | 'def_' | 'speed' | 'hp';
+    value: number;
+    duration: number; // in turns
+    source_skill_name: string;
 }
 
 interface AttrBonusType {
@@ -20,7 +30,7 @@ interface AttrBonusType {
 }
 
 interface CharacterDatas {
-    [property: string]: CharacterData;
+    [property: string]: Character;
 }
 
 export enum CharacterType {
@@ -39,12 +49,12 @@ export class CharacterManager {
         this.characters = {};
     }
 
-    add(character: Character): null {
+    add(character: Character): void {
         if (this.characters[character.inside_name]) {
             // 已经存在
             return;
         }
-        this.characters[character.inside_name] = character.dump();
+        this.characters[character.inside_name] = character;
     }
 
     remove(character_name: string): boolean {
@@ -63,19 +73,13 @@ export class CharacterManager {
         if (!this.characters[character_name]) {
             return null;
         }
-        let character_class = characters[character_name];
-
-        if (character_class === null) {
-            return null;
-        }
-        let c: Character = new character_class();
-        return c.load(this.characters[character_name]);
+        return this.characters[character_name];
     }
 
     get_all(): Array<Character> {
         let r: Array<Character> = [];
         for (let i in this.characters) {
-            r.push(this.get(i)!); // 确保get返回Character而非null
+            r.push(this.characters[i]);
         }
         return r;
     }
@@ -83,7 +87,7 @@ export class CharacterManager {
         if (!this.characters[c.inside_name]) {
             return null;
         }
-        this.characters[c.inside_name] = c.dump();
+        this.characters[c.inside_name] = c;
     }
 }
 
@@ -109,8 +113,10 @@ export abstract class Character {
     atk: number;
     def_: number;
     speed: number;
+    favorability: number; // 新增：好感度
     attr_bonus: AttrBonusType;
     env: BattleCharacters | null; // 角色所在的战斗环境
+    active_effects: ActiveEffect[]; // 新增：当前生效的增益/减益效果
 
     constructor() {
         this.name = "Test"; // 角色名
@@ -134,6 +140,7 @@ export abstract class Character {
         this.atk = 10; // 攻击力
         this.def_ = 10; // 防御
         this.speed = 10; // 速度
+        this.favorability = 0; // 初始好感度
 
         this.attr_bonus = {
             [CharacterType.Fire]: 0.0,
@@ -144,6 +151,7 @@ export abstract class Character {
             [CharacterType.Thunder]: 0.0,
             [CharacterType.Water]: 0.0
         }
+        this.active_effects = []; // 初始化空数组
 
         this.level_hp();
         this.level_def();
@@ -210,7 +218,9 @@ export abstract class Character {
             hp: this.hp, // 血量
             atk: this.atk, // 攻击力
             def: this.def_, // 防御
-            attr_bonus: this.attr_bonus // 属性加成
+            attr_bonus: this.attr_bonus, // 属性加成
+            favorability: this.favorability, // 好感度
+            active_effects: this.active_effects // 活跃效果
         }
     }
 
@@ -221,6 +231,8 @@ export abstract class Character {
         this.atk = data.atk;
         this.def_ = data.def;
         this.attr_bonus = data.attr_bonus;
+        this.favorability = data.favorability; // 加载好感度
+        this.active_effects = data.active_effects || []; // 加载活跃效果，如果不存在则为空数组
         this.level_hp();
         this.level_def();
         this.level_atk();
@@ -231,6 +243,72 @@ export abstract class Character {
         this.level_hp();
         this.level_def();
         this.level_atk();
+    }
+
+    // 应用效果
+    apply_effect(effect: ActiveEffect): void {
+        this.active_effects.push(effect);
+    }
+
+    // 移除效果
+    remove_effect(effect_name: string): void {
+        this.active_effects = this.active_effects.filter(effect => effect.source_skill_name !== effect_name);
+    }
+
+    // 更新所有效果的持续时间
+    update_effects(): void {
+        this.active_effects = this.active_effects.filter(effect => {
+            effect.duration--;
+            return effect.duration > 0;
+        });
+    }
+
+    // 获取修改后的属性值
+    get_modified_stat(stat: 'atk' | 'def_' | 'speed' | 'hp'): number {
+        let value = this[stat];
+        for (const effect of this.active_effects) {
+            if (effect.attribute === stat) {
+                if (effect.type === 'buff') {
+                    value += effect.value;
+                } else {
+                    value -= effect.value;
+                }
+            }
+        }
+        return Math.max(0, value); // 属性值不能低于0
+    }
+
+    // 获取普通攻击技能对象
+    getGeneralSkill(): Skill {
+        return {
+            name: this.general_name,
+            type: SkillType.Damage,
+            value: this.general(),
+            targetScope: 'single',
+            description: this.general_desc,
+        };
+    }
+
+    // 获取技能对象
+    getSkill(): Skill {
+        return {
+            name: this.skill_name,
+            type: SkillType.Damage,
+            value: this.skill(),
+            targetScope: 'single',
+            description: this.skill_desc,
+        };
+    }
+
+    // 获取大招技能对象
+    getSuperSkill(): Skill {
+        return {
+            name: this.super_skill_name,
+            type: SkillType.Damage,
+            value: this.super_skill(),
+            targetScope: 'single',
+            description: this.super_skill_desc,
+        };
     }
 }
 
