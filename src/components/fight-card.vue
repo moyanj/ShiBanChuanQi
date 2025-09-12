@@ -30,7 +30,7 @@ const props = defineProps({
 })
 
 const backgroundStyle = computed(() => ({
-    backgroundImage: `url(illustrations/${props.character.inside_name}.png)`
+    backgroundImage: `url(illustrations/${props.character.inside_name}.jpg)`
 }))
 
 const hpPercentage = computed(() => {

@@ -49,7 +49,7 @@ const level_up = () => {
     save.characters.update(now_character.value)
 }
 watch(now_character, () => {
-    ill.value = `illustrations/${now_character.value.inside_name}.png`;
+    ill.value = `illustrations/${now_character.value.inside_name}.jpg`;
 
 })
 
@@ -94,7 +94,7 @@ watch(now_character, () => {
                 <el-descriptions-item label="普攻" :span="4">{{ now_character.general_name }} {{
                     now_character.general_desc }}</el-descriptions-item>
                 <el-descriptions-item label="技能" :span="4">{{ now_character.skill_name }} {{ now_character.skill_desc
-                    }}</el-descriptions-item>
+                }}</el-descriptions-item>
                 <el-descriptions-item label="爆发技" :span="4">{{ now_character.super_skill_name }} {{
                     now_character.super_skill_desc }}</el-descriptions-item>
             </el-descriptions>
@@ -114,11 +114,11 @@ watch(now_character, () => {
                 <el-descriptions-item label="生命">{{ Math.round(now_character.hp) }} / {{
                     Math.round(now_character.max_hp) }}</el-descriptions-item>
                 <el-descriptions-item label="攻击力">{{ Math.round(now_character.atk)
-                    }}</el-descriptions-item>
+                }}</el-descriptions-item>
                 <el-descriptions-item label="防御力">{{ Math.round(now_character.def_)
-                    }}</el-descriptions-item>
+                }}</el-descriptions-item>
                 <el-descriptions-item label="速度">{{ Math.round(now_character.speed)
-                    }}</el-descriptions-item>
+                }}</el-descriptions-item>
                 <el-descriptions-item label="好感度">{{ Math.round(now_character.favorability) }}</el-descriptions-item>
             </el-descriptions>
         </el-scrollbar>
