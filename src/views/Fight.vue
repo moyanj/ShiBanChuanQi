@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { onKeyStroke } from '@vueuse/core';
 import { ElImage, ElAvatar, ElScrollbar, ElMessage, ElDialog } from 'element-plus';
 import { useDataStore, useSaveStore, useFightStore, APM } from '../js/store';
 import { icons, MersenneTwister } from '../js/utils';
 import sbutton from '../components/sbutton.vue';
 import fightCard from '../components/fight-card.vue';
-import card from '../components/card.vue'; // 用于选择角色界面 (虽然这里没用card组件，但保留了import)
 import { Battle, Skill } from '../js/fight';
 import { Character, CharacterType, characters } from '../js/character';
 import { ThingList } from '../js/things';
@@ -68,7 +67,10 @@ const toggleCharacterSelection = (character: Character) => {
     } else {
         // 角色未选择，添加
         if (fightStore.selected_characters.length < 3) {
-            fightStore.selected_characters.push(character);
+            const CharacterConstructor = characters[character.inside_name];
+            const selected_our_character = new CharacterConstructor();
+            selected_our_character.load(character)
+            fightStore.selected_characters.push(selected_our_character);
         } else {
             ElMessage.warning("最多只能选择三个角色！");
         }
@@ -141,7 +143,6 @@ const startBattle = () => {
         } else {
             // 有角色准备行动
             const { type: active_party_type, character: active_character } = activeCharacterInfo;
-            console.log(`当前行动角色: ${active_character.name} (${active_party_type}), AI模式: ${fightStore.ai}`);
 
             // 如果轮到我方玩家角色行动，且处于手动模式
             if (active_party_type === 'our' && fightStore.ai === false) {
@@ -150,7 +151,6 @@ const startBattle = () => {
                     fightStore.selected_our_character = active_character;
                     fightStore.selected_target_character = null; // 重置目标选择
                     fightStore.battle_instance.log(`轮到 ${active_character.name} 行动！请选择技能和目标。`);
-                    console.log(`[手动] 等待玩家操作 ${active_character.name}`);
                 }
                 // 此时不推进回合，等待玩家操作。next_turn不会被调用。
             } else {
@@ -192,10 +192,14 @@ const endBattle = () => {
         for (const char of fightStore.our) {
             char.favorability += 5;
         }
+        show_settlement_dialog.value = true;
 
     } else if (fightStore.battle_instance?.our.hp <= 0) {
         message = "很遗憾，战斗失败！";
         ElMessage.error(message);
+        exp_reward = fightStore.enemy.reduce((sum, char) => sum + Math.round(char.level_xp(char.level) / 7), 0);
+        save.things.add(new (ThingList["EXP"] as any)(), exp_reward);
+
     } else {
         message = "战斗结束。";
         ElMessage.info(message);
@@ -259,7 +263,6 @@ const playerAttack = async (attack_type: 'general' | 'skill' | 'super_skill') =>
         fightStore.selected_target_character = null;
         return;
     }
-
     let skill_to_execute: Skill | null = null;
     switch (attack_type) {
         case 'general':
@@ -314,8 +317,8 @@ const toggleAI = () => {
 const createWeakerEnemy = (baseCharacter: Character): Character => {
     const CharacterConstructor = characters[baseCharacter.inside_name];
     const weakerEnemy = new CharacterConstructor();
-    weakerEnemy.load(baseCharacter.dump()); // 加载基础角色的数据，包括等级、XP、HP等
-    weakerEnemy.level = Math.max(1, baseCharacter.level - random.randint(-3, 3)); // 等级降低1-3级，至少为1级
+    weakerEnemy.load(baseCharacter); // 加载基础角色的数据，包括等级、XP、HP等
+    weakerEnemy.level = Math.max(1, baseCharacter.level - random.randint(-1, 3)); // 等级降低1-3级，至少为1级
     weakerEnemy.level_hp();
     weakerEnemy.level_atk();
     weakerEnemy.level_def();

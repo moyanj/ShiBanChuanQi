@@ -75,6 +75,7 @@ export class BattleCharacters {
     // 处理伤害
     take_damage(character_name: string, damage: number): number {
         let character = this.characters[character_name];
+        
         if (character && character.hp > 0) {
             const modified_def = character.get_modified_stat('def_');
             const actual_damage = Math.max(0, damage - modified_def); // 伤害减去防御
@@ -369,6 +370,7 @@ export class Battle {
         }
 
         const { type: active_party_type, character: active_character } = active_info;
+
 
         // 更新当前行动角色的所有效果持续时间
         active_character.update_effects();
