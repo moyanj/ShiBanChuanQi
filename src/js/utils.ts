@@ -20,7 +20,7 @@ import icon_element_liangzi from "../assets/icon/element-liangzi.png";
 import icon_element_nihility from "../assets/icon/element-nihility.png";
 
 import { Howl } from "howler";
-
+import { Character, characters } from "./character";
 export const icons = {
     left: icon_left,
     character: icon_character,
@@ -455,4 +455,11 @@ export class SaveServer {
             xhr.send(JSON.stringify(data));
         });
     }
+}
+
+export function get_character_by_dump(dump:Character): Character | null { 
+    const CharacterConstructor = characters[dump.inside_name];
+    const selected_our_character = new CharacterConstructor();
+    selected_our_character.load(dump);
+    return selected_our_character
 }

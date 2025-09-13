@@ -3,7 +3,7 @@ import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { onKeyStroke } from '@vueuse/core';
 import { ElImage, ElAvatar, ElScrollbar, ElMessage, ElDialog } from 'element-plus';
 import { useDataStore, useSaveStore, useFightStore, APM } from '../js/store';
-import { icons, MersenneTwister } from '../js/utils';
+import { get_character_by_dump, icons, MersenneTwister } from '../js/utils';
 import sbutton from '../components/sbutton.vue';
 import fightCard from '../components/fight-card.vue';
 import { Battle, Skill } from '../js/fight';
@@ -67,10 +67,7 @@ const toggleCharacterSelection = (character: Character) => {
     } else {
         // 角色未选择，添加
         if (fightStore.selected_characters.length < 3) {
-            const CharacterConstructor = characters[character.inside_name];
-            const selected_our_character = new CharacterConstructor();
-            selected_our_character.load(character)
-            fightStore.selected_characters.push(selected_our_character);
+            fightStore.selected_characters.push(get_character_by_dump(character));
         } else {
             ElMessage.warning("最多只能选择三个角色！");
         }
