@@ -10,7 +10,6 @@ import { Battle, Skill } from '../js/fight';
 import { Character, CharacterType, characters } from '../js/character';
 import { ThingList } from '../js/things';
 import { generateRandomItem, Item } from '../js/tools'; // 新增导入
-// import cloneDeep from 'lodash-es'; // 未使用，可以移除
 
 const data = useDataStore();
 const save = useSaveStore();
@@ -180,6 +179,10 @@ const endBattle = () => {
     let xinhuo_reward = 0;
 
     if (fightStore.battle_instance?.enemy.hp <= 0) {
+        if (!("battle_win" in APM.objs)) {
+            APM.add("battle_win", 'audio/battle_win.mp3');
+        }
+        APM.play("battle_win");
         message = "恭喜你，战斗胜利！";
         // 给予经验值奖励
         exp_reward = fightStore.enemy.reduce((sum, char) => sum + Math.round(char.level_xp(char.level) / 5), 0);
@@ -205,6 +208,10 @@ const endBattle = () => {
         show_settlement_dialog.value = true;
 
     } else if (fightStore.battle_instance?.our.hp <= 0) {
+        if (!("battle_lose" in APM.objs)) {
+            APM.add("battle_lose", 'audio/battle_lose.mp3');
+        }
+        APM.play("battle_lose");
         message = "很遗憾，战斗失败！";
         ElMessage.error(message);
         exp_reward = fightStore.enemy.reduce((sum, char) => sum + Math.round(char.level_xp(char.level) / 7), 0);
@@ -293,7 +300,10 @@ const playerAttack = async (attack_type: 'general' | 'skill' | 'super_skill') =>
 
     // 执行技能
     const dealt_value = fightStore.battle_instance.execute_skill(target_party_type, target.inside_name, skill_to_execute, attacker);
-
+    if (!("battle" in APM.objs)) {
+        APM.add("battle", 'audio/fight.mp3');
+    }
+    APM.play("battle");
     // 如果技能消耗了战技点但未能成功执行 (dealt_value 为 0 且技能有消耗)，则提示用户并等待重新选择
     if (skill_to_execute.cost > 0 && dealt_value === 0) {
         ElMessage.warning("战技点不足，请重新选择技能！");
