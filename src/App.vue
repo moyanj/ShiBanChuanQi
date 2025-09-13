@@ -88,6 +88,9 @@ watch(keys["Alt+T"], console_handler);
             v-show="dataStore.page_type != 'fight' && dataStore.page_type != 'main'">
             <el-image :src="icons.left" style="width: 25px;height: 25px;" />
         </sbutton>
+        <sbutton @click="console_handler()" class="console-button">
+            控制台
+        </sbutton>
         <Transition>
             <!-- 根据数据存储中的 page_type 显示不同页面 -->
             <Home v-if="dataStore.page_type == 'main'" />
@@ -116,6 +119,18 @@ watch(keys["Alt+T"], console_handler);
     width: 30px;
     height: 30px;
     z-index: 1000;
+}
+
+.console-button {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    width: 20px;
+    height: 20px;
+    z-index: 1000;
+    opacity: 0.01;
+    font-size: 0;
+    /* 隐藏文字 */
 }
 
 .v-enter-active,
