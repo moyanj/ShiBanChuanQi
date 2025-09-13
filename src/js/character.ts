@@ -396,10 +396,39 @@ export class ShuiLiFang extends Character {
         this.inside_name = "ShuiLiFang";
         this.type = CharacterType.Water;
 
-        this.desc = "海的那边是自由"
+        this.desc = "海的那边是自由";
+        this.general_name = "水之波动";
+        this.general_desc = "造成自身30%生命值+30%攻击力的伤害";
+        this.skill_name = "潮汐冲击";
+        this.skill_desc = "造成自身20%生命值+70%攻击力的伤害";
+        this.super_skill_name = "海神领域";
+        this.super_skill_desc = "对敌方造成230%伤害，并为我方所有角色水属性攻击加成提高20%";
+    }
+
+    general(): number {
+        return this.hp * 0.3 + this.atk * 0.3;
+    }
+
+    skill(): number {
+        return this.hp * 0.2 + this.atk * 0.7;
+    }
+
+    super_skill(): number {
+        // 大招除了造成伤害，还需要为我方所有角色水属性攻击加成提高20%
+        if (this.env) {
+            for (const chara_name in this.env.characters) {
+                const chara = this.env.characters[chara_name];
+                if (chara.is_our) { // 只对我方角色生效
+                    chara.attr_bonus[CharacterType.Water] += 0.2;
+                }
+            }
+        }
+        return this.atk * 2.3;
     }
 }
 export class ChenGe extends Character {
+    halo_count: number; // 新增：光环数量
+
     constructor() {
         super()
         this.name = "辰哥";
@@ -407,6 +436,73 @@ export class ChenGe extends Character {
         this.type = CharacterType.Nihility;
 
         this.desc = '”做啊！继续做啊！“';
+        
+        this.general_name = "虚核"
+        this.general_desc = "造成85%的伤害，并增加一个“光环”,最多12个光环"
+
+        this.skill_name = "融核"
+        this.skill_desc = "造成60%的伤害，并为我方全体增加3%乘以光环数量的攻击力，并消耗一个光环"
+
+        this.super_skill_name = "超核"
+        this.super_skill_desc = "消耗全部光环，造成190%的伤害，并为全队增加3%的攻击力"
+
+        this.halo_count = 0; // 初始化光环数量
+    }
+
+    general(): number {
+        // 造成85%的伤害
+        const damage = this.atk * 0.85;
+        // 增加一个“光环”,最多12个光环
+        if (this.halo_count < 12) {
+            this.halo_count++;
+        }
+        return damage;
+    }
+
+    skill(): number {
+        // 造成60%的伤害
+        const damage = this.atk * 0.6;
+        // 为我方全体增加3%乘以光环数量的攻击力，并消耗一个光环
+        if (this.env && this.halo_count > 0) {
+            const atk_bonus_value = 0.03 * this.halo_count; // 3%乘以光环数量
+            for (const chara_name in this.env.characters) {
+                const chara = this.env.characters[chara_name];
+                if (chara.is_our) { // 只对我方角色生效
+                    chara.apply_effect({
+                        type: 'buff',
+                        attribute: 'atk',
+                        value: chara.atk * atk_bonus_value,
+                        duration: 1, // 持续1回合，或者根据实际需求调整
+                        source_skill_name: this.skill_name
+                    });
+                }
+            }
+            this.halo_count--; // 消耗一个光环
+        }
+        return damage;
+    }
+
+    super_skill(): number {
+        // 消耗全部光环
+        this.halo_count = 0;
+        // 造成190%的伤害
+        const damage = this.atk * 1.9;
+        // 为全队增加3%的攻击力
+        if (this.env) {
+            for (const chara_name in this.env.characters) {
+                const chara = this.env.characters[chara_name];
+                if (chara.is_our) { // 只对我方角色生效
+                    chara.apply_effect({
+                        type: 'buff',
+                        attribute: 'atk',
+                        value: chara.atk * 0.03, // 增加3%攻击力
+                        duration: 1, // 持续1回合，或者根据实际需求调整
+                        source_skill_name: this.super_skill_name
+                    });
+                }
+            }
+        }
+        return damage;
     }
 }
 
@@ -416,6 +512,47 @@ export class ZongTong extends Character {
         this.name = "总统";
         this.inside_name = "ZongTong";
         this.type = CharacterType.Fire;
+
+        this.desc = "惹我奥Nigger,c你不带套"
+
+        this.super_skill_name = "采棉花了"
+        this.super_skill_desc = "损失15%生命值，全体速度提高20%，自身防御力降低10%，持续三个回合"
+    }
+
+    super_skill(): number {
+        // 1. 损失15%生命值
+        this.hp -= this.max_hp * 0.15;
+        if (this.hp < 0) {
+            this.hp = 0;
+        }
+
+        // 2. 全体速度提高20%，持续三个回合
+        if (this.env) {
+            for (const chara_name in this.env.characters) {
+                const chara = this.env.characters[chara_name];
+                if (chara.is_our) { // 只对我方角色生效
+                    chara.apply_effect({
+                        type: 'buff',
+                        attribute: 'speed',
+                        value: chara.speed * 0.2, // 提高20%速度
+                        duration: 3,
+                        source_skill_name: this.super_skill_name
+                    });
+                }
+            }
+        }
+
+        // 3. 自身防御力降低10%，持续三个回合
+        this.apply_effect({
+            type: 'debuff',
+            attribute: 'def_',
+            value: this.def_ * 0.1, // 降低10%防御
+            duration: 3,
+            source_skill_name: this.super_skill_name
+        });
+
+        // 大招不造成直接伤害，返回0
+        return 0;
     }
 }
 
@@ -425,6 +562,8 @@ export class HaoJing extends Character {
         this.name = "昊京";
         this.inside_name = "HaoJing";
         this.type = CharacterType.Grass
+
+        this.desc = "熊一般的男人"
     }
 }
 
@@ -434,15 +573,30 @@ export class NiuYaoZi extends Character {
         this.name = "牛尧资";
         this.inside_name = "NiuYaoZi";
         this.type = CharacterType.Water;
+
+        this.desc = "52647"
     }
 }
 
 export class DongYin extends Character {
+    firefly_count: number;
+
     constructor() {
         super()
         this.name = "东瀛";
         this.inside_name = "DongYin";
         this.type = CharacterType.LiangZi;
+
+        this.general_name = "虚空震荡"
+        this.general_desc = "对敌方全体共造成200%的伤害，由敌方全体平均分担，消耗自身3%生命值"
+
+        this.skill_name = "萤火之光"
+        this.skill_desc = "为己方指定单体恢复15%的生命值，若溢出则转化为萤火"
+
+        this.super_skill_name = "飞萤扑火"
+        this.super_skill_desc = "为全队恢复自身生命值上限20%的生命值。此后，在每个角色行动前，将恢复其自身生命值上限的10%，并消耗对应数量的萤火，此效果持续至萤火不足以支付消耗。"
+
+        this.firefly_count = 0; // 初始化萤火数量
     }
 }
 
@@ -452,6 +606,9 @@ export class FeiNiao extends Character {
         this.name = "飞鸟";
         this.inside_name = "FeiNiao";
         this.type = CharacterType.Fire;
+        this.desc = "The old man and sea."
+
+        this.general_name = "铳击"
     }
 }
 
@@ -494,6 +651,9 @@ export class JiMing extends Character {
         this.type = CharacterType.Water;
 
         this.desc = "曾经那四光年的枪，却在今日变得毫无光泽"
+
+        this.super_skill_name = "强吊冲击"
+        this.super_skill_desc = "对敌方全体造成321%的伤害，随后1个回合，自身攻击力降低40%"
     }
 }
 
@@ -580,15 +740,120 @@ export class WuYu extends Character {
         this.name = "乌鱼";
         this.inside_name = "WuYu";
         this.type = CharacterType.Thunder;
+
+        this.general_name = "农夫山泉"
+        this.general_desc = "对敌方单体造成自生生命值40%+自身攻击力20%的伤害"
+
+        this.skill_name = "华润怡宝"
+        this.skill_desc = "消耗15%的生命值，对己方生命值最低的回复45%攻击力的生命值"
+
+        this.super_skill_name = "百岁山"
+        this.super_skill_desc = "回复己方生命值最低的角色30%的生命值，并额外回复10%自身攻击力的"
+    }
+
+    general(): number {
+        return this.hp * 0.4 + this.atk * 0.2;
+    }
+
+    skill(): number {
+        // 消耗15%的生命值
+        this.hp -= this.max_hp * 0.15;
+        if (this.hp < 0) {
+            this.hp = 0;
+        }
+
+        // 对己方生命值最低的回复45%攻击力的生命值
+        if (this.env) {
+            let lowest_hp_chara: Character | null = null;
+            let min_hp = Infinity;
+
+            for (const chara_name in this.env.characters) {
+                const chara = this.env.characters[chara_name];
+                if (chara.is_our && chara.hp < min_hp) {
+                    min_hp = chara.hp;
+                    lowest_hp_chara = chara;
+                }
+            }
+
+            if (lowest_hp_chara) {
+                lowest_hp_chara.hp += this.atk * 0.45;
+                if (lowest_hp_chara.hp > lowest_hp_chara.max_hp) {
+                    lowest_hp_chara.hp = lowest_hp_chara.max_hp;
+                }
+            }
+        }
+        return 0; // 技能不造成直接伤害
+    }
+
+    super_skill(): number {
+        // 回复己方生命值最低的角色30%的生命值，并额外回复10%自身攻击力的生命值
+        if (this.env) {
+            let lowest_hp_chara: Character | null = null;
+            let min_hp = Infinity;
+
+            for (const chara_name in this.env.characters) {
+                const chara = this.env.characters[chara_name];
+                if (chara.is_our && chara.hp < min_hp) {
+                    min_hp = chara.hp;
+                    lowest_hp_chara = chara;
+                }
+            }
+
+            if (lowest_hp_chara) {
+                lowest_hp_chara.hp += lowest_hp_chara.max_hp * 0.3 + this.atk * 0.1;
+                if (lowest_hp_chara.hp > lowest_hp_chara.max_hp) {
+                    lowest_hp_chara.hp = lowest_hp_chara.max_hp;
+                }
+            }
+        }
+        return 0; // 大招不造成直接伤害
     }
 }
 
 export class Song extends Character {
+    pine_nut_count: number; // 新增：松子数量
+
     constructor() {
         super()
         this.name = "松";
         this.inside_name = "Song";
         this.type = CharacterType.LiangZi;
+
+        this.general_desc = "造成等同于自身生命值40%的伤害"
+
+        this.skill_desc = "增加一颗松子，无视对方50%的防御力，造成85%攻击力的伤害"
+
+        this.super_skill_desc = "在其之前增加一颗松子，造成100%攻击力的伤害，若攒至3颗，则消耗三颗松子，造成250%的伤害"
+
+        this.pine_nut_count = 0; // 初始化松子数量
+    }
+
+    general(): number {
+        // 造成等同于自身生命值40%的伤害
+        return this.hp * 0.4;
+    }
+
+    skill(): number {
+        // 增加一颗松子
+        this.pine_nut_count++;
+        // 无视对方50%的防御力，造成85%攻击力的伤害
+        // 注意：这里只是计算伤害值，实际的防御力减免逻辑需要在战斗系统中处理
+        return this.atk * 0.85;
+    }
+
+    super_skill(): number {
+        // 在其之前增加一颗松子
+        this.pine_nut_count++;
+
+        if (this.pine_nut_count >= 3) {
+            // 消耗三颗松子
+            this.pine_nut_count -= 3;
+            // 造成250%的伤害
+            return this.atk * 2.5;
+        } else {
+            // 造成100%攻击力的伤害
+            return this.atk * 1;
+        }
     }
 }
 
@@ -598,7 +863,15 @@ export class PeiBa extends Character {
         this.name = "佩八";
         this.inside_name = "PeiBa";
         this.type = CharacterType.Fire;
+
+        this.general_name = "啊？"
+
+        this.skill_name = "就在看一会儿"
+
+        this.super_skill_name = "我这有啥好说的"
     }
+
+
 }
 
 export class ChengXiang extends Character {
