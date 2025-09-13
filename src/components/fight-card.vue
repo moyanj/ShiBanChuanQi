@@ -75,6 +75,7 @@ const cardClass = computed(() => {
     position: relative;
     box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
     /* 绿色光晕 */
+    border-radius: 15px;
 }
 
 .fight-card.dead-character {

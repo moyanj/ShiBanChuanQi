@@ -32,7 +32,6 @@ export class ThingsManager {
         } else if (this.things[id] == null) {
             this.things[id] = 0;
         }
-        console.log(this.things)
         return this.things[id];
     }
     get_all():object {

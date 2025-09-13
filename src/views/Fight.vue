@@ -449,8 +449,11 @@ const getCharacterAtb = (character: Character) => {
                         </div>
                     </div>
                 </el-scrollbar>
-                <sbutton type="primary" size="large" @click="startBattle"
-                    :disabled="fightStore.selected_characters.length !== 3">开始战斗</sbutton>
+                <div class="selection-actions">
+                    <sbutton type="default" size="large" @click="data.page_type = 'main'">返回</sbutton>
+                    <sbutton type="primary" size="large" @click="startBattle"
+                        :disabled="fightStore.selected_characters.length !== 3">开始战斗</sbutton>
+                </div>
             </div>
         </div>
 
@@ -876,5 +879,11 @@ const getCharacterAtb = (character: Character) => {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.selection-actions {
+    display: flex;
+    gap: 20px;
+    margin-top: 20px;
 }
 </style>
