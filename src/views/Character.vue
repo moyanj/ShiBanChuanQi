@@ -10,7 +10,9 @@ import {
     ElDialog,
     ElForm,
     ElFormItem,
-    ElSlider
+    ElSlider,
+    ElSelect,
+    ElOption
 } from 'element-plus';
 import { CharacterType, characters, Character } from '../js/character'; // 引入 Character 类型
 import { useSaveStore } from '../js/store';
@@ -121,6 +123,25 @@ const levelUpExperience = computed(() => {
 const hasEnoughExperience = computed(() => {
     return save.things.get('EXP') > 0;
 });
+
+// 属性名称中文翻译映射
+const attributeTranslations: { [key: string]: string } = {
+    atk: '攻击力',
+    def_: '防御力',
+    speed: '速度',
+    hp: '生命值',
+};
+
+// 格式化道具标签，使其在选择时显示属性
+const formatItemLabel = (item: Item) => {
+    const attributes = Object.entries(item.random_attributes)
+        .map(([key, value]) => {
+            const translatedKey = attributeTranslations[key] || key; // 获取中文翻译，如果没有则使用原英文名
+            return `${translatedKey}: ${value > 0 ? '+' : ''}${value}`;
+        })
+        .join(', ');
+    return `${item.name} (${attributes})`;
+};
 </script>
 
 <template>
@@ -156,9 +177,9 @@ const hasEnoughExperience = computed(() => {
                 <el-descriptions-item label="详细信息">
                     <SButton class="show_info" @click="showInfo = true">显示</SButton>
                 </el-descriptions-item>
-                <el-descriptions-item label="攻击力">{{ Math.round(nowCharacter.atk) }}</el-descriptions-item>
-                <el-descriptions-item label="防御力">{{ Math.round(nowCharacter.def_) }}</el-descriptions-item>
-                <el-descriptions-item label="速度">{{ Math.round(nowCharacter.speed) }}</el-descriptions-item>
+                <el-descriptions-item label="攻击力">{{ Math.round(nowCharacter.get_modified_stat('atk')) }}</el-descriptions-item>
+                <el-descriptions-item label="防御力">{{ Math.round(nowCharacter.get_modified_stat('def_')) }}</el-descriptions-item>
+                <el-descriptions-item label="速度">{{ Math.round(nowCharacter.get_modified_stat('speed')) }}</el-descriptions-item>
                 <el-descriptions-item label="好感度">{{ Math.round(nowCharacter.favorability) }}</el-descriptions-item>
                 <el-descriptions-item label="介绍" :span="4">
                     {{ nowCharacter.desc }}
@@ -177,6 +198,9 @@ const hasEnoughExperience = computed(() => {
                     <div v-if="nowCharacter.equipped_items.length > 0">
                         <div v-for="item in nowCharacter.equipped_items" :key="item.id">
                             {{ item.name }} ({{ item.desc }})
+                            <span v-for="(value, key) in item.random_attributes" :key="key">
+                                {{ attributeTranslations[key] || key }}: {{ value > 0 ? '+' : '' }}{{ value }}<br>
+                            </span>
                             <SButton @click="unequipItem(item)" text>卸下</SButton>
                         </div>
                     </div>
@@ -240,10 +264,17 @@ const hasEnoughExperience = computed(() => {
     <el-dialog v-model="showEquipItemDialog" title="装备道具">
         <el-form v-if="availableItems.length > 0">
             <el-form-item label="选择道具：">
-                <el-select v-model="selectedItemToEquip" placeholder="请选择要装备的道具">
-                    <el-option v-for="item in availableItems" :key="item.id" :label="item.name" :value="item" />
+                <el-select v-model="selectedItemToEquip" placeholder="请选择要装备的道具" value-key="id">
+                    <el-option v-for="item in availableItems" :key="item.id" :label="formatItemLabel(item)" :value="item" />
                 </el-select>
             </el-form-item>
+            <div v-if="selectedItemToEquip">
+                <el-form-item label="道具属性：">
+                    <span v-for="(value, key) in selectedItemToEquip.random_attributes" :key="key">
+                        {{ attributeTranslations[key] || key }}: {{ value > 0 ? '+' : '' }}{{ value }}<br>
+                    </span>
+                </el-form-item>
+            </div>
             <el-form-item>
                 <SButton type="primary" @click="equipItem" :disabled="!selectedItemToEquip">确定装备</SButton>
             </el-form-item>

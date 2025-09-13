@@ -72,6 +72,14 @@ watch(save.items, () => {
     items_table_data.value = update_items_data();
 });
 
+// 属性名称中文翻译映射
+const attributeTranslations: { [key: string]: string } = {
+    atk: '攻击力',
+    def_: '防御力',
+    speed: '速度',
+    hp: '生命值',
+};
+
 </script>
 
 <template>
@@ -96,7 +104,7 @@ watch(save.items, () => {
                 <el-table-column label="属性">
                     <template #default="scope">
                         <span v-for="(value, key) in scope.row.random_attributes" :key="key">
-                            {{ key }}: {{ value > 0 ? '+' : '' }}{{ value }}<br>
+                            {{ attributeTranslations[key] || key }}: {{ value > 0 ? '+' : '' }}{{ value }}<br>
                         </span>
                     </template>
                 </el-table-column>

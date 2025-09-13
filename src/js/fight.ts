@@ -78,7 +78,6 @@ export class BattleCharacters {
     // 处理伤害
     take_damage(character_name: string, damage: number): number {
         let character = this.characters[character_name];
-        
         if (character && character.hp > 0) {
             const modified_def = character.get_modified_stat('def_');
             const actual_damage = Math.max(0, damage - modified_def); // 伤害减去防御
@@ -96,7 +95,7 @@ export class BattleCharacters {
     update_team_hp(): void {
         this.hp = 0;
         for (let i in this.characters) {
-            this.hp += this.characters[i].hp;
+            this.hp += this.characters[i].get_modified_stat('hp');
         }
     }
 
@@ -387,7 +386,7 @@ export class Battle {
             active_info = this.get_now_character();
 
             // 防止无限循环的保护机制
-            if (this.tick > 100000) { // 增加tick上限，避免卡死
+            if (this.tick > 100000) { // 增加tick上限，避免卡死 83分钟
                 this.log("战斗异常，长时间无角色行动，强制结束。");
                 return true;
             }

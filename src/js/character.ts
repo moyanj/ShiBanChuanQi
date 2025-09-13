@@ -240,6 +240,7 @@ export abstract class Character {
         this.attr_bonus = data.attr_bonus;
         this.favorability = data.favorability; // 加载好感度
         this.active_effects = data.active_effects || []; // 加载活跃效果，如果不存在则为空数组
+        this.equipped_items = data.equipped_items || []; // 加载已装备道具，如果不存在则为空数组
         this.level_hp();
         this.level_def();
         this.level_atk();
