@@ -9,6 +9,7 @@ import fightCard from '../components/fight-card.vue';
 import { Battle, Skill } from '../js/fight';
 import { Character, CharacterType, characters } from '../js/character';
 import { ThingList } from '../js/things';
+import { generateRandomItem, Item } from '../js/tools'; // 新增导入
 // import cloneDeep from 'lodash-es'; // 未使用，可以移除
 
 const data = useDataStore();
@@ -26,6 +27,7 @@ var show_settlement_dialog = ref(false); // 控制结算界面的显示
 var battle_result = ref("");
 var battle_exp_reward = ref(0);
 var battle_xinhuo_reward = ref(0);
+var dropped_items = ref<Item[]>([]);
 
 const enemy_avatar = random.randint(1, 100);
 
@@ -189,6 +191,16 @@ const endBattle = () => {
 
         for (const char of fightStore.our) {
             char.favorability += 5;
+        }
+        console.log("开始生成道具")
+        // 道具掉落逻辑
+        const numItemsToDrop = random.randint(1, 3); // 掉落1到3个道具
+        dropped_items.value = []; // 清空之前的掉落道具
+        for (let i = 0; i < numItemsToDrop; i++) {
+            const droppedItem = generateRandomItem();
+            save.items.add(droppedItem); // 将道具添加到背包
+            dropped_items.value.push(droppedItem);
+            ElMessage.success(`获得道具：${droppedItem.name}`);
         }
         show_settlement_dialog.value = true;
 

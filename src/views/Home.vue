@@ -5,7 +5,7 @@ import sbutton from '../components/sbutton.vue';
 import { useSaveStore, SaveStoreState, useDataStore } from '../js/store'
 import { MersenneTwister, icons } from '../js/utils'
 
-const save: SaveStoreState = useSaveStore();
+const save = useSaveStore();
 const data = useDataStore();
 const random = new MersenneTwister();
 

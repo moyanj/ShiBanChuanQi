@@ -1,5 +1,6 @@
 import { Character, CharacterType, ActiveEffect } from "./character";
 import { useFightStore } from './store';
+import { generateRandomItem } from './tools'; // 新增导入
 
 export enum SkillType {
     Damage = "伤害",

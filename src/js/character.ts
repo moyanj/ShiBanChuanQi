@@ -1,4 +1,5 @@
 import { Battle, BattleCharacters, Skill, SkillType } from "./fight";
+import { Item } from "./tools";
 
 interface CharacterData {
     level: number;
@@ -9,6 +10,7 @@ interface CharacterData {
     attr_bonus: AttrBonusType;
     favorability: number;
     active_effects: ActiveEffect[];
+    equipped_items: Item[]; // 新增：已装备的道具
 }
 
 export interface ActiveEffect {
@@ -118,6 +120,7 @@ export abstract class Character {
     attr_bonus: AttrBonusType;
     env: BattleCharacters | null; // 角色所在的战斗环境
     active_effects: ActiveEffect[]; // 新增：当前生效的增益/减益效果
+    equipped_items: Item[]; // 新增：装备的道具
 
     constructor() {
         this.name = "Test"; // 角色名
@@ -154,6 +157,7 @@ export abstract class Character {
             [CharacterType.Water]: 0.0
         }
         this.active_effects = []; // 初始化空数组
+        this.equipped_items = []; // 初始化空数组
 
         this.level_hp();
         this.level_def();
@@ -222,7 +226,8 @@ export abstract class Character {
             def: this.def_, // 防御
             attr_bonus: this.attr_bonus, // 属性加成
             favorability: this.favorability, // 好感度
-            active_effects: this.active_effects // 活跃效果
+            active_effects: this.active_effects, // 活跃效果
+            equipped_items: this.equipped_items
         }
     }
 
@@ -268,6 +273,8 @@ export abstract class Character {
     // 获取修改后的属性值
     get_modified_stat(stat: 'atk' | 'def_' | 'speed' | 'hp'): number {
         let value = this[stat];
+
+        // 应用活跃效果
         for (const effect of this.active_effects) {
             if (effect.attribute === stat) {
                 if (effect.type === 'buff') {
@@ -277,9 +284,18 @@ export abstract class Character {
                 }
             }
         }
+
+        // 应用装备道具的随机属性
+        for (const item of this.equipped_items) {
+            if (item.random_attributes[stat] !== undefined) {
+                value += item.random_attributes[stat]!;
+            }
+        }
+
         return Math.max(0, value); // 属性值不能低于0
     }
 
+    // 获取普通攻击技能对象
     // 获取普通攻击技能对象
     getGeneralSkill(): Skill {
         return {

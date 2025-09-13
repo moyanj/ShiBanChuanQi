@@ -17,6 +17,7 @@ import { useSaveStore } from '../js/store';
 import { get_character_by_dump, icons } from '../js/utils';
 import { ref, watch, computed } from 'vue';
 import SButton from '../components/sbutton.vue'; // 更规范的组件命名
+import { Item, ItemManager } from '../js/tools'; // 导入 Item 和 ItemManager
 
 const save = useSaveStore();
 
@@ -26,6 +27,8 @@ const showUpCharacter = ref(false);
 const showIll = ref(false);
 const levelUpAmount = ref(0); // 经验值数量
 const currentIllustration = ref(''); // 立绘路径
+const showEquipItemDialog = ref(false); // 控制装备道具对话框显示
+const selectedItemToEquip = ref<Item | null>(null); // 选中的要装备的道具
 
 // 将类型定义明确
 const c2e: { [key in CharacterType]: string } = {
@@ -46,6 +49,11 @@ const characterList = computed(() => {
 
 // 当前角色
 const nowCharacter = ref<Character | null>(characterList.value.length > 0 ? get_character_by_dump(characterList.value[0]) : null);
+
+// 可供装备的道具列表
+const availableItems = computed(() => {
+    return save.items.getAll();
+});
 
 // 监听角色列表变化
 watch(characterList, () => {
@@ -73,6 +81,29 @@ const levelUp = () => {
     save.things.remove("EXP", levelUpAmount.value);
     nowCharacter.value.level_up(levelUpAmount.value);
     save.characters.update(nowCharacter.value);
+};
+
+// 方法：装备道具
+const equipItem = () => {
+    if (!nowCharacter.value || !selectedItemToEquip.value) return;
+
+    nowCharacter.value.equipped_items.push(selectedItemToEquip.value);
+    save.items.remove(selectedItemToEquip.value.id);
+    save.characters.update(nowCharacter.value);
+    showEquipItemDialog.value = false;
+    selectedItemToEquip.value = null; // 重置选中道具
+};
+
+// 方法：卸下道具
+const unequipItem = (item: Item) => {
+    if (!nowCharacter.value) return;
+
+    const index = nowCharacter.value.equipped_items.findIndex(i => i.id === item.id);
+    if (index !== -1) {
+        nowCharacter.value.equipped_items.splice(index, 1);
+        save.items.add(item);
+        save.characters.update(nowCharacter.value);
+    }
 };
 
 // 计算属性：判断当前角色卡片是否被选中
@@ -142,6 +173,18 @@ const hasEnoughExperience = computed(() => {
                 <el-descriptions-item label="爆发技" :span="4">
                     {{ nowCharacter.super_skill_name }} {{ nowCharacter.super_skill_desc }}
                 </el-descriptions-item>
+                <el-descriptions-item label="已装备道具" :span="4">
+                    <div v-if="nowCharacter.equipped_items.length > 0">
+                        <div v-for="item in nowCharacter.equipped_items" :key="item.id">
+                            {{ item.name }} ({{ item.desc }})
+                            <SButton @click="unequipItem(item)" text>卸下</SButton>
+                        </div>
+                    </div>
+                    <div v-else>
+                        暂无装备道具
+                    </div>
+                    <SButton @click="showEquipItemDialog = true">装备道具</SButton>
+                </el-descriptions-item>
             </el-descriptions>
             <div v-else class="container">
                 <img :src="icons.empty" style="width: 200px;height: auto;" alt="没有角色" />
@@ -191,6 +234,23 @@ const hasEnoughExperience = computed(() => {
                 <h4 align="center">该角色暂无立绘</h4>
             </template>
         </el-image>
+    </el-dialog>
+
+    <!-- 装备道具弹窗 -->
+    <el-dialog v-model="showEquipItemDialog" title="装备道具">
+        <el-form v-if="availableItems.length > 0">
+            <el-form-item label="选择道具：">
+                <el-select v-model="selectedItemToEquip" placeholder="请选择要装备的道具">
+                    <el-option v-for="item in availableItems" :key="item.id" :label="item.name" :value="item" />
+                </el-select>
+            </el-form-item>
+            <el-form-item>
+                <SButton type="primary" @click="equipItem" :disabled="!selectedItemToEquip">确定装备</SButton>
+            </el-form-item>
+        </el-form>
+        <div v-else>
+            <p>背包中没有可用的道具。</p>
+        </div>
     </el-dialog>
 </template>
 
