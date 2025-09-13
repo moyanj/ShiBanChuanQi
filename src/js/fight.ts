@@ -178,6 +178,7 @@ export class Battle {
         this.fightStore = useFightStore(); // 初始化 fight store
 
         this.log("战斗开始！");
+        this.check_team_synergy(); // 在战斗开始时检查队伍协同
     }
 
     // 记录战斗日志
@@ -493,5 +494,25 @@ export class Battle {
 
         // 战斗未结束
         return false;
+    }
+
+    // 新增方法：检查队伍协同效果
+    check_team_synergy(): void {
+        const our_characters_map = this.our.characters;
+        const fanShiFu = our_characters_map["FanShiFu"];
+        const zongTong = our_characters_map["ZongTong"];
+
+        if (fanShiFu && zongTong) {
+            // 如果范师傅和总统都在我方队伍中
+            const speed_buff: ActiveEffect = {
+                type: 'buff',
+                attribute: 'speed',
+                value: zongTong.speed * 0.25, // 总统速度提升25%
+                duration: 9999, // 持续整个战斗
+                source_skill_name: "范师傅-总统协同",
+            };
+            zongTong.apply_effect(speed_buff);
+            this.log(`范师傅与总统触发协同效果：总统速度提升25%！`);
+        }
     }
 }

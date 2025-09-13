@@ -356,7 +356,36 @@ export class FanShiFu extends Character {
         this.type = CharacterType.Thunder;
 
         this.desc = "人生殊梦一场，大梦归离而已";
+        this.general_name = "控梦";
+        this.general_desc = "造成自身攻击力90%的伤害";
+        this.skill_name = "幻灭之境";
+        this.skill_desc = "消耗自身20%的生命值，对敌方造成150%的伤害";
+        this.super_skill_name = "恶咒归梦";
+        this.super_skill_desc = "消耗自身75%生命，对敌方造成257%的伤害";
+    }
 
+    general(): number {
+        return this.atk * 0.9;
+    }
+
+    skill(): number {
+        // 消耗自身20%的生命值
+        this.hp -= this.max_hp * 0.2;
+        if (this.hp < 0) {
+            this.hp = 0;
+        }
+        // 对敌方造成150%的伤害
+        return this.atk * 1.5;
+    }
+
+    super_skill(): number {
+        // 消耗自身75%生命
+        this.hp -= this.max_hp * 0.75;
+        if (this.hp < 0) {
+            this.hp = 0;
+        }
+        // 对敌方造成257%的伤害
+        return this.atk * 2.57;
     }
 }
 
