@@ -153,11 +153,25 @@ function skip() {
 
 <style scoped>
 .container {
+    width: 100vw;
+    height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 100vh;
+}
+
+.container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-image: url('../assets/bg/wish.jpg');
+    background-size: cover;
+    background-position: center;
+    filter: blur(5px);
 }
 
 .ani {

@@ -52,13 +52,13 @@ const onclick_start = () => {
                         <span>&nbsp;抽卡</span>
                     </sbutton>
                 </el-col>
-
+                <!--
                 <el-col :span="4">
                     <sbutton text @click="data.page_type = 'MiJing'">
                         <el-image :src="icons.online" class="icon" />
                         <span>&nbsp;联机</span>
                     </sbutton>
-                </el-col>
+                </el-col>-->
                 <el-col :span="4">
                     <sbutton text @click="data.page_type = 'bag'">
                         <el-image :src="icons.backpack" class="icon" />
