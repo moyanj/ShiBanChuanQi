@@ -1,6 +1,8 @@
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import { px2viewport } from '@mistjs/vite-plugin-px2viewport';
+import ElementPlus from 'unplugin-element-plus/vite'
+
 
 // 从package.json获取版本号
 const version = require('./package.json').version;
@@ -13,7 +15,8 @@ export default defineConfig({
       viewportWidth: 1360,
       unitPrecision: 10
     }),
-    vue()
+    vue(),
+    ElementPlus({})
   ],
   css: {
     preprocessorOptions: {
