@@ -78,6 +78,7 @@ export class BattleCharacters {
     // 处理伤害
     take_damage(character_name: string, damage: number): number {
         let character = this.characters[character_name];
+        let character_hp
         if (character && character.hp > 0) {
             const modified_def = character.get_modified_stat('def_');
             const actual_damage = Math.max(0, damage - modified_def); // 伤害减去防御

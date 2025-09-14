@@ -7,6 +7,7 @@ import Setting from './views/Setting.vue';
 import Bag from './views/Bag.vue';
 import Character from './views/Character.vue';
 import Wish from './views/Wish.vue';
+import Battle from './views/Battle.vue';
 
 
 import sbutton from './components/sbutton.vue';
@@ -95,6 +96,7 @@ watch(keys["Alt+T"], console_handler);
             <!-- 根据数据存储中的 page_type 显示不同页面 -->
             <Home v-if="dataStore.page_type == 'main'" />
             <Fight v-else-if="dataStore.page_type == 'fight'" />
+            <Battle v-else-if="dataStore.page_type == 'battle'" />
             <About v-else-if="dataStore.page_type == 'about'" />
             <Setting v-else-if="dataStore.page_type == 'setting'" />
             <Bag v-else-if="dataStore.page_type == 'bag'" />

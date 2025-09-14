@@ -1,4 +1,5 @@
 import { Battle, BattleCharacters, Skill, SkillType } from "./fight";
+import { BattleTeam } from "./battle/battle";
 import { Item } from "./tools";
 
 interface CharacterData {
@@ -118,7 +119,7 @@ export abstract class Character {
     speed: number;
     favorability: number; // 新增：好感度
     attr_bonus: AttrBonusType;
-    env: BattleCharacters | null; // 角色所在的战斗环境
+    env: BattleTeam | null; // 角色所在的战斗环境
     active_effects: ActiveEffect[]; // 新增：当前生效的增益/减益效果
     equipped_items: Item[]; // 新增：装备的道具
 
@@ -453,7 +454,7 @@ export class ChenGe extends Character {
         this.type = CharacterType.Nihility;
 
         this.desc = '”做啊！继续做啊！“';
-        
+
         this.general_name = "虚核"
         this.general_desc = "造成85%的伤害，并增加一个“光环”,最多12个光环"
 
@@ -739,6 +740,8 @@ export class DiaoMin extends Character {
         this.name = "刁民";
         this.inside_name = "DiaoMin";
         this.type = CharacterType.Fire;
+
+        this.super_skill_desc = "消耗自身99%的生命值，秒杀敌方，随后每次行动恢复10%1"
     }
 }
 

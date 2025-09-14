@@ -4,7 +4,7 @@ import { ElCol, ElRow, ElCard, ElAvatar, ElMessageBox, ElMessage, ElImage } from
 import sbutton from '../components/sbutton.vue';
 import { useSaveStore, SaveStoreState, useDataStore } from '../js/store'
 import { MersenneTwister, icons } from '../js/utils'
-
+import { emitter } from '../js/battle/event';
 const save = useSaveStore();
 const data = useDataStore();
 const random = new MersenneTwister();
