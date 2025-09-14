@@ -118,22 +118,16 @@ export abstract class Character {
     base_speed: number;
     favorability: number; // 新增：好感度
     attr_bonus: AttrBonusType;
-    env: BattleCharacters | null; // 角色所在的战斗环境
+    env: Battle | null; // 角色所在的战斗环境
     active_effects: ActiveEffect[]; // 新增：当前生效的增益/减益效果
     equipped_items: Item[]; // 新增：装备的道具
-
-    /**
-     * 获取战斗环境中的 Battle 实例
-     */
-    getBattle(): Battle | null {
-        return this.env ? this.env.battle : null;
-    }
 
     constructor() {
         this.name = "Test"; // 角色名
         this.inside_name = "Test";
         this.desc = "这是一个测试角色";
         this.is_our = false; // 默认为敌方角色
+        this.env = null;
 
         this.skill_name = "技能";
         this.general_name = "普通攻击";
@@ -176,17 +170,6 @@ export abstract class Character {
         // 确保 _current_hp 已经被初始化
         return Math.min(Math.max(this._current_hp, 0), this.max_hp);
     }
-    
-    /**
-     * 获取角色所在的Battle实例
-     */
-    get battle(): Battle | null {
-        if (this.env) {
-            return this.env.battle;
-        }
-        return null;
-    }
-    
     /**
      * 设置当前生命值，并确保其在 [0, max_hp] 范围内
      */
@@ -300,7 +283,7 @@ export abstract class Character {
         this.level_atk();
 
         if (this.env) { // 如果在战斗环境中，更新队伍总血量
-            this.env.update_team_hp();
+            this.env.our.update_team_hp();
         }
     }
 
@@ -538,8 +521,8 @@ export class ShuiLiFang extends Character {
     super_skill(): number {
         // 大招除了造成伤害，还需要为我方所有角色水属性攻击加成提高20%
         if (this.env) {
-            for (const chara_name in this.env.characters) {
-                const chara = this.env.characters[chara_name];
+            for (const chara_name in this.env.our.characters) {
+                const chara = this.env.our.characters[chara_name];
                 if (chara.is_our) { // 只对我方角色生效
                     chara.attr_bonus[CharacterType.Water] += 0.2;
                 }
@@ -587,8 +570,8 @@ export class ChenGe extends Character {
         // 为我方全体增加3%乘以光环数量的攻击力，并消耗一个光环
         if (this.env && this.halo_count > 0) {
             const atk_bonus_value = 0.03 * this.halo_count; // 3%乘以光环数量
-            for (const chara_name in this.env.characters) {
-                const chara = this.env.characters[chara_name];
+            for (const chara_name in this.env.our.characters) {
+                const chara = this.env.our.characters[chara_name];
                 if (chara.is_our) { // 只对我方角色生效
                     chara.apply_effect({
                         type: 'buff',
@@ -611,8 +594,8 @@ export class ChenGe extends Character {
         const damage = this.atk * 1.9;
         // 为全队增加3%的攻击力
         if (this.env) {
-            for (const chara_name in this.env.characters) {
-                const chara = this.env.characters[chara_name];
+            for (const chara_name in this.env.our.characters) {
+                const chara = this.env.our.characters[chara_name];
                 if (chara.is_our) { // 只对我方角色生效
                     chara.apply_effect({
                         type: 'buff',
@@ -650,8 +633,8 @@ export class ZongTong extends Character {
 
         // 2. 全体速度提高20%，持续三个回合
         if (this.env) {
-            for (const chara_name in this.env.characters) {
-                const chara = this.env.characters[chara_name];
+            for (const chara_name in this.env.our.characters) {
+                const chara = this.env.our.characters[chara_name];
                 if (chara.is_our) { // 只对我方角色生效
                     chara.apply_effect({
                         type: 'buff',
@@ -889,8 +872,8 @@ export class WuYu extends Character {
             let lowest_hp_chara: Character | null = null;
             let min_hp = Infinity;
 
-            for (const chara_name in this.env.characters) {
-                const chara = this.env.characters[chara_name];
+            for (const chara_name in this.env.our.characters) {
+                const chara = this.env.our.characters[chara_name];
                 if (chara.is_our && chara.hp < min_hp) {
                     min_hp = chara.hp;
                     lowest_hp_chara = chara;
@@ -913,8 +896,8 @@ export class WuYu extends Character {
             let lowest_hp_chara: Character | null = null;
             let min_hp = Infinity;
 
-            for (const chara_name in this.env.characters) {
-                const chara = this.env.characters[chara_name];
+            for (const chara_name in this.env.our.characters) {
+                const chara = this.env.our.characters[chara_name];
                 if (chara.is_our && chara.hp < min_hp) {
                     min_hp = chara.hp;
                     lowest_hp_chara = chara;

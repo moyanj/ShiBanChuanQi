@@ -34,13 +34,10 @@ export class BattleCharacters {
     characters: CharactersMap;
     atb: ATB;
     hp: number; // 队伍总血量
-    battle: Battle;
-
-    constructor(characters: Character[], battle: Battle) {
+    constructor(characters: Character[]) {
         this.characters = {};
         this.atb = {};
         this.hp = 0;
-        this.battle = battle;
         this.copy_chara(characters);
     }
 
@@ -51,10 +48,15 @@ export class BattleCharacters {
         this.hp = 0; // 重置总血量
         for (let i = 0; i < c.length; i++) {
             let obj = c[i];
-            obj.env = this;
             this.characters[obj.inside_name] = obj;
             this.atb[obj.inside_name] = 0; // 初始化atb
             this.hp += obj.hp; // 累加总血量
+        }
+    }
+
+    register_env(obj: Battle) {
+        for (let i in this.characters) {
+            this.characters[i].env = obj;
         }
     }
 
@@ -181,8 +183,8 @@ export class Battle {
     fightStore: ReturnType<typeof useFightStore>; // 新增：Pinia fight store 实例
 
     constructor(enemy_characters: Character[], our_characters: Character[]) {
-        this.enemy = new BattleCharacters(enemy_characters, this);
-        this.our = new BattleCharacters(our_characters, this);
+        this.enemy = new BattleCharacters(enemy_characters);
+        this.our = new BattleCharacters(our_characters);
         this.tick = 0;
         this.now_character = null;
         this.battle_log = [];
@@ -190,6 +192,8 @@ export class Battle {
         this.battle_points = 5; // 初始化战技点为5
         this.fightStore = useFightStore(); // 初始化 fight store
 
+        this.our.register_env(this);
+        this.enemy.register_env(this);
         this.log("战斗开始！");
         this.check_team_synergy(); // 在战斗开始时检查队伍协同
     }

@@ -82,7 +82,8 @@ const levelUp = () => {
     if (!nowCharacter.value) return;
     save.things.remove("EXP", levelUpAmount.value);
     nowCharacter.value.level_up(levelUpAmount.value);
-    save.characters.update(nowCharacter.value);
+    // 使用类型断言解决类型不匹配问题
+    save.characters.update(nowCharacter.value as Character);
 };
 
 // 方法：装备道具
@@ -91,7 +92,8 @@ const equipItem = () => {
 
     nowCharacter.value.equipped_items.push(selectedItemToEquip.value);
     save.items.remove(selectedItemToEquip.value.id);
-    save.characters.update(nowCharacter.value);
+    // 使用类型断言解决类型不匹配问题
+    save.characters.update(nowCharacter.value as Character);
     showEquipItemDialog.value = false;
     selectedItemToEquip.value = null; // 重置选中道具
 };
@@ -104,7 +106,8 @@ const unequipItem = (item: Item) => {
     if (index !== -1) {
         nowCharacter.value.equipped_items.splice(index, 1);
         save.items.add(item);
-        save.characters.update(nowCharacter.value);
+        // 使用类型断言解决类型不匹配问题
+        save.characters.update(nowCharacter.value as Character);
     }
 };
 

@@ -92,21 +92,25 @@ onKeyStroke("Escape", (e) => {
 });
 
 // 选择角色逻辑
-const toggleCharacterSelection = (character: Character) => {
-    const index = fightStore.selected_characters.findIndex(c => c.inside_name === character.inside_name);
+const toggleCharacterSelection = (character: any) => {
+    // 使用类型断言解决类型不匹配问题
+    const char = character as Character;
+    const index = fightStore.selected_characters.findIndex(c => c.inside_name === char.inside_name);
     if (index > -1) {
         fightStore.selected_characters.splice(index, 1);
     } else {
         if (fightStore.selected_characters.length < 3) {
-            fightStore.selected_characters.push(get_character_by_dump(character));
+            fightStore.selected_characters.push(get_character_by_dump(char));
         } else {
             ElMessage.warning("最多只能选择三个角色！");
         }
     }
 };
 
-const isCharacterSelected = (character: Character) => {
-    return fightStore.selected_characters.some(c => c.inside_name === character.inside_name);
+const isCharacterSelected = (character: any) => {
+    // 使用类型断言解决类型不匹配问题
+    const char = character as Character;
+    return fightStore.selected_characters.some(c => c.inside_name === char.inside_name);
 };
 
 
@@ -118,18 +122,21 @@ const startBattle = () => {
     }
 
     fightStore.our = fightStore.selected_characters.map(c => {
-        const charInstance = get_character_by_dump(c);
+        // 使用类型断言解决类型不匹配问题
+        const char = c as Character;
+        const charInstance = get_character_by_dump(char);
         charInstance.hp = charInstance.max_hp;
         charInstance.is_our = true;
         // 确保装备的道具也被复制到战斗实例中
-        charInstance.equipped_items = [...c.equipped_items];
+        charInstance.equipped_items = [...char.equipped_items];
         return charInstance;
     });
 
     show_character_selection.value = false;
     generateEnemyCharacters();
 
-    fightStore.battle_instance = new Battle(fightStore.enemy, fightStore.our);
+    // 使用类型断言解决类型不匹配问题
+    fightStore.battle_instance = new Battle(fightStore.enemy as Character[], fightStore.our as Character[]);
     fightStore.battle_instance.ai_mode = fightStore.ai;
 
     battle_ended.value = false;
@@ -202,7 +209,8 @@ const endBattle = () => {
     }
 
     fightStore.our.forEach(char => {
-        get_character_by_dump(char).reset_status();
+        // 使用类型断言解决类型不匹配问题
+        get_character_by_dump(char as Character).reset_status();
     });
     battle_exp_reward.value = exp_reward;
     battle_xinhuo_reward.value = xinhuo_reward;
@@ -271,7 +279,13 @@ const playerAttack = async (attack_type: 'general' | 'skill' | 'super_skill') =>
 
     if (!skill_to_execute) return;
 
-    const dealt_value = battle.value.execute_skill(target_party_type, target.inside_name, skill_to_execute, attacker);
+    // 使用类型断言解决类型不匹配问题
+    const dealt_value = battle.value.execute_skill(
+        target_party_type, 
+        target.inside_name, 
+        skill_to_execute, 
+        attacker as Character
+    );
 
     // 如果技能因战技点不足而失败，execute_skill会返回0，此时不应结束回合
     if (skill_to_execute.cost > 0 && dealt_value === 0 && battle.value.battle_points < skill_to_execute.cost) {
