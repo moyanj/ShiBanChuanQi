@@ -54,11 +54,10 @@ const autoSelectActiveCharacter = () => {
     if (fightStore.ai) return;
 
     const activeChar = current_active_character.value;
-    if (activeChar && activeChar.type === 'our') {
+    if (activeChar && !fightStore.selected_our_character && activeChar.type === 'our') {
         // 如果当前行动角色是我方角色，自动选择它
         fightStore.selected_our_character = activeChar.character;
         fightStore.selected_target_character = null;
-        battle.value?.log(`自动选择了 ${activeChar.character.name} 行动。请选择攻击目标和技能。`);
     }
 };
 

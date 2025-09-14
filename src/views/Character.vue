@@ -178,11 +178,11 @@ const formatItemLabel = (item: Item) => {
                     <SButton class="show_info" @click="showInfo = true">显示</SButton>
                 </el-descriptions-item>
                 <el-descriptions-item label="攻击力">{{ Math.round(nowCharacter.atk)
-                    }}</el-descriptions-item>
+                }}</el-descriptions-item>
                 <el-descriptions-item label="防御力">{{ Math.round(nowCharacter.def_)
-                    }}</el-descriptions-item>
+                }}</el-descriptions-item>
                 <el-descriptions-item label="速度">{{ Math.round(nowCharacter.speed)
-                    }}</el-descriptions-item>
+                }}</el-descriptions-item>
                 <el-descriptions-item label="好感度">{{ Math.round(nowCharacter.favorability) }}</el-descriptions-item>
                 <el-descriptions-item label="介绍" :span="4">
                     {{ nowCharacter.desc }}
@@ -225,14 +225,14 @@ const formatItemLabel = (item: Item) => {
         <el-scrollbar>
             <el-descriptions border :column="1" class="info" v-if="nowCharacter">
                 <el-descriptions-item label="经验">{{ Math.round(nowCharacter.xp) }}</el-descriptions-item>
-                <el-descriptions-item label="生命">{{ Math.round(nowCharacter.hp) }}
+                <el-descriptions-item label="生命">{{ Math.round(nowCharacter.max_hp) }}
                 </el-descriptions-item>
                 <el-descriptions-item label="攻击力">{{ Math.round(nowCharacter.atk)
-                }}</el-descriptions-item>
-                <el-descriptions-item label="防御力">{{ Math.round(nowCharacter.def_)
-                }}</el-descriptions-item>
-                <el-descriptions-item label="速度">{{ Math.round(nowCharacter.speed)
                     }}</el-descriptions-item>
+                <el-descriptions-item label="防御力">{{ Math.round(nowCharacter.def_)
+                    }}</el-descriptions-item>
+                <el-descriptions-item label="速度">{{ Math.round(nowCharacter.speed)
+                }}</el-descriptions-item>
                 <el-descriptions-item label="好感度">{{ Math.round(nowCharacter.favorability) }}</el-descriptions-item>
             </el-descriptions>
         </el-scrollbar>

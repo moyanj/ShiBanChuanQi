@@ -112,8 +112,7 @@ export abstract class Character {
     type: CharacterType;
     xp: number;
     base_hp: number;
-    max_hp: number; // 新增：最大血量
-    private _current_hp: number; // 新增：当前血量
+    _current_hp: number; // 新增：当前血量
     base_atk: number;
     base_def_: number;
     base_speed: number;
@@ -142,7 +141,6 @@ export abstract class Character {
         this.type = CharacterType.Water; // 角色类型
         this.xp = 0; // 经验
         this.base_hp = 100; // 血量
-        this.max_hp = 100; // 初始最大血量
         this._current_hp = 100; // 初始化当前血量
         this.base_atk = 10; // 攻击力
         this.base_def_ = 10; // 防御
@@ -167,57 +165,37 @@ export abstract class Character {
     }
 
     get hp(): number {
-        // 如果当前血量未初始化，则使用计算值
-        if (this._current_hp === undefined) {
-            let value = this.base_hp * (1 + this.level * 0.1);
-
-            // 应用活跃效果
-            for (const effect of this.active_effects) {
-                if (effect.attribute === 'hp') {
-                    if (effect.type === 'buff') {
-                        value += effect.value;
-                    } else {
-                        value -= effect.value;
-                    }
-                }
-            }
-
-            // 应用装备道具的随机属性
-            for (const item of this.equipped_items) {
-                if (item.random_attributes['hp'] !== undefined) {
-                    value += item.random_attributes['hp']!;
-                }
-            }
-
-            return Math.max(0, value); // 属性值不能低于0
-        }
-        
-        // 使用_private_hp值，并确保它在合法范围内
-        let value = this._current_hp;
-
-        // 应用活跃效果
+        // 直接返回当前血量，不再做任何计算
+        // 确保 _current_hp 已经被初始化
+        return Math.min(Math.max(this._current_hp, 0), this.max_hp);
+    }
+    /**
+     * 设置当前生命值，并确保其在 [0, max_hp] 范围内
+     */
+    set hp(value: number) {
+        // 使用 max_hp 作为上限
+        this._current_hp = Math.max(0, Math.min(value, this.max_hp));
+    }
+    /**
+     * 计算并获取最大生命值
+     * 所有的增益/减益都应该作用于最大生命值
+     */
+    get max_hp(): number {
+        // 1. 基础值：基于基础血量和等级
+        let value = this.base_hp;
+        // 2. 应用活跃效果 (Buff/Debuff)
         for (const effect of this.active_effects) {
             if (effect.attribute === 'hp') {
-                if (effect.type === 'buff') {
-                    value += effect.value;
-                } else {
-                    value -= effect.value;
-                }
+                value += (effect.type === 'buff' ? effect.value : -effect.value);
             }
         }
-
-        // 应用装备道具的随机属性
+        // 3. 应用装备道具的属性
         for (const item of this.equipped_items) {
-            if (item.random_attributes['hp'] !== undefined) {
-                value += item.random_attributes['hp']!;
-            }
+            // 使用 ?. 和 ?? 操作符简化代码
+            value += item.random_attributes?.['hp'] ?? 0;
         }
-
-        return Math.max(0, Math.min(value, this.max_hp)); // 不能超过最大血量也不能低于0
-    }
-    
-    set hp(value: number) {
-        this._current_hp = Math.max(0, Math.min(value, this.max_hp));
+        // 确保最大生命值不低于0 (或1，根据游戏规则)
+        return Math.max(0, value);
     }
 
     get atk(): number {
@@ -316,9 +294,8 @@ export abstract class Character {
     level_hp(): void {
         // 计算等级对应血量
         const new_max_hp = 460.45 * this.level + Math.pow(this.level, 1.863) + 650 + 13.4 * this.level;
-        const hp_diff = new_max_hp - this.max_hp; // 最大血量增加量
-        this.max_hp = new_max_hp;
-        this.base_hp += hp_diff; // 当前血量也等比例增加，或直接设置为max_hp
+        this.hp = new_max_hp;
+        this.base_hp = new_max_hp; // 当前血量也等比例增加，或直接设置为max_hp
     }
 
     level_def(): void {
