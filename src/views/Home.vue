@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { ElCol, ElRow, ElCard, ElAvatar, ElMessageBox, ElMessage, ElImage } from 'element-plus'
+import { ElCol, ElRow, ElCard, ElAvatar, ElImage } from 'element-plus'
 import sbutton from '../components/sbutton.vue';
-import { useSaveStore, SaveStoreState, useDataStore } from '../js/store'
+import { useSaveStore, useDataStore } from '../js/store'
 import { MersenneTwister, icons } from '../js/utils'
 
 const save = useSaveStore();

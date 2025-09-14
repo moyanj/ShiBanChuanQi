@@ -1,5 +1,5 @@
 import { Battle, BattleCharacters, Skill, SkillType } from "./fight";
-import { Item } from "./tools";
+import { Item } from "./item";
 
 interface CharacterData {
     level: number;
@@ -72,7 +72,6 @@ export const teamSynergyConfig: TeamSynergy[] = [
                 }
             }
         }
-        // 可以在这里继续添加更多协同配置...
     ];
 
 export class CharacterManager {
@@ -142,18 +141,18 @@ export abstract class Character {
     type: CharacterType;
     xp: number;
     base_hp: number;
-    _current_hp: number; // 新增：当前血量
+    _current_hp: number; // 当前血量
     base_atk: number;
     base_def_: number;
     base_speed: number;
-    favorability: number; // 新增：好感度
+    favorability: number; // 好感度
     attr_bonus: AttrBonusType;
     env: Battle | null; // 角色所在的战斗环境
-    active_effects: ActiveEffect[]; // 新增：当前生效的增益/减益效果
-    equipped_items: Item[]; // 新增：装备的道具
+    active_effects: ActiveEffect[]; // 当前生效的增益/减益效果
+    equipped_items: Item[]; // 装备的道具
 
     constructor() {
-        this.name = "Test"; // 角色名
+        this.name = "Test";
         this.inside_name = "Test";
         this.desc = "这是一个测试角色";
         this.is_our = false; // 默认为敌方角色
@@ -196,8 +195,6 @@ export abstract class Character {
     }
 
     get hp(): number {
-        // 直接返回当前血量，不再做任何计算
-        // 确保 _current_hp 已经被初始化
         return Math.min(Math.max(this._current_hp, 0), this.max_hp);
     }
     /**
@@ -249,6 +246,10 @@ export abstract class Character {
                 value += item.random_attributes['atk']!;
             }
         }
+
+        // 应用自身属性加成
+        const selfBonus = this.attr_bonus[this.type] || 0;
+        value *= (1 + selfBonus);
 
         return Math.max(0, value); // 属性值不能低于0
     }

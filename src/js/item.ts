@@ -1,10 +1,8 @@
 import { v4 as uuidv4 } from 'uuid'; // 用于生成唯一ID
-import { Thing } from './things'; // 导入 Thing 类
 
 export interface Item { // Item 独立于 Thing
     id: string; // 道具唯一ID
     name: string; // 道具名称
-    desc: string; // 道具描述
     inside_name: string; // 内部名
     random_attributes: { // 随机属性，最多三个
         hp?: number;
@@ -20,16 +18,8 @@ export interface Item { // Item 独立于 Thing
  */
 export function generateRandomItem(): Item {
     const itemNames = ["神秘护符", "古老戒指", "能量水晶", "坚韧护甲", "锋利之刃"];
-    const itemDescriptions = [
-        "蕴含神秘力量的护符。",
-        "一枚古老的戒指，似乎有故事。",
-        "闪烁着微光的能量水晶。",
-        "由未知材料制成的坚韧护甲。",
-        "锋利无比的刀刃，能轻易切开敌人。",
-    ];
 
     const randomName = itemNames[Math.floor(Math.random() * itemNames.length)];
-    const randomDescription = itemDescriptions[Math.floor(Math.random() * itemDescriptions.length)];
 
     const attributes = ['hp', 'atk', 'def_', 'speed'];
     const selectedAttributes: { hp?: number; atk?: number; def_?: number; speed?: number; } = {};
@@ -65,7 +55,6 @@ export function generateRandomItem(): Item {
     return {
         id: uuidv4(),
         name: randomName,
-        desc: randomDescription, // 使用 desc 属性
         inside_name: randomName.replace(/\s/g, ''), // 生成内部名
         random_attributes: selectedAttributes,
     };

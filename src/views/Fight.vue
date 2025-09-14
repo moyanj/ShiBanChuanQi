@@ -9,7 +9,7 @@ import fightCard from '../components/fight-card.vue';
 import { Battle, Skill } from '../js/fight';
 import { Character, CharacterType, characters } from '../js/character';
 import { ThingList } from '../js/things';
-import { generateRandomItem, Item } from '../js/tools';
+import { generateRandomItem, Item } from '../js/item';
 
 const data = useDataStore();
 const save = useSaveStore();
@@ -281,9 +281,9 @@ const playerAttack = async (attack_type: 'general' | 'skill' | 'super_skill') =>
 
     // 使用类型断言解决类型不匹配问题
     const dealt_value = battle.value.execute_skill(
-        target_party_type, 
-        target.inside_name, 
-        skill_to_execute, 
+        target_party_type,
+        target.inside_name,
+        skill_to_execute,
         attacker as Character
     );
 

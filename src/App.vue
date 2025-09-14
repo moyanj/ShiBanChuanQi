@@ -14,10 +14,9 @@ import { icons, isLandscape } from './js/utils';
 import { console_handler } from './js/key';
 import { useDataStore, APM } from './js/store';
 
-// 导入 Element Plus 的消息框组件
 import { ElMessageBox, ElImage } from 'element-plus';
 
-import { KeepAlive, watch } from 'vue';
+import { watch } from 'vue';
 import { useMagicKeys } from '@vueuse/core';
 
 // 初始化数据存储

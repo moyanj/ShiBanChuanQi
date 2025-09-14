@@ -1,6 +1,5 @@
-import { Character, CharacterType, ActiveEffect, teamSynergyConfig, TeamSynergy } from "./character";
+import { Character,  ActiveEffect, teamSynergyConfig} from "./character";
 import { useFightStore } from './store';
-import { generateRandomItem } from './tools'; // 新增导入
 
 export enum SkillType {
     Damage = "伤害",
@@ -12,14 +11,14 @@ export enum SkillType {
 }
 
 export interface Skill {
-    name: string;
-    type: SkillType;
-    value: number;
-    cost: number; // 新增：战技点消耗
-    targetScope: 'single' | 'all_allies' | 'all_enemies';
-    attribute?: 'atk' | 'def_' | 'speed' | 'hp'; // For buffs/debuffs
-    duration?: number; // For buffs/debuffs, in turns
-    description: string;
+    name: string; // 技能名称
+    type: SkillType;  // 技能类型
+    value: number; // 技能数值（伤害量、治疗量、增益/减益值等）
+    cost: number; // 战技点消耗
+    targetScope: 'single' | 'all_allies' | 'all_enemies';  // 目标范围
+    attribute?: 'atk' | 'def_' | 'speed' | 'hp'; // 修改的属性，仅对 Buff/Debuff 有效
+    duration?: number; // 持续回合数，仅对 Buff/Debuff 有效
+    description: string;  // 技能描述
 }
 
 interface ATB {
@@ -32,7 +31,7 @@ interface CharactersMap {
 
 export class BattleCharacters {
     characters: CharactersMap;
-    atb: ATB;
+    atb: ATB; // 行动值
     hp: number; // 队伍总血量
     appliedSynergies: Set<string>; // 记录已应用的协同效果ID
 
@@ -57,12 +56,14 @@ export class BattleCharacters {
         }
     }
 
+    // 注册战斗环境
     register_env(obj: Battle) {
         for (let i in this.characters) {
             this.characters[i].env = obj;
         }
     }
 
+    // 更新所有角色的行动值
     update_atb(tick: number) {
         for (let i in this.characters) {
             let c = this.characters[i];
@@ -70,9 +71,9 @@ export class BattleCharacters {
                 this.atb[c.inside_name] += c.speed * tick;
             }
         }
-        // 总血量的更新应该在take_damage方法中处理
     }
 
+    // 重置指定角色的行动值
     reset_atb(character_name: string): void {
         if (this.atb[character_name] !== undefined) {
             this.atb[character_name] = 0;
@@ -149,25 +150,25 @@ export class BattleCharacters {
                         source_skill_name: skill.name,
                     };
                     target_character.apply_effect(effect);
-                    actual_value_dealt = skill.value; // Return the buff/debuff value
+                    actual_value_dealt = skill.value;
                 }
                 break;
             case SkillType.PartyBuff:
             case SkillType.PartyDebuff:
-                // Party effects will be handled by iterating through characters in Battle class
-                // For now, we'll just return the skill value
                 actual_value_dealt = skill.value;
                 break;
         }
         return actual_value_dealt;
     }
 
+    // 回合开始钩子
     onTurnStart() {
         Object.values(this.characters).forEach(character => {
             character.onTurnStart();
         });
     }
 
+    // 回合结束钩子
     onTurnEnd() {
         Object.values(this.characters).forEach(character => {
             character.onTurnEnd();
@@ -179,11 +180,11 @@ export class Battle {
     enemy: BattleCharacters;
     our: BattleCharacters;
     now_character: { type: 'enemy' | 'our', name: string } | null; // 当前行动的角色
-    tick: number;
+    tick: number; // 当前回合数
     battle_log: string[]; // 战斗日志
-    ai_mode: boolean; // 新增：战斗是否处于AI模式
+    ai_mode: boolean; // 战斗是否处于AI模式
     battle_points: number; // 战技点
-    fightStore: ReturnType<typeof useFightStore>; // 新增：Pinia fight store 实例
+    fightStore: ReturnType<typeof useFightStore>;
 
     constructor(enemy_characters: Character[], our_characters: Character[]) {
         this.enemy = new BattleCharacters(enemy_characters);
@@ -193,10 +194,11 @@ export class Battle {
         this.battle_log = [];
         this.ai_mode = false; // 默认为手动模式
         this.battle_points = 5; // 初始化战技点为5
-        this.fightStore = useFightStore(); // 初始化 fight store
+        this.fightStore = useFightStore();
 
         this.our.register_env(this);
         this.enemy.register_env(this);
+
         this.log("战斗开始！");
         this.check_team_synergy(); // 在战斗开始时检查队伍协同
     }
@@ -321,7 +323,6 @@ export class Battle {
         if (skill.type === SkillType.Damage) {
             const bonus = attacker.attr_bonus[target.type] || 0;
             final_skill_value *= (1 + bonus);
-            // 这里可以添加更多的克制逻辑
         }
         return { ...skill, value: final_skill_value };
     }
@@ -414,7 +415,7 @@ export class Battle {
             }
             // AI：优先攻击血量最低的
             let target = alive_enemy.sort((a, b) => a.hp - b.hp)[0];
-            
+
             // 技能选择：战技点充足则用技能，否则普攻
             const skill_to_execute = (this.battle_points > 2 && Math.random() < 0.7) ? active_character.getSkill() : active_character.getGeneralSkill();
 
@@ -436,7 +437,7 @@ export class Battle {
         // 检查敌方队伍协同
         this.checkSynergy(this.enemy);
     }
-    
+
     private checkSynergy(team: BattleCharacters): void {
         for (const synergy of teamSynergyConfig) {
             const active = synergy.condition(team);

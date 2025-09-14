@@ -6,7 +6,6 @@ import 'video.js/dist/video-js.css';
 
 import { useSaveStore, useDataStore, APM } from "../js/store";
 import { MersenneTwister, icons } from "../js/utils";
-import { ThingList } from "../js/things";
 import { characters } from "../js/character";
 import { ref } from "vue";
 

@@ -1,11 +1,11 @@
 import { defineStore } from 'pinia';
 import { ThingsManager } from './things';
-import { ItemManager, Item } from './tools'; // 导入 ItemManager 和 Item
+import { ItemManager} from './item';
 import { CharacterManager, Character } from './character';
 import { AudioPlayer } from './utils';
 import { HistoryManager } from './lib/ai';
 import { randomName } from './lib/name';
-import { Battle, SkillType } from './fight'; // 引入 Battle 类
+import { Battle } from './fight';
 
 interface BuildInfoState {
     version: string;
@@ -44,10 +44,10 @@ export interface FightStoreState {
     enemy: Character[];
     our: Character[];
     ai: boolean;
-    battle_instance: Battle | null; // 新增：战斗实例
-    selected_our_character: Character | null; // 新增：当前玩家选择的行动角色
-    selected_target_character: { type: 'enemy' | 'our', character: Character } | null; // 新增：当前玩家选择的目标角色
-    selected_characters: Character[]; // 新增：用户在战斗前选择的角色
+    battle_instance: Battle | null; // 战斗实例
+    selected_our_character: Character | null; // 当前玩家选择的行动角色
+    selected_target_character: { type: 'enemy' | 'our', character: Character } | null; // 当前玩家选择的目标角色
+    selected_characters: Character[]; // 用户在战斗前选择的角色
 }
 
 export const useDataStore = defineStore('data', {

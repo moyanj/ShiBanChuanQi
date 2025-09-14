@@ -14,12 +14,12 @@ import {
     ElSelect,
     ElOption
 } from 'element-plus';
-import { CharacterType, characters, Character } from '../js/character'; // 引入 Character 类型
+import { CharacterType, Character } from '../js/character';
 import { useSaveStore } from '../js/store';
 import { get_character_by_dump, icons } from '../js/utils';
 import { ref, watch, computed } from 'vue';
-import SButton from '../components/sbutton.vue'; // 更规范的组件命名
-import { Item, ItemManager } from '../js/tools'; // 导入 Item 和 ItemManager
+import SButton from '../components/sbutton.vue';
+import { Item } from '../js/item';
 
 const save = useSaveStore();
 
@@ -181,11 +181,11 @@ const formatItemLabel = (item: Item) => {
                     <SButton class="show_info" @click="showInfo = true">显示</SButton>
                 </el-descriptions-item>
                 <el-descriptions-item label="攻击力">{{ Math.round(nowCharacter.atk)
-                }}</el-descriptions-item>
+                    }}</el-descriptions-item>
                 <el-descriptions-item label="防御力">{{ Math.round(nowCharacter.def_)
-                }}</el-descriptions-item>
+                    }}</el-descriptions-item>
                 <el-descriptions-item label="速度">{{ Math.round(nowCharacter.speed)
-                }}</el-descriptions-item>
+                    }}</el-descriptions-item>
                 <el-descriptions-item label="好感度">{{ Math.round(nowCharacter.favorability) }}</el-descriptions-item>
                 <el-descriptions-item label="介绍" :span="4">
                     {{ nowCharacter.desc }}
@@ -203,7 +203,7 @@ const formatItemLabel = (item: Item) => {
                 <el-descriptions-item label="已装备道具" :span="4">
                     <div v-if="nowCharacter.equipped_items.length > 0">
                         <div v-for="item in nowCharacter.equipped_items" :key="item.id">
-                            {{ item.name }} ({{ item.desc }})
+                            {{ item.name }}
                             <span v-for="(value, key) in item.random_attributes" :key="key">
                                 {{ attributeTranslations[key] || key }}: {{ value > 0 ? '+' : '' }}{{ value }}<br>
                             </span>
@@ -231,11 +231,11 @@ const formatItemLabel = (item: Item) => {
                 <el-descriptions-item label="生命">{{ Math.round(nowCharacter.max_hp) }}
                 </el-descriptions-item>
                 <el-descriptions-item label="攻击力">{{ Math.round(nowCharacter.atk)
-                    }}</el-descriptions-item>
-                <el-descriptions-item label="防御力">{{ Math.round(nowCharacter.def_)
-                    }}</el-descriptions-item>
-                <el-descriptions-item label="速度">{{ Math.round(nowCharacter.speed)
                 }}</el-descriptions-item>
+                <el-descriptions-item label="防御力">{{ Math.round(nowCharacter.def_)
+                }}</el-descriptions-item>
+                <el-descriptions-item label="速度">{{ Math.round(nowCharacter.speed)
+                    }}</el-descriptions-item>
                 <el-descriptions-item label="好感度">{{ Math.round(nowCharacter.favorability) }}</el-descriptions-item>
             </el-descriptions>
         </el-scrollbar>

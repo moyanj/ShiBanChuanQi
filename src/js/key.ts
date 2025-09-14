@@ -1,7 +1,6 @@
 import { useDataStore, useSaveStore, useFightStore } from "./store";
 import { ElMessageBox } from 'element-plus'
 import { ThingList } from "./things";
-import { SaveServer } from "./utils";
 
 function cmd_handler(value) {
     value = value.value;

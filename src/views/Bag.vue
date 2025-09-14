@@ -2,9 +2,9 @@
 import { watch, ref } from 'vue';
 import { ElTable, ElTableColumn, ElDialog, ElForm, ElFormItem, ElSlider, ElTabs, ElTabPane } from 'element-plus';
 import sbutton from '../components/sbutton.vue';
-import { useSaveStore, SaveStoreState } from '../js/store';
+import { useSaveStore } from '../js/store';
 import { ThingList } from '../js/things';
-import { Item } from '../js/tools'; // 导入 Item 接口
+import { Item } from '../js/item';
 
 const save = useSaveStore();
 console.log(save);
@@ -100,7 +100,6 @@ const attributeTranslations: { [key: string]: string } = {
         <el-tab-pane label="道具" name="items">
             <el-table :data="items_table_data" class="table" empty-text="暂无道具">
                 <el-table-column prop="name" label="道具名"></el-table-column>
-                <el-table-column prop="desc" label="描述"></el-table-column>
                 <el-table-column label="属性">
                     <template #default="scope">
                         <span v-for="(value, key) in scope.row.random_attributes" :key="key">
