@@ -457,7 +457,7 @@ export class SaveServer {
     }
 }
 
-export function get_character_by_dump(dump:Character): Character | null { 
+export function get_character_by_dump(dump: Character): Character | null { 
     const CharacterConstructor = characters[dump.inside_name];
     const selected_our_character = new CharacterConstructor();
     selected_our_character.load(dump);

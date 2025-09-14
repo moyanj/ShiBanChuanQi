@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 import { onKeyStroke } from '@vueuse/core';
 import { ElImage, ElAvatar, ElScrollbar, ElMessage, ElDialog } from 'element-plus';
 import { useDataStore, useSaveStore, useFightStore, APM } from '../js/store';
@@ -9,7 +9,7 @@ import fightCard from '../components/fight-card.vue';
 import { Battle, Skill } from '../js/fight';
 import { Character, CharacterType, characters } from '../js/character';
 import { ThingList } from '../js/things';
-import { generateRandomItem, Item } from '../js/tools'; // 新增导入
+import { generateRandomItem, Item } from '../js/tools';
 
 const data = useDataStore();
 const save = useSaveStore();
@@ -17,12 +17,12 @@ const fightStore = useFightStore();
 const random = new MersenneTwister();
 
 var show_manager = ref(false);
-var battle_interval: number | null = null; // 用于存储战斗循环的定时器
+var battle_interval: number | null = null;
 var battle_ended = ref(false);
-var show_character_selection = ref(true); // 控制角色选择界面的显示
-var available_characters = ref<Character[]>([]); // 可���选择的角色 (我方)
-var errorMessage = ref(''); // 错误信息
-var show_settlement_dialog = ref(false); // 控制结算界面的显示
+var show_character_selection = ref(true);
+var available_characters = ref<Character[]>([]);
+var errorMessage = ref('');
+var show_settlement_dialog = ref(false);
 var battle_result = ref("");
 var battle_exp_reward = ref(0);
 var battle_xinhuo_reward = ref(0);
@@ -30,14 +30,51 @@ var dropped_items = ref<Item[]>([]);
 
 const enemy_avatar = random.randint(1, 100);
 
+// 从 store 中获取战斗实例
+const battle = computed(() => fightStore.battle_instance);
+
 // 当前行动角色，用于判断是否轮到我方玩家操作
-const current_active_character = computed(() => fightStore.battle_instance?.get_now_character());
+const current_active_character = computed(() => battle.value?.get_now_character());
+
+// 当前选中的技能类型
+const selected_skill_type = computed(() => {
+    if (!fightStore.selected_our_character) {
+        return null;
+    }
+
+    // 返回当前选择的技能类型
+    return current_selected_skill_type.value;
+});
+
+// 添加用于跟踪当前选择技能类型的响应式变量
+var current_selected_skill_type = ref<null | 'general' | 'skill' | 'super_skill'>(null);
+
+// 自动选择当前行动角色的函数
+const autoSelectActiveCharacter = () => {
+    if (fightStore.ai) return;
+
+    const activeChar = current_active_character.value;
+    if (activeChar && activeChar.type === 'our') {
+        // 如果当前行动角色是我方角色，自动选择它
+        fightStore.selected_our_character = activeChar.character;
+        fightStore.selected_target_character = null;
+        battle.value?.log(`自动选择了 ${activeChar.character.name} 行动。请选择攻击目标和技能。`);
+    }
+};
+
+// 监听当前行动角色的变化
+watch(current_active_character, (newVal, oldVal) => {
+    // 只有在手动模式下才自动选择
+    if (!fightStore.ai && newVal && newVal.type === 'our') {
+        autoSelectActiveCharacter();
+    }
+});
 
 // 玩家选择的我方角色 (用于手动模式下，玩家点击我方角色后，准备选择技能)
 const selected_our_character = computed(() => fightStore.selected_our_character);
 // 玩家选择的目标角色 (用于手动模式下，玩家选择攻击目标)
 const selected_target_character = computed(() => fightStore.selected_target_character);
-const battle_log = computed(() => fightStore.battle_instance?.battle_log || []);
+const battle_log = computed(() => battle.value?.battle_log || []);
 
 // 角色类型到元素图标的映射
 const c2e = {
@@ -52,21 +89,15 @@ const c2e = {
 
 onKeyStroke("Escape", (e) => {
     e.preventDefault();
-    if (show_manager.value) {
-        show_manager.value = false;
-    } else {
-        show_manager.value = true;
-    }
+    show_manager.value = !show_manager.value;
 });
 
 // 选择角色逻辑
 const toggleCharacterSelection = (character: Character) => {
     const index = fightStore.selected_characters.findIndex(c => c.inside_name === character.inside_name);
     if (index > -1) {
-        // 角色已选择，移除
         fightStore.selected_characters.splice(index, 1);
     } else {
-        // 角色未选择，添加
         if (fightStore.selected_characters.length < 3) {
             fightStore.selected_characters.push(get_character_by_dump(character));
         } else {
@@ -75,7 +106,6 @@ const toggleCharacterSelection = (character: Character) => {
     }
 };
 
-// 检查角色是否被选中
 const isCharacterSelected = (character: Character) => {
     return fightStore.selected_characters.some(c => c.inside_name === character.inside_name);
 };
@@ -83,36 +113,25 @@ const isCharacterSelected = (character: Character) => {
 
 // 战斗开始逻辑
 const startBattle = () => {
-    // 确保有角色参与战斗
     if (fightStore.selected_characters.length !== 3) {
         ElMessage.error("请选择三名角色开始战斗！");
         return;
     }
 
-    // 将用户选择的角色赋值给 fightStore.our
-    fightStore.our = fightStore.selected_characters;
-    show_character_selection.value = false; // 关闭角色选择界面
-
-    // 确保所有角色都有初始血量和最大血量，并设置is_our为true
-    fightStore.our.forEach(c => {
-        if (c.hp <= 0) c.hp = c.max_hp;
-        if (c.max_hp <= 0) c.level_hp(); // 重新计算最大血量
-        c.is_our = true; // 明确标记为我方角色
+    fightStore.our = fightStore.selected_characters.map(c => {
+        const charInstance = get_character_by_dump(c);
+        charInstance.hp = charInstance.max_hp;
+        charInstance.is_our = true;
+        // 确保装备的道具也被复制到战斗实例中
+        charInstance.equipped_items = [...c.equipped_items];
+        return charInstance;
     });
 
-    // 在我方角色确定后，生成敌方角色
-    generateEnemyCharacters(); // 调用生成敌方角色的函数
-
-    fightStore.enemy.forEach(c => {
-        if (c.hp <= 0) c.hp = c.max_hp;
-        if (c.max_hp <= 0) c.level_hp(); // 重新计算最大血量
-    });
+    show_character_selection.value = false;
+    generateEnemyCharacters();
 
     fightStore.battle_instance = new Battle(fightStore.enemy, fightStore.our);
-    // !!! 关键修改点：将AI模式状态传递给战斗实例 !!!
-    if (fightStore.battle_instance) {
-        fightStore.battle_instance.ai_mode = fightStore.ai;
-    }
+    fightStore.battle_instance.ai_mode = fightStore.ai;
 
     battle_ended.value = false;
     fightStore.selected_our_character = null;
@@ -123,318 +142,266 @@ const startBattle = () => {
         APM.add("battle_music", 'audio/background/battle.mp3', { loop: true, volume: 0.5 });
     }
     APM.play("battle_music");
-
     // 启动战斗循环
     battle_interval = setInterval(async () => {
-        if (!fightStore.battle_instance) return;
+        if (!battle.value) return;
 
-        // 检查战斗是否已经结束，如果结束则停止循环
-        if (fightStore.battle_instance.enemy.hp <= 0 || fightStore.battle_instance.our.hp <= 0) {
+        // next_turn 内部会检查战斗是否结束
+        const is_ended = await battle.value.next_turn();
+        console.log("is_ended", is_ended);
+        if (is_ended) {
             endBattle();
-            return; // 结束当前循环迭代
         }
-
-        let activeCharacterInfo = fightStore.battle_instance.get_now_character();
-
-        if (!activeCharacterInfo) {
-            // 没有角色达到行动点，推进时间
-            fightStore.battle_instance.update_atb_all(1);
-        } else {
-            // 有角色准备行动
-            const { type: active_party_type, character: active_character } = activeCharacterInfo;
-
-            // 如果轮到我方玩家角色行动，且处于手动模式
-            if (active_party_type === 'our' && fightStore.ai === false) {
-                // 如果当前没有选定角色，或者选定的不是当前行动角色，则更新选定角色
-                if (!fightStore.selected_our_character || fightStore.selected_our_character.inside_name !== active_character.inside_name) {
-                    fightStore.selected_our_character = active_character;
-                    fightStore.selected_target_character = null; // 重置目标选择
-                    fightStore.battle_instance.log(`轮到 ${active_character.name} 行动！请选择技能和目标。`);
-                }
-                // 此时不推进回合，等待玩家操作。next_turn不会被调用。
-            } else {
-                // 轮到敌方角色行动，或者我方AI自动行动
-                // 在fight.ts的next_turn中会根据this.ai_mode判断是否执行我方AI逻辑
-                console.log(`[AI/敌方] 推进回合或我方AI自动行动`);
-                const ended = await fightStore.battle_instance.next_turn();
-                if (ended) {
-                    endBattle();
-                }
-            }
-        }
-    }, 50) as unknown as number; // 每次主循环间隔50ms
+    }, 100) as unknown as number;
 };
 
 const endBattle = () => {
     if (battle_interval) {
         clearInterval(battle_interval);
-        battle_interval = null; // 清除定时器句柄
+        battle_interval = null;
+        console.log("战斗结束");
     }
+    if (battle_ended.value) return; // 防止重复执行
     battle_ended.value = true;
     APM.stop("battle_music");
-    APM.play("background_music"); // 恢复主页背景音乐
+    APM.play("background_music");
 
     let message = '';
     let exp_reward = 0;
     let xinhuo_reward = 0;
 
-    if (fightStore.battle_instance?.enemy.hp <= 0) {
+    if (battle.value?.enemy.hp <= 0) {
         if (!("battle_win" in APM.objs)) {
             APM.add("battle_win", 'audio/battle_win.mp3');
         }
         APM.play("battle_win");
         message = "恭喜你，战斗胜利！";
-        // 给予经验值奖励
         exp_reward = fightStore.enemy.reduce((sum, char) => sum + Math.round(char.level_xp(char.level) / 5), 0);
         save.things.add(new (ThingList["EXP"] as any)(), exp_reward);
-        // 给予星火奖励
         xinhuo_reward = random.randint(175, 840);
         save.things.add(new (ThingList["XinHuo"] as any)(), xinhuo_reward);
-        ElMessage.success(`${message} 获得 ${exp_reward} EXP, ${xinhuo_reward} 星火`);
 
-        for (const char of fightStore.our) {
-            char.favorability += 5;
-        }
-        console.log("开始生成道具")
-        // 道具掉落逻辑
-        const numItemsToDrop = random.randint(1, 3); // 掉落1到3个道具
-        dropped_items.value = []; // 清空之前的掉落道具
+        fightStore.our.forEach(char => save.characters.get(char.inside_name)!.favorability += 5);
+
+        dropped_items.value = [];
+        const numItemsToDrop = random.randint(1, 3);
         for (let i = 0; i < numItemsToDrop; i++) {
             const droppedItem = generateRandomItem();
-            save.items.add(droppedItem); // 将道具添加到背包
+            save.items.add(droppedItem);
             dropped_items.value.push(droppedItem);
-            ElMessage.success(`获得道具：${droppedItem.name}`);
         }
-        show_settlement_dialog.value = true;
-
-    } else if (fightStore.battle_instance?.our.hp <= 0) {
+        battle_result.value = 'win';
+    } else {
         if (!("battle_lose" in APM.objs)) {
             APM.add("battle_lose", 'audio/battle_lose.mp3');
         }
         APM.play("battle_lose");
         message = "很遗憾，战斗失败！";
-        ElMessage.error(message);
         exp_reward = fightStore.enemy.reduce((sum, char) => sum + Math.round(char.level_xp(char.level) / 7), 0);
         save.things.add(new (ThingList["EXP"] as any)(), exp_reward);
+        battle_result.value = 'lose';
+    }
 
-    } else {
-        message = "战斗结束。";
-        ElMessage.info(message);
-    }
-    for (const char of fightStore.our) {
-        char.reset_status();
-    }
-    fightStore.battle_instance?.log(message);
-    battle_result.value = fightStore.battle_instance?.enemy.hp <= 0 ? 'win' : 'lose';
+    fightStore.our.forEach(char => {
+        get_character_by_dump(char).reset_status();
+    });
     battle_exp_reward.value = exp_reward;
     battle_xinhuo_reward.value = xinhuo_reward;
-    show_settlement_dialog.value = true; // 显示结算界面
+    show_settlement_dialog.value = true;
 };
 
 // 玩家选择我方角色进行操作
 const selectOurCharacter = (character: Character) => {
-    // 只有当是该角色行动，���处于手动模式时才允许选择
-    if (current_active_character.value?.type === 'our' && current_active_character.value.character.inside_name === character.inside_name && fightStore.ai === false) {
+    if (fightStore.ai) {
+        ElMessage.warning("请先切换为手动模式。");
+        return;
+    }
+    if (current_active_character.value?.type === 'our' && current_active_character.value.character.inside_name === character.inside_name) {
         fightStore.selected_our_character = character;
-        fightStore.selected_target_character = null; // 重置目标选择
-        fightStore.battle_instance?.log(`你选择了 ${character.name} 行动。请选择攻击目标和技能。`);
+        fightStore.selected_target_character = null;
+        battle.value?.log(`你选择了 ${character.name} 行动。请选择攻击目标和技能。`);
     } else {
-        if (current_active_character.value?.character.inside_name !== character.inside_name) {
-            ElMessage.warning("现在不是该角色行动。");
-        } else if (fightStore.ai === true) {
-            ElMessage.warning("当前为AI自动战斗模式，请切换为手动模式。");
-        }
+        ElMessage.warning("现在不是该角色行动。");
     }
 };
 
 // 玩家选择目标角色
 const selectTargetCharacter = (target_party: 'enemy' | 'our', character: Character) => {
-    // 只有在我方角色被选中，且处于手动模式时才允许选择目标
-    if (fightStore.selected_our_character && fightStore.ai === false) {
+    if (fightStore.ai) return;
+
+    // 检查当前技能是否允许作用于目标方
+    const canTarget = canSkillTarget(target_party);
+    if (!canTarget) {
+        const targetName = target_party === 'enemy' ? '敌方' : '己方';
+        ElMessage.warning(`当前技能无法作用于${targetName}角色！`);
+        return;
+    }
+
+    if (fightStore.selected_our_character) {
         fightStore.selected_target_character = { type: target_party, character: character };
-        fightStore.battle_instance?.log(`你选择了 ${character.name} 作为目标。`);
-    } else if (!fightStore.selected_our_character) {
+        battle.value?.log(`你选择了 ${character.name} 作为目标。`);
+    } else {
         ElMessage.warning("请先选择一个我方行动角色。");
-    } else if (fightStore.ai === true) {
-        ElMessage.warning("当前为AI自动战斗模式，请切换为手动模式。");
     }
 };
 
 // 玩家执行攻击
 const playerAttack = async (attack_type: 'general' | 'skill' | 'super_skill') => {
-    if (!fightStore.selected_our_character || !fightStore.selected_target_character) {
+    // 记录当前选择的技能类型
+    current_selected_skill_type.value = attack_type;
+
+    if (!battle.value || !selected_our_character.value || !selected_target_character.value) {
         ElMessage.error("请选择行动角色和目标。");
         return;
     }
-    if (!fightStore.battle_instance) return;
 
-    const attacker = fightStore.selected_our_character;
-    const target = fightStore.selected_target_character.character;
-    const target_party_type = fightStore.selected_target_character.type;
+    const attacker = selected_our_character.value;
+    const { type: target_party_type, character: target } = selected_target_character.value;
 
-    // 再次确认当前行动角色是否是玩家选择的这个��色
-    if (current_active_character.value?.type !== 'our' || current_active_character.value.character.inside_name !== attacker.inside_name) {
+    if (current_active_character.value?.character.inside_name !== attacker.inside_name) {
         ElMessage.error("现在不是该角色的行动回合。");
-        // 清除玩家选择状态，等待正确回合
-        fightStore.selected_our_character = null;
-        fightStore.selected_target_character = null;
         return;
     }
+
     let skill_to_execute: Skill | null = null;
     switch (attack_type) {
-        case 'general':
-            skill_to_execute = attacker.getGeneralSkill();
-            break;
-        case 'skill':
-            skill_to_execute = attacker.getSkill();
-            break;
-        case 'super_skill':
-            skill_to_execute = attacker.getSuperSkill();
-            break;
+        case 'general': skill_to_execute = attacker.getGeneralSkill(); break;
+        case 'skill': skill_to_execute = attacker.getSkill(); break;
+        case 'super_skill': skill_to_execute = attacker.getSuperSkill(); break;
     }
 
-    if (!skill_to_execute) {
-        ElMessage.error("未能获取到技能信息。");
-        return;
+    if (!skill_to_execute) return;
+
+    const dealt_value = battle.value.execute_skill(target_party_type, target.inside_name, skill_to_execute, attacker);
+
+    // 如果技能因战技点不足而失败，execute_skill会返回0，此时不应结束回合
+    if (skill_to_execute.cost > 0 && dealt_value === 0 && battle.value.battle_points < skill_to_execute.cost) {
+        return; // 等待玩家重新选择
     }
 
-    // 执行技能
-    const dealt_value = fightStore.battle_instance.execute_skill(target_party_type, target.inside_name, skill_to_execute, attacker);
     if (!("battle" in APM.objs)) {
         APM.add("battle", 'audio/fight.mp3');
     }
     APM.play("battle");
-    // 如果技能消耗了战技点但未能成功执行 (dealt_value 为 0 且技能有消耗)，则提示用户并等待重新选择
-    if (skill_to_execute.cost > 0 && dealt_value === 0) {
-        ElMessage.warning("战技点不足，请重新选择技能！");
-        return; // 不重置ATB和选择状态，等待玩家重新操作
-    }
 
-    // 重置当前行动角色的ATB，因为已经执行了操作
-    fightStore.battle_instance.our.reset_atb(attacker.inside_name);
+    battle.value.our.reset_atb(attacker.inside_name);
 
-    // 清除选择状态
     fightStore.selected_our_character = null;
     fightStore.selected_target_character = null;
+    current_selected_skill_type.value = null; // 重置技能类型
 
+    // 手动操作后，立即检查一次战斗是否结束
+    if (battle.value.enemy.hp <= 0 || battle.value.our.hp <= 0) {
+        endBattle();
+    }
 };
 
 const toggleAI = () => {
     fightStore.ai = !fightStore.ai;
-    if (fightStore.battle_instance) {
-        fightStore.battle_instance.ai_mode = fightStore.ai; // 更新战斗实例的AI模式
-        console.log("切换AI模式，战斗实例AI模式为:", fightStore.battle_instance.ai_mode);
+    if (battle.value) {
+        battle.value.ai_mode = fightStore.ai;
     }
-
+    ElMessage.info(`已切换为${fightStore.ai ? 'AI自动战斗' : '手动战斗'}`);
     if (fightStore.ai) {
-        ElMessage.info("已切换为AI自动战斗");
         fightStore.selected_our_character = null;
         fightStore.selected_target_character = null;
-    } else {
-        ElMessage.info("已切换为手动战斗");
     }
 };
 
-/**
- * 生成略弱于我方角色的敌方角色
- * @param baseCharacter 我方角色作为模板
- * @returns 略弱的敌方角色实例
- */
+
+// 预判技能是否可以作用于指定目标
+const canSkillTarget = (target_party: 'enemy' | 'our') => {
+    // 如果没有选择技能类型，则默认可以作用于敌方，不能作用于己方
+    if (!current_selected_skill_type.value) {
+        return target_party === 'enemy';
+    }
+
+    // 获取当前行动角色
+    const activeChar = fightStore.selected_our_character;
+    if (!activeChar) return false;
+
+    // 根据选中的技能类型判断
+    switch (current_selected_skill_type.value) {
+        case 'general':
+        case 'skill':
+        case 'super_skill':
+            // 对于所有技能类型，获取对应的技能信息
+            let skill: Skill;
+            switch (current_selected_skill_type.value) {
+                case 'general':
+                    skill = activeChar.getGeneralSkill();
+                    break;
+                case 'skill':
+                    skill = activeChar.getSkill();
+                    break;
+                case 'super_skill':
+                    skill = activeChar.getSuperSkill();
+                    break;
+                default:
+                    return target_party === 'enemy'; // 默认只能作用于敌方
+            }
+
+            // 根据技能的targetScope判断
+            switch (skill.targetScope) {
+                case 'single':
+                    // 单体技能可以作用于任何单个目标（敌方或己方）
+                    return true;
+                case 'all_enemies':
+                    // 全体敌方技能只能作用于敌方
+                    return target_party === 'enemy';
+                case 'all_allies':
+                    // 全体己方技能只能作用于己方
+                    return target_party === 'our';
+                default:
+                    return target_party === 'enemy'; // 默认只能作用于敌方
+            }
+        default:
+            return target_party === 'enemy'; // 默认只能作用于敌方
+    }
+};
+
 const createWeakerEnemy = (baseCharacter: Character): Character => {
-    const CharacterConstructor = characters[baseCharacter.inside_name];
-    const weakerEnemy = new CharacterConstructor();
-    weakerEnemy.load(baseCharacter); // 加载基础角色的数据，包括等级、XP、HP等
-    weakerEnemy.level = Math.max(1, baseCharacter.level - random.randint(-1, 3)); // 等级降低1-3级，至少为1级
+    const weakerEnemy = get_character_by_dump(baseCharacter);
+    weakerEnemy.level = Math.max(1, baseCharacter.level - random.randint(-1, 3));
     weakerEnemy.level_hp();
     weakerEnemy.level_atk();
     weakerEnemy.level_def();
-    weakerEnemy.hp = weakerEnemy.max_hp; // 确保满血状态
-    weakerEnemy.name = `[敌]${baseCharacter.name}`; // 敌方角色名称标记
+    weakerEnemy.hp = weakerEnemy.max_hp;
+    weakerEnemy.name = `[敌]${baseCharacter.name}`;
     return weakerEnemy;
 };
 
-/**
- * 随机生成敌方角色队伍
- */
 const generateEnemyCharacters = () => {
-    const ourCharacters = save.characters.get_all();
-    if (ourCharacters.length === 0) {
-        ElMessage.error("我方没有选择角色，无法生成敌方！");
-        return;
-    }
+    const ourAvgLevel = fightStore.our.reduce((sum, char) => sum + char.level, 0) / fightStore.our.length;
+    const allGameCharacters = Object.values(characters).map(C => new C());
 
     fightStore.enemy = [];
-
-    const numEnemies = 3;
-    const availableEnemyTemplates = [...ourCharacters];
-
-    for (let i = 0; i < numEnemies; i++) {
-        if (availableEnemyTemplates.length === 0) {
-            const allAvailableGameCharacters = save.characters.get_all();
-            if (allAvailableGameCharacters.length > 0) {
-                const randomIndex = random.randint(0, allAvailableGameCharacters.length - 1);
-                const randomTemplate = allAvailableGameCharacters[randomIndex];
-                fightStore.enemy.push(createWeakerEnemy(randomTemplate));
-            } else {
-                ElMessage.error("游戏中没有任何可用的角色来生成敌方！");
-                break;
-            }
-        } else {
-            const randomIndex = random.randint(0, availableEnemyTemplates.length - 1);
-            const selectedTemplate = availableEnemyTemplates.splice(randomIndex, 1)[0];
-            fightStore.enemy.push(createWeakerEnemy(selectedTemplate));
-        }
+    for (let i = 0; i < 3; i++) {
+        const template = allGameCharacters[random.randint(0, allGameCharacters.length - 1)];
+        const enemy = createWeakerEnemy(template);
+        enemy.level = Math.max(1, Math.floor(ourAvgLevel) + random.randint(-2, 1));
+        enemy.level_hp();
+        enemy.level_atk();
+        enemy.level_def();
+        enemy.hp = enemy.max_hp;
+        fightStore.enemy.push(enemy);
     }
-
-    ElMessage.info(`敌方队伍已生成：${fightStore.enemy.map(e => e.name).join(', ')}`);
 };
 
-
-// 在组件挂载时初始化可选角色 (我方)
 onMounted(() => {
     available_characters.value = save.characters.get_all();
-
-    if (available_characters.value.length === 0) {
-        errorMessage.value = "你还没有任何角色！请去抽卡。";
-        ElMessage.error(errorMessage.value);
-        data.page_type = 'main';
-        return;
+    if (available_characters.value.length < 3) {
+        errorMessage.value = "你的角色不足三名！请去抽卡。";
     }
-
-    show_character_selection.value = true;
 });
 
-// 在组件卸载时清除定时器
 onUnmounted(() => {
-    if (battle_interval) {
-        clearInterval(battle_interval);
-    }
+    if (battle_interval) clearInterval(battle_interval);
     APM.stop("battle_music");
     APM.play("background_music");
-    // 清空选择的角色，避免下次进入战斗时残留
-    fightStore.selected_characters = [];
-    fightStore.our = [];
-    fightStore.enemy = [];
-    fightStore.selected_our_character = null;
-    fightStore.selected_target_character = null;
-    fightStore.battle_instance = null;
+    // 重置store状态
+    fightStore.$reset();
 });
-
-// 模拟一个随机的敌人名称，可以根据实际情况替换
-const enemy_name = computed(() => {
-    if (fightStore.enemy.length > 0) {
-        return fightStore.enemy.map(e => e.name).join(', ');
-    }
-    return '未知敌人';
-});
-
-// 计算ATB值，用于显示
-const getCharacterAtb = (character: Character) => {
-    if (fightStore.battle_instance) {
-        return fightStore.battle_instance.our.atb[character.inside_name];
-    }
-    return 0;
-}
 </script>
 
 <template>
@@ -474,13 +441,13 @@ const getCharacterAtb = (character: Character) => {
                 <div class="selection-actions">
                     <sbutton type="default" size="large" @click="data.page_type = 'main'">返回</sbutton>
                     <sbutton type="primary" size="large" @click="startBattle"
-                        :disabled="fightStore.selected_characters.length !== 3">开始战斗</sbutton>
+                        :disabled="fightStore.selected_characters.length !== 3 || !!errorMessage">开始战斗</sbutton>
                 </div>
             </div>
         </div>
 
         <!-- 战斗界面 -->
-        <div class="content fight-c" v-else>
+        <div class="content fight-c" v-else-if="battle">
             <sbutton @click="show_manager = true" class="menu">
                 <el-image :src="icons.menu" style="width: 24px;height: 24px;" />
             </sbutton>
@@ -490,13 +457,13 @@ const getCharacterAtb = (character: Character) => {
                 </div>
                 <div>
                     <el-avatar><img :src="save.user_avatar" id="avatar"></el-avatar>
-                    <div class="battle-points">战技点: {{ fightStore.battle_instance?.battle_points || 0 }}/5</div>
+                    <div class="battle-points">战技点: {{ battle.battle_points }}/5</div>
                 </div>
             </div>
             <div class="enemy">
                 <div class="character-row">
-                    <fightCard v-for="char in fightStore.battle_instance?.enemy.get_alive_characters()"
-                        :key="char.inside_name" :character="char"
+                    <fightCard v-for="char in battle.enemy.get_alive_characters()" :key="char.inside_name"
+                        :character="char"
                         :is_active="current_active_character?.type === 'enemy' && current_active_character.character.inside_name === char.inside_name"
                         :is_enemy="true"
                         :is_selected="selected_target_character?.type === 'enemy' && selected_target_character.character.inside_name === char.inside_name"
@@ -505,14 +472,16 @@ const getCharacterAtb = (character: Character) => {
             </div>
             <div class="our">
                 <div class="character-row">
-                    <fightCard v-for="char in fightStore.battle_instance?.our.get_alive_characters()"
-                        :key="char.inside_name" :character="char"
+                    <fightCard v-for="char in battle.our.get_alive_characters()" :key="char.inside_name"
+                        :character="char"
                         :is_active="current_active_character?.type === 'our' && current_active_character.character.inside_name === char.inside_name"
-                        :atb_value="getCharacterAtb(char)" :is_enemy="false"
-                        :is_selected="selected_our_character?.inside_name === char.inside_name"
-                        :active_effects="char.active_effects" @click="selectOurCharacter(char)"></fightCard>
+                        :atb_value="battle.our.atb[char.inside_name]" :is_enemy="false"
+                        :is_selected="selected_our_character?.inside_name === char.inside_name || (selected_target_character?.type === 'our' && selected_target_character.character.inside_name === char.inside_name)"
+                        :active_effects="char.active_effects"
+                        @click="fightStore.selected_our_character ? selectTargetCharacter('our', char) : selectOurCharacter(char)">
+                    </fightCard>
                 </div>
-                <!-- 玩家手动攻击按钮，仅在手动模式、有行动角色、有目标时显示 -->
+                <!-- 玩家手动攻击按钮 -->
                 <div class="atk"
                     v-if="!fightStore.ai && selected_our_character && current_active_character?.type === 'our' && current_active_character.character.inside_name === selected_our_character.inside_name && selected_target_character">
                     <div @click="playerAttack('general')">
@@ -548,33 +517,38 @@ const getCharacterAtb = (character: Character) => {
                 <sbutton @click="data.page_type = 'main'">退出战斗</sbutton>
                 <sbutton @click="toggleAI">{{ fightStore.ai ? '切换手动模式' : '切换AI模式' }}</sbutton>
                 <br>
-                <h2>正在与{{ enemy_name }}战斗</h2>
                 <h3 v-if="battle_ended">战斗已结束</h3>
-                <h3 v-else>回合数: {{ fightStore.battle_instance?.tick / 100 }}</h3>
+                <h3 v-else-if="battle">回合数: {{ Math.floor(battle.tick / 100) }}</h3>
             </div>
         </div>
 
         <!-- 结算界面 -->
         <el-dialog v-model="show_settlement_dialog" title="战斗结算" width="500px" :close-on-click-modal="false"
             :close-on-press-escape="false" :show-close="false">
-            <div class="settlement-content">
+            <div class="settlement-content" style="text-align: center;">
                 <h2 v-if="battle_result === 'win'" style="color: #67c23a;">战斗胜利！</h2>
                 <h2 v-else style="color: #f56c6c;">战斗失败！</h2>
 
-                <div v-if="battle_result === 'win'" class="rewards-section">
-                    <h3>奖励：</h3>
+                <div class="rewards-section">
+                    <h3>获得奖励：</h3>
                     <p>经验值: {{ battle_exp_reward }}</p>
-                    <p>星火: {{ battle_xinhuo_reward }}</p>
+                    <p v-if="battle_result === 'win'">星火: {{ battle_xinhuo_reward }}</p>
+                    <div v-if="battle_result === 'win' && dropped_items.length > 0">
+                        <p>道具：</p>
+                        <ul>
+                            <li v-for="item in dropped_items" :key="item.id">{{ item.name }}</li>
+                        </ul>
+                    </div>
                 </div>
 
-                <sbutton type="primary" @click="data.page_type = 'main'">返回主页</sbutton>
+                <sbutton type="primary" @click="data.page_type = 'main'" style="margin-top: 20px;">返回主页</sbutton>
             </div>
         </el-dialog>
     </div>
 </template>
 
 <style scoped>
-/* 保持所有样式不变，因为主要改动在逻辑层 */
+/* 样式与之前保持一致，此处省略以减少篇幅 */
 .content {
     position: fixed;
     left: 0;

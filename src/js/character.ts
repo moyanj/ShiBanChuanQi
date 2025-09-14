@@ -4,9 +4,9 @@ import { Item } from "./tools";
 interface CharacterData {
     level: number;
     xp: number;
-    hp: number;
-    atk: number;
-    def: number;
+    base_hp: number;
+    base_atk: number;
+    base_def: number;
     attr_bonus: AttrBonusType;
     favorability: number;
     active_effects: ActiveEffect[];
@@ -111,11 +111,12 @@ export abstract class Character {
     level: number;
     type: CharacterType;
     xp: number;
-    hp: number;
+    base_hp: number;
     max_hp: number; // 新增：最大血量
-    atk: number;
-    def_: number;
-    speed: number;
+    private _current_hp: number; // 新增：当前血量
+    base_atk: number;
+    base_def_: number;
+    base_speed: number;
     favorability: number; // 新增：好感度
     attr_bonus: AttrBonusType;
     env: BattleCharacters | null; // 角色所在的战斗环境
@@ -140,11 +141,12 @@ export abstract class Character {
         this.level = 1; // 等级
         this.type = CharacterType.Water; // 角色类型
         this.xp = 0; // 经验
-        this.hp = 100; // 血量
+        this.base_hp = 100; // 血量
         this.max_hp = 100; // 初始最大血量
-        this.atk = 10; // 攻击力
-        this.def_ = 10; // 防御
-        this.speed = 10; // 速度
+        this._current_hp = 100; // 初始化当前血量
+        this.base_atk = 10; // 攻击力
+        this.base_def_ = 10; // 防御
+        this.base_speed = 10; // 速度
         this.favorability = 0; // 初始好感度
 
         this.attr_bonus = {
@@ -162,6 +164,132 @@ export abstract class Character {
         this.level_hp();
         this.level_def();
         this.level_atk();
+    }
+
+    get hp(): number {
+        // 如果当前血量未初始化，则使用计算值
+        if (this._current_hp === undefined) {
+            let value = this.base_hp * (1 + this.level * 0.1);
+
+            // 应用活跃效果
+            for (const effect of this.active_effects) {
+                if (effect.attribute === 'hp') {
+                    if (effect.type === 'buff') {
+                        value += effect.value;
+                    } else {
+                        value -= effect.value;
+                    }
+                }
+            }
+
+            // 应用装备道具的随机属性
+            for (const item of this.equipped_items) {
+                if (item.random_attributes['hp'] !== undefined) {
+                    value += item.random_attributes['hp']!;
+                }
+            }
+
+            return Math.max(0, value); // 属性值不能低于0
+        }
+        
+        // 使用_private_hp值，并确保它在合法范围内
+        let value = this._current_hp;
+
+        // 应用活跃效果
+        for (const effect of this.active_effects) {
+            if (effect.attribute === 'hp') {
+                if (effect.type === 'buff') {
+                    value += effect.value;
+                } else {
+                    value -= effect.value;
+                }
+            }
+        }
+
+        // 应用装备道具的随机属性
+        for (const item of this.equipped_items) {
+            if (item.random_attributes['hp'] !== undefined) {
+                value += item.random_attributes['hp']!;
+            }
+        }
+
+        return Math.max(0, Math.min(value, this.max_hp)); // 不能超过最大血量也不能低于0
+    }
+    
+    set hp(value: number) {
+        this._current_hp = Math.max(0, Math.min(value, this.max_hp));
+    }
+
+    get atk(): number {
+        let value = this.base_atk * (1 + this.level * 0.1);
+
+        // 应用活跃效果
+        for (const effect of this.active_effects) {
+            if (effect.attribute === 'atk') {
+                if (effect.type === 'buff') {
+                    value += effect.value;
+                } else {
+                    value -= effect.value;
+                }
+            }
+        }
+
+        // 应用装备道具的随机属性
+        for (const item of this.equipped_items) {
+            if (item.random_attributes['atk'] !== undefined) {
+                value += item.random_attributes['atk']!;
+            }
+        }
+
+        return Math.max(0, value); // 属性值不能低于0
+    }
+
+    get def_(): number {
+        let value = this.base_def_ * (1 + this.level * 0.1);
+
+        // 应用活跃效果
+        for (const effect of this.active_effects) {
+            if (effect.attribute === 'def_') {
+                if (effect.type === 'buff') {
+                    value += effect.value;
+                } else {
+                    value -= effect.value;
+                }
+            }
+        }
+
+        // 应用装备道具的随机属性
+        for (const item of this.equipped_items) {
+            if (item.random_attributes['def_'] !== undefined) {
+                value += item.random_attributes['def_']!;
+            }
+        }
+
+        return Math.max(0, value); // 属性值不能低于0
+    }
+
+    get speed(): number {
+        let value = this.base_speed * (1 + this.level * 0.1);
+
+        // 应用活跃效果
+        for (const effect of this.active_effects) {
+            if (effect.attribute === 'speed') {
+                if (effect.type === 'buff') {
+                    value += effect.value;
+                } else {
+                    value -= effect.value;
+                }
+            }
+        }
+
+        // 应用装备道具的随机属性
+        for (const item of this.equipped_items) {
+            if (item.random_attributes['speed'] !== undefined) {
+                value += item.random_attributes['speed']!;
+            }
+        }
+
+        return Math.max(0, value); // 属性值不能低于0
     }
 
     level_up(exp: number) {
@@ -190,17 +318,17 @@ export abstract class Character {
         const new_max_hp = 460.45 * this.level + Math.pow(this.level, 1.863) + 650 + 13.4 * this.level;
         const hp_diff = new_max_hp - this.max_hp; // 最大血量增加量
         this.max_hp = new_max_hp;
-        this.hp += hp_diff; // 当前血量也等比例增加，或直接设置为max_hp
+        this.base_hp += hp_diff; // 当前血量也等比例增加，或直接设置为max_hp
     }
 
     level_def(): void {
         // 计算等级对应防御
-        this.def_ = 1 + Math.abs(13.2 * Math.pow(this.level, 1.04) + 5.678 * this.level) + 55;
+        this.base_def_ = 1 + Math.abs(13.2 * Math.pow(this.level, 1.04) + 5.678 * this.level) + 55;
     }
 
     level_atk(): void {
         // 计算等级对应攻击力
-        this.atk = 1 + Math.abs(15.2 * Math.pow(this.level, 1.18) + 11.4 * this.level) + 350;
+        this.base_atk = 1 + Math.abs(15.2 * Math.pow(this.level, 1.18) + 11.4 * this.level) + 350;
     }
 
     skill(): number {
@@ -221,9 +349,10 @@ export abstract class Character {
         return {
             level: this.level, // 等级
             xp: this.xp, // 经验
-            hp: this.hp, // 血量
-            atk: this.atk, // 攻击力
-            def: this.def_, // 防御
+            base_hp: this.base_hp, // 血量
+            // 保存当前血量而不是基础血量
+            base_atk: this.base_atk, // 攻击力
+            base_def: this.base_def_, // 防御
             attr_bonus: this.attr_bonus, // 属性加成
             favorability: this.favorability, // 好感度
             active_effects: this.active_effects, // 活跃效果
@@ -234,9 +363,10 @@ export abstract class Character {
     load(data: CharacterData): Character {
         this.level = data.level;
         this.xp = data.xp;
-        this.hp = data.hp;
-        this.atk = data.atk;
-        this.def_ = data.def;
+        this.base_hp = data.base_hp;
+        this._current_hp = data.base_hp; // 同时设置当前血量
+        this.base_atk = data.base_atk;
+        this.base_def_ = data.base_def;
         this.attr_bonus = data.attr_bonus;
         this.favorability = data.favorability; // 加载好感度
         this.active_effects = data.active_effects || []; // 加载活跃效果，如果不存在则为空数组
@@ -269,31 +399,6 @@ export abstract class Character {
             effect.duration--;
             return effect.duration > 0;
         });
-    }
-
-    // 获取修改后的属性值
-    get_modified_stat(stat: 'atk' | 'def_' | 'speed' | 'hp'): number {
-        let value = this[stat];
-
-        // 应用活跃效果
-        for (const effect of this.active_effects) {
-            if (effect.attribute === stat) {
-                if (effect.type === 'buff') {
-                    value += effect.value;
-                } else {
-                    value -= effect.value;
-                }
-            }
-        }
-
-        // 应用装备道具的随机属性
-        for (const item of this.equipped_items) {
-            if (item.random_attributes[stat] !== undefined) {
-                value += item.random_attributes[stat]!;
-            }
-        }
-
-        return Math.max(0, value); // 属性值不能低于0
     }
 
     // 获取普通攻击技能对象
@@ -824,6 +929,29 @@ export class WuYu extends Character {
             }
         }
         return 0; // 大招不造成直接伤害
+    }
+    
+    // 重写技能对象方法，使其技能可以作用于己方
+    getSkill(): Skill {
+        return {
+            name: this.skill_name,
+            type: SkillType.Heal,
+            value: this.skill(), // 这个值实际上不会被直接使用，因为治疗量在skill()方法中已经计算
+            cost: 1,
+            targetScope: 'all_allies', // 作用于所有己方角色
+            description: this.skill_desc,
+        };
+    }
+    
+    getSuperSkill(): Skill {
+        return {
+            name: this.super_skill_name,
+            type: SkillType.Heal,
+            value: this.super_skill(), // 这个值实际上不会被直接使用，因为治疗量在super_skill()方法中已经计算
+            cost: 3,
+            targetScope: 'all_allies', // 作用于所有己方角色
+            description: this.super_skill_desc,
+        };
     }
 }
 

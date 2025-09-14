@@ -71,10 +71,10 @@ watch(nowCharacter, (newCharacter) => {
 
 // 方法：改变当前角色
 const changeCharacter = (characterData: any) => {
-    const CharacterConstructor = characters[characterData.inside_name];
-    const selectedCharacter = new CharacterConstructor();
-    selectedCharacter.load(characterData);
-    nowCharacter.value = selectedCharacter;
+    const selectedCharacter = get_character_by_dump(characterData);
+    if (selectedCharacter) {
+        nowCharacter.value = selectedCharacter;
+    }
 };
 
 // 方法：升级角色
@@ -177,9 +177,12 @@ const formatItemLabel = (item: Item) => {
                 <el-descriptions-item label="详细信息">
                     <SButton class="show_info" @click="showInfo = true">显示</SButton>
                 </el-descriptions-item>
-                <el-descriptions-item label="攻击力">{{ Math.round(nowCharacter.get_modified_stat('atk')) }}</el-descriptions-item>
-                <el-descriptions-item label="防御力">{{ Math.round(nowCharacter.get_modified_stat('def_')) }}</el-descriptions-item>
-                <el-descriptions-item label="速度">{{ Math.round(nowCharacter.get_modified_stat('speed')) }}</el-descriptions-item>
+                <el-descriptions-item label="攻击力">{{ Math.round(nowCharacter.atk)
+                    }}</el-descriptions-item>
+                <el-descriptions-item label="防御力">{{ Math.round(nowCharacter.def_)
+                    }}</el-descriptions-item>
+                <el-descriptions-item label="速度">{{ Math.round(nowCharacter.speed)
+                    }}</el-descriptions-item>
                 <el-descriptions-item label="好感度">{{ Math.round(nowCharacter.favorability) }}</el-descriptions-item>
                 <el-descriptions-item label="介绍" :span="4">
                     {{ nowCharacter.desc }}
@@ -222,12 +225,14 @@ const formatItemLabel = (item: Item) => {
         <el-scrollbar>
             <el-descriptions border :column="1" class="info" v-if="nowCharacter">
                 <el-descriptions-item label="经验">{{ Math.round(nowCharacter.xp) }}</el-descriptions-item>
-                <el-descriptions-item label="生命">{{ Math.round(nowCharacter.hp) }} / {{ Math.round(nowCharacter.max_hp)
-                }}
+                <el-descriptions-item label="生命">{{ Math.round(nowCharacter.hp) }}
                 </el-descriptions-item>
-                <el-descriptions-item label="攻击力">{{ Math.round(nowCharacter.atk) }}</el-descriptions-item>
-                <el-descriptions-item label="防御力">{{ Math.round(nowCharacter.def_) }}</el-descriptions-item>
-                <el-descriptions-item label="速度">{{ Math.round(nowCharacter.speed) }}</el-descriptions-item>
+                <el-descriptions-item label="攻击力">{{ Math.round(nowCharacter.atk)
+                }}</el-descriptions-item>
+                <el-descriptions-item label="防御力">{{ Math.round(nowCharacter.def_)
+                }}</el-descriptions-item>
+                <el-descriptions-item label="速度">{{ Math.round(nowCharacter.speed)
+                    }}</el-descriptions-item>
                 <el-descriptions-item label="好感度">{{ Math.round(nowCharacter.favorability) }}</el-descriptions-item>
             </el-descriptions>
         </el-scrollbar>
@@ -265,7 +270,8 @@ const formatItemLabel = (item: Item) => {
         <el-form v-if="availableItems.length > 0">
             <el-form-item label="选择道具：">
                 <el-select v-model="selectedItemToEquip" placeholder="请选择要装备的道具" value-key="id">
-                    <el-option v-for="item in availableItems" :key="item.id" :label="formatItemLabel(item)" :value="item" />
+                    <el-option v-for="item in availableItems" :key="item.id" :label="formatItemLabel(item)"
+                        :value="item" />
                 </el-select>
             </el-form-item>
             <div v-if="selectedItemToEquip">
