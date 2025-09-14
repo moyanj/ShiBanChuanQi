@@ -1,4 +1,4 @@
-import { Character, CharacterType, ActiveEffect } from "./character";
+import { Character, CharacterType, ActiveEffect, teamSynergyConfig, TeamSynergy } from "./character";
 import { useFightStore } from './store';
 import { generateRandomItem } from './tools'; // 新增导入
 
@@ -34,10 +34,13 @@ export class BattleCharacters {
     characters: CharactersMap;
     atb: ATB;
     hp: number; // 队伍总血量
+    appliedSynergies: Set<string>; // 记录已应用的协同效果ID
+
     constructor(characters: Character[]) {
         this.characters = {};
         this.atb = {};
         this.hp = 0;
+        this.appliedSynergies = new Set();
         this.copy_chara(characters);
     }
 
@@ -427,23 +430,22 @@ export class Battle {
         return false;
     }
 
-    // 新增方法：检查队伍协同效果
     check_team_synergy(): void {
-        const our_characters_map = this.our.characters;
-        const fanShiFu = our_characters_map["FanShiFu"];
-        const zongTong = our_characters_map["ZongTong"];
+        // 检查我方队伍协同
+        this.checkSynergy(this.our);
+        // 检查敌方队伍协同
+        this.checkSynergy(this.enemy);
+    }
+    
+    private checkSynergy(team: BattleCharacters): void {
+        for (const synergy of teamSynergyConfig) {
+            const active = synergy.condition(team);
 
-        if (fanShiFu && zongTong) {
-            // 如果范师傅和总统都在我方队伍中
-            const speed_buff: ActiveEffect = {
-                type: 'buff',
-                attribute: 'speed',
-                value: zongTong.speed * 0.25, // 总统速度提升25%
-                duration: 9999, // 持续整个战斗
-                source_skill_name: "范师傅-总统协同",
-            };
-            zongTong.apply_effect(speed_buff);
-            this.log(`范师傅与总统触发协同效果：总统速度提升25%！`);
+            if (active && !team.appliedSynergies.has(synergy.id)) {
+                // 应用协同效果
+                synergy.effect(this);
+                team.appliedSynergies.add(synergy.id);
+            }
         }
     }
 }

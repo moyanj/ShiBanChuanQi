@@ -45,6 +45,36 @@ export enum CharacterType {
     Physics = "物理", // 物理
 }
 
+export type TeamSynergy = {
+    id: string;
+    condition: (characters: BattleCharacters) => boolean;
+    effect: (characters: Battle) => void;
+}
+
+export const teamSynergyConfig: TeamSynergy[] = [
+        {
+            id: 'FANSHIFU_ZONGTONG',
+            condition: (chars: BattleCharacters) =>
+                chars.characters["FanShiFu"] !== undefined &&
+                chars.characters["ZongTong"] !== undefined,
+            effect: (battleChars: Battle) => {
+                const zongTong = battleChars.our.characters["ZongTong"];
+                if (zongTong) {
+                    const speedBuff: ActiveEffect = {
+                        type: 'buff',
+                        attribute: 'speed',
+                        value: zongTong.speed * 0.25,
+                        duration: 9999,
+                        source_skill_name: '范师傅-总统协同'
+                    };
+                    zongTong.apply_effect(speedBuff);
+                    battleChars.log(`范师傅与总统触发协同效果：总统速度提升25%！`);
+                }
+            }
+        }
+        // 可以在这里继续添加更多协同配置...
+    ];
+
 export class CharacterManager {
     characters: CharacterDatas;
     constructor() {
