@@ -34,11 +34,13 @@ export class BattleCharacters {
     characters: CharactersMap;
     atb: ATB;
     hp: number; // 队伍总血量
+    battle: Battle;
 
-    constructor(characters: Character[]) {
+    constructor(characters: Character[], battle: Battle) {
         this.characters = {};
         this.atb = {};
         this.hp = 0;
+        this.battle = battle;
         this.copy_chara(characters);
     }
 
@@ -154,6 +156,18 @@ export class BattleCharacters {
         }
         return actual_value_dealt;
     }
+
+    onTurnStart() {
+        Object.values(this.characters).forEach(character => {
+            character.onTurnStart();
+        });
+    }
+
+    onTurnEnd() {
+        Object.values(this.characters).forEach(character => {
+            character.onTurnEnd();
+        });
+    }
 }
 
 export class Battle {
@@ -167,8 +181,8 @@ export class Battle {
     fightStore: ReturnType<typeof useFightStore>; // 新增：Pinia fight store 实例
 
     constructor(enemy_characters: Character[], our_characters: Character[]) {
-        this.enemy = new BattleCharacters(enemy_characters);
-        this.our = new BattleCharacters(our_characters);
+        this.enemy = new BattleCharacters(enemy_characters, this);
+        this.our = new BattleCharacters(our_characters, this);
         this.tick = 0;
         this.now_character = null;
         this.battle_log = [];

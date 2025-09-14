@@ -122,6 +122,13 @@ export abstract class Character {
     active_effects: ActiveEffect[]; // 新增：当前生效的增益/减益效果
     equipped_items: Item[]; // 新增：装备的道具
 
+    /**
+     * 获取战斗环境中的 Battle 实例
+     */
+    getBattle(): Battle | null {
+        return this.env ? this.env.battle : null;
+    }
+
     constructor() {
         this.name = "Test"; // 角色名
         this.inside_name = "Test";
@@ -169,6 +176,17 @@ export abstract class Character {
         // 确保 _current_hp 已经被初始化
         return Math.min(Math.max(this._current_hp, 0), this.max_hp);
     }
+    
+    /**
+     * 获取角色所在的Battle实例
+     */
+    get battle(): Battle | null {
+        if (this.env) {
+            return this.env.battle;
+        }
+        return null;
+    }
+    
     /**
      * 设置当前生命值，并确保其在 [0, max_hp] 范围内
      */
@@ -413,6 +431,11 @@ export abstract class Character {
             targetScope: 'single',
             description: this.super_skill_desc,
         };
+    }
+
+    onTurnStart(): void {
+    }
+    onTurnEnd(): void {
     }
 }
 
