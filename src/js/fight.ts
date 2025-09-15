@@ -86,11 +86,18 @@ export class BattleCharacters {
         if (character && character.hp > 0) {
             const modified_def = character.def_;
             const actual_damage = Math.max(0, damage - modified_def); // 伤害减去防御
+            const old_hp = character.hp;
             character.hp -= actual_damage;
             if (character.hp < 0) {
                 character.hp = 0;
             }
             this.update_team_hp(); // 每次角色血量变化都更新队伍总血量
+            
+            // 检查角色是否刚死亡（血量从非0降到0）
+            if (old_hp > 0 && character.hp <= 0) {
+                character.onCharacterDeath(); // 调用角色死亡钩子
+            }
+            
             return actual_damage;
         }
         return 0;
@@ -172,6 +179,24 @@ export class BattleCharacters {
     onTurnEnd() {
         Object.values(this.characters).forEach(character => {
             character.onTurnEnd();
+        });
+    }
+
+    onCharacterAction(character_name, skill) {
+        Object.values(this.characters).forEach(character => {
+            character.onCharacterAction(character_name, skill);
+        });
+    }
+
+    onAfterCharacterAction() {
+        Object.values(this.characters).forEach(character => {
+            character.onAfterCharacterAction();
+        });
+    }
+
+    onCharacterDeath() {
+        Object.values(this.characters).forEach(character => {
+            character.onCharacterDeath();
         });
     }
 }
@@ -273,8 +298,9 @@ export class Battle {
         this.enemy.update_atb(tick_amount);
         this.our.update_atb(tick_amount);
     }
-    
+
     execute_skill(target_party: 'enemy' | 'our', target_character_name: string, skill: Skill, attacker_character: Character): number {
+        let skill = this.onCharacterAction(target_character_name, skill); // 角色动作开始钩子
         // 战技点消耗逻辑 (必须在最前面)
         if (attacker_character.is_our && skill.cost > 0) {
             if (this.battle_points >= skill.cost) {
@@ -314,7 +340,7 @@ export class Battle {
             this.battle_points = Math.min(5, this.battle_points + 1);
             this.log(`${attacker_character.name} 使用普通攻击，战技点回复1点，当前战技点：${this.battle_points}`);
         }
-
+        this.onAfterCharacterAction(); // 角色动作结束钩子
         return total_value_dealt;
     }
 
@@ -376,6 +402,7 @@ export class Battle {
 
         const { type: active_party_type, character: active_character } = active_info;
 
+        this.onTurnStart(); // 回合开始钩子
 
         // 更新当前行动角色的所有效果持续时间
         active_character.update_effects();
@@ -423,12 +450,39 @@ export class Battle {
             this.execute_skill('enemy', target.inside_name, skill_to_execute, active_character);
         }
 
+        this.onTurnEnd(); // 回合结束钩子
+
         // 再次检查战斗是否结束
         if (this.enemy.hp <= 0 || this.our.hp <= 0) {
             return true;
         }
 
         return false;
+    }
+
+    onCharacterAction(character_name, skill): void {
+        this.our.onCharacterAction(character_name, skill);
+        this.enemy.onCharacterAction(character_name, skill);
+    }
+
+    onAfterCharacterAction(): void {
+        this.our.onAfterCharacterAction();
+        this.enemy.onAfterCharacterAction();
+    }
+
+    onCharacterDeath(): void {
+        this.our.onCharacterDeath();
+        this.enemy.onCharacterDeath();
+    }
+
+    onTurnStart(): void {
+        this.our.onTurnStart();
+        this.enemy.onTurnStart();
+    }
+
+    onTurnEnd(): void {
+        this.our.onTurnEnd();
+        this.enemy.onTurnEnd();
     }
 
     check_team_synergy(): void {
