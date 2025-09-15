@@ -449,11 +449,14 @@ export abstract class Character {
 
     onTurnStart(): void {} // 回合开始时触发
     onTurnEnd(): void {} // 回合结束时触发
-    onAfterCharacterAction(): void {} // 角色动作结束时触发
-    onCharacterAction(character_name, skill): Skill {
-        return skill;
-    } // 角色动作开始时触发
+    onAfterCharacterAction(): void {} // 任意角色动作结束时触发
+    onCharacterAction(): void {
+    } // 任意角色动作开始时触发
     onCharacterDeath(): void {} // 角色死亡时触发
+    onWillBeingAttack(skill: Skill): Skill {
+        return skill;
+    } // 角色即将被攻击时触发
+    onAfterBeingAttacked(): void {} // 角色被攻击后触发
 }
 
 export class Fairy extends Character {

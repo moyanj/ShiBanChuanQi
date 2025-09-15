@@ -182,9 +182,9 @@ export class BattleCharacters {
         });
     }
 
-    onCharacterAction(character_name, skill) {
+    onCharacterAction() {
         Object.values(this.characters).forEach(character => {
-            character.onCharacterAction(character_name, skill);
+            character.onCharacterAction();
         });
     }
 
@@ -300,7 +300,7 @@ export class Battle {
     }
 
     execute_skill(target_party: 'enemy' | 'our', target_character_name: string, skill: Skill, attacker_character: Character): number {
-        let skill = this.onCharacterAction(target_character_name, skill); // 角色动作开始钩子
+        this.onCharacterAction(); // 角色动作开始钩子
         // 战技点消耗逻辑 (必须在最前面)
         if (attacker_character.is_our && skill.cost > 0) {
             if (this.battle_points >= skill.cost) {
@@ -315,6 +315,8 @@ export class Battle {
         const target_battle_characters = target_party === 'enemy' ? this.enemy : this.our;
         let main_target_character = target_battle_characters.characters[target_character_name];
         let total_value_dealt = 0;
+
+        skill = main_target_character.onWillBeAttack(skill); // 角色即将被攻击钩子
 
         // 处理群体技能
         if (skill.targetScope === 'all_allies' || skill.targetScope === 'all_enemies') {
@@ -341,6 +343,7 @@ export class Battle {
             this.log(`${attacker_character.name} 使用普通攻击，战技点回复1点，当前战技点：${this.battle_points}`);
         }
         this.onAfterCharacterAction(); // 角色动作结束钩子
+        main_target_character.onAfterBeingAttacked(); // 角色被攻击后钩子
         return total_value_dealt;
     }
 
@@ -460,9 +463,9 @@ export class Battle {
         return false;
     }
 
-    onCharacterAction(character_name, skill): void {
-        this.our.onCharacterAction(character_name, skill);
-        this.enemy.onCharacterAction(character_name, skill);
+    onCharacterAction(): void { 
+        this.our.onCharacterAction();
+        this.enemy.onCharacterAction();
     }
 
     onAfterCharacterAction(): void {
