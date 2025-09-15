@@ -181,11 +181,11 @@ const formatItemLabel = (item: Item) => {
                     <SButton class="show_info" @click="showInfo = true">显示</SButton>
                 </el-descriptions-item>
                 <el-descriptions-item label="攻击力">{{ Math.round(nowCharacter.atk)
-                    }}</el-descriptions-item>
+                }}</el-descriptions-item>
                 <el-descriptions-item label="防御力">{{ Math.round(nowCharacter.def_)
-                    }}</el-descriptions-item>
+                }}</el-descriptions-item>
                 <el-descriptions-item label="速度">{{ Math.round(nowCharacter.speed)
-                    }}</el-descriptions-item>
+                }}</el-descriptions-item>
                 <el-descriptions-item label="好感度">{{ Math.round(nowCharacter.favorability) }}</el-descriptions-item>
                 <el-descriptions-item label="介绍" :span="4">
                     {{ nowCharacter.desc }}
@@ -200,7 +200,7 @@ const formatItemLabel = (item: Item) => {
                 <el-descriptions-item label="爆发技" :span="4">
                     {{ nowCharacter.super_skill_name }} {{ nowCharacter.super_skill_desc }}
                 </el-descriptions-item>
-                <el-descriptions-item label="已装备道具" :span="4">
+                <el-descriptions-item label="已装备圣遗物" :span="4">
                     <div v-if="nowCharacter.equipped_items.length > 0">
                         <div v-for="item in nowCharacter.equipped_items" :key="item.id">
                             {{ item.name }}
@@ -211,9 +211,9 @@ const formatItemLabel = (item: Item) => {
                         </div>
                     </div>
                     <div v-else>
-                        暂无装备道具
+                        暂无装备圣遗物
                     </div>
-                    <SButton @click="showEquipItemDialog = true">装备道具</SButton>
+                    <SButton @click="showEquipItemDialog = true">装备圣遗物</SButton>
                 </el-descriptions-item>
             </el-descriptions>
             <div v-else class="container">
@@ -235,7 +235,7 @@ const formatItemLabel = (item: Item) => {
                 <el-descriptions-item label="防御力">{{ Math.round(nowCharacter.def_)
                 }}</el-descriptions-item>
                 <el-descriptions-item label="速度">{{ Math.round(nowCharacter.speed)
-                    }}</el-descriptions-item>
+                }}</el-descriptions-item>
                 <el-descriptions-item label="好感度">{{ Math.round(nowCharacter.favorability) }}</el-descriptions-item>
             </el-descriptions>
         </el-scrollbar>
@@ -269,16 +269,16 @@ const formatItemLabel = (item: Item) => {
     </el-dialog>
 
     <!-- 装备道具弹窗 -->
-    <el-dialog v-model="showEquipItemDialog" title="装备道具">
+    <el-dialog v-model="showEquipItemDialog" title="装备圣遗物">
         <el-form v-if="availableItems.length > 0">
-            <el-form-item label="选择道具：">
-                <el-select v-model="selectedItemToEquip" placeholder="请选择要装备的道具" value-key="id">
+            <el-form-item label="选择圣遗物：">
+                <el-select v-model="selectedItemToEquip" placeholder="请选择要装备的圣遗物" value-key="id">
                     <el-option v-for="item in availableItems" :key="item.id" :label="formatItemLabel(item)"
                         :value="item" />
                 </el-select>
             </el-form-item>
             <div v-if="selectedItemToEquip">
-                <el-form-item label="道具属性：">
+                <el-form-item label="圣遗物属性：">
                     <span v-for="(value, key) in selectedItemToEquip.random_attributes" :key="key">
                         {{ attributeTranslations[key] || key }}: {{ value > 0 ? '+' : '' }}{{ value }}<br>
                     </span>

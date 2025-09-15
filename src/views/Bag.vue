@@ -97,9 +97,9 @@ const attributeTranslations: { [key: string]: string } = {
                 </el-table-column>
             </el-table>
         </el-tab-pane>
-        <el-tab-pane label="道具" name="items">
-            <el-table :data="items_table_data" class="table" empty-text="暂无道具">
-                <el-table-column prop="name" label="道具名"></el-table-column>
+        <el-tab-pane label="圣遗物" name="items">
+            <el-table :data="items_table_data" class="table" empty-text="暂无圣遗物">
+                <el-table-column prop="name" label="套装名"></el-table-column>
                 <el-table-column label="属性">
                     <template #default="scope">
                         <span v-for="(value, key) in scope.row.random_attributes" :key="key">
