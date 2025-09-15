@@ -1,15 +1,21 @@
-import { v4 as uuidv4 } from 'uuid'; // 用于生成唯一ID
+import { v4 as uuidv4 } from "uuid"; // 用于生成唯一ID
+import { MersenneTwister } from "./utils";
 
-export interface Item { // Item 独立于 Thing
+const rng = new MersenneTwister(); // 初始化随机数生成器
+
+export interface Item {
+    // Item 独立于 Thing
     id: string; // 道具唯一ID
     name: string; // 道具名称
     inside_name: string; // 内部名
-    random_attributes: { // 随机属性，最多三个
+    random_attributes: {
+        // 随机属性，最多三个
         hp?: number;
         atk?: number;
         def_?: number;
         speed?: number;
     };
+    equipped?: boolean; // 是否已被装备的标记
 }
 
 /**
@@ -17,46 +23,76 @@ export interface Item { // Item 独立于 Thing
  * @returns {Item} 生成的道具
  */
 export function generateRandomItem(): Item {
-    const itemNames = ["神秘护符", "古老戒指", "能量水晶", "坚韧护甲", "锋利之刃"];
+    const itemNames = [
+        "DSM王朝的记忆",
+        "繁星最后的余光",
+        "日记中的言语",
+        "纸上的异世界",
+        "破空的镜子一角",
+        "古战场对世界的哀鸣",
+        "望风的笼中鸟",
+        "继承者的遗产",
+        "刚翻开的夏书",
+        "宇宙般永恒的孤独",
+        "仿若无人之地",
+        "坠入亚特兰蒂斯",
+        "捕风的异乡人",
+        "无尽冬日的温暖",
+        "被风所打的记忆",
+        "梦境中的花园",
+        "流浪者的归宿",
+        "星辰大海的邀约",
+        "遗忘之地的呼唤",
+        "穿越次元的信使",
+        "时光尽头的誓言",
+    ];
 
-    const randomName = itemNames[Math.floor(Math.random() * itemNames.length)];
+    const randomName = rng.random_choice(itemNames); // 随机选择一个名字
 
-    const attributes = ['hp', 'atk', 'def_', 'speed'];
-    const selectedAttributes: { hp?: number; atk?: number; def_?: number; speed?: number; } = {};
-    const numRandomAttributes = Math.floor(Math.random() * 3) + 1; // 1到3个随机属性
-
+    const attributes = ["hp", "atk", "def_", "speed"];
+    const selectedAttributes: {
+        hp?: number;
+        atk?: number;
+        def_?: number;
+        speed?: number;
+    } = {};
+    const numRandomAttributes = rng.randint(1, 3); // 1到3个随机属性
+    console.log(numRandomAttributes);
     // 随机选择属性并赋值
     for (let i = 0; i < numRandomAttributes; i++) {
-        const randomIndex = Math.floor(Math.random() * attributes.length);
-        const attributeName = attributes[randomIndex];
+        const attributeName = rng.random_choice(attributes);
         // 避免重复选择同一个属性
-        if (selectedAttributes[attributeName as keyof typeof selectedAttributes] === undefined) {
+        if (
+            selectedAttributes[attributeName] === undefined
+        ) {
             let value = 0;
             switch (attributeName) {
-                case 'hp':
-                    value = Math.floor(Math.random() * 20) - 10; // -10 到 +10
+                case "hp":
+                    value = rng.randint(1, 150); // -10 到 +10
                     break;
-                case 'atk':
-                    value = Math.floor(Math.random() * 10) - 5; // -5 到 +5
+                case "atk":
+                    value = rng.randint(10, 35); // -5 到 +5
                     break;
-                case 'def_':
-                    value = Math.floor(Math.random() * 10) - 5;
+                case "def_":
+                    value = rng.randint(10, 35);
                     break;
-                case 'speed':
-                    value = Math.floor(Math.random() * 4) - 2; // -2 到 +2
+                case "speed":
+                    value = rng.randint(5, 15); // -2 到 +2
                     break;
             }
             if (value !== 0) {
-                selectedAttributes[attributeName as keyof typeof selectedAttributes] = value;
+                selectedAttributes[attributeName as keyof typeof selectedAttributes] =
+                    value;
             }
         }
     }
-
+    console.log(selectedAttributes)
     return {
         id: uuidv4(),
         name: randomName,
-        inside_name: randomName.replace(/\s/g, ''), // 生成内部名
+        inside_name: randomName.replace(/\s/g, ""), // 生成内部名
         random_attributes: selectedAttributes,
+        equipped: false, // 默认未装备
     };
 }
 
@@ -106,6 +142,14 @@ export class ItemManager {
     }
 
     /**
+     * 更新道具信息
+     * @param item 要更新的道具
+     */
+    update(item: Item): void {
+        this.items[item.id] = item;
+    }
+
+    /**
      * 清空所有道具
      */
     clear() {
@@ -126,7 +170,7 @@ export class ItemManager {
      */
     load(data: Item[]) {
         this.clear();
-        data.forEach(item => {
+        data.forEach((item) => {
             this.add(item);
         });
     }

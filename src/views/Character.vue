@@ -54,7 +54,7 @@ const nowCharacter = ref<Character | null>(characterList.value.length > 0 ? get_
 
 // 可供装备的道具列表
 const availableItems = computed(() => {
-    return save.items.getAll();
+    return save.items.getAll().filter(item => !item.equipped);
 });
 
 // 监听角色列表变化
@@ -90,8 +90,13 @@ const levelUp = () => {
 const equipItem = () => {
     if (!nowCharacter.value || !selectedItemToEquip.value) return;
 
+    // 标记道具为已装备
+    selectedItemToEquip.value.equipped = true;
+    save.items.update(selectedItemToEquip.value);
+    
+    // 将道具添加到角色的装备列表中
     nowCharacter.value.equipped_items.push(selectedItemToEquip.value);
-    save.items.remove(selectedItemToEquip.value.id);
+    
     // 使用类型断言解决类型不匹配问题
     save.characters.update(nowCharacter.value as Character);
     showEquipItemDialog.value = false;
@@ -102,10 +107,13 @@ const equipItem = () => {
 const unequipItem = (item: Item) => {
     if (!nowCharacter.value) return;
 
+    // 标记道具为未装备
+    item.equipped = false;
+    save.items.update(item);
+
     const index = nowCharacter.value.equipped_items.findIndex(i => i.id === item.id);
     if (index !== -1) {
         nowCharacter.value.equipped_items.splice(index, 1);
-        save.items.add(item);
         // 使用类型断言解决类型不匹配问题
         save.characters.update(nowCharacter.value as Character);
     }

@@ -10,7 +10,7 @@ import icon_skip from "../assets/icon/skip.svg";
 import icon_online from "../assets/icon/online.svg";
 import icon_menu from "../assets/icon/menu.svg";
 import icon_sword from "../assets/icon/sword.svg";
-import icon_empty from "../assets/icon/empty.svg"
+import icon_empty from "../assets/icon/empty.svg";
 import icon_element_fire from "../assets/icon/element-fire.png";
 import icon_element_water from "../assets/icon/element-water.png";
 import icon_element_thunder from "../assets/icon/element-thunder.png";
@@ -42,18 +42,18 @@ export const icons = {
         grass: icon_element_grass,
         physics: icon_element_physics,
         liangzi: icon_element_liangzi,
-        nihility: icon_element_nihility
-    }
-}
+        nihility: icon_element_nihility,
+    },
+};
 
 export const audios: object = {
-    background: 'audio/background/main.mp3',
-    click: 'audio/click.mp3',
+    background: "audio/background/main.mp3",
+    click: "audio/click.mp3",
     // 主题曲1
-    theme1: 'audio/theme/HerosQuest.mp3',
+    theme1: "audio/theme/HerosQuest.mp3",
     // 主题曲2
-    theme2: 'audio/theme/HerosQuest2.mp3',
-}
+    theme2: "audio/theme/HerosQuest2.mp3",
+};
 
 interface UserAgentInfo {
     ie?: string;
@@ -125,7 +125,7 @@ export function getExplore(): string {
         return `Safari ${userAgentInfo.safari}`;
     }
 
-    return 'Unknown Browser';
+    return "Unknown Browser";
 }
 
 export class MersenneTwister {
@@ -150,10 +150,10 @@ export class MersenneTwister {
         }
 
         let y = this.mt[this.index];
-        y ^= (y >>> 11);
-        y ^= (y << 7) & 0x9D2C5680;
-        y ^= (y << 15) & 0xEFC60000;
-        y ^= (y >>> 18);
+        y ^= y >>> 11;
+        y ^= (y << 7) & 0x9d2c5680;
+        y ^= (y << 15) & 0xefc60000;
+        y ^= y >>> 18;
 
         this.index++;
         return y >>> 0; // Ensure unsigned
@@ -161,7 +161,7 @@ export class MersenneTwister {
 
     // 返回 0 到 1 之间的随机数
     public random(): number {
-        return this.extractNumber() / 0xFFFFFFFF;
+        return this.extractNumber() / 0xffffffff;
     }
 
     // 返回指定数量的随机数
@@ -182,16 +182,17 @@ export class MersenneTwister {
     }
 
     public random_choice(choices: any[]): any {
-        return choices[this.randint(0, choices.length - 1)];
+        return choices[this.randint(0, choices.length)];
     }
 
     // 扭曲操作
     private twist(): void {
         for (let i = 0; i < 624; i++) {
-            const y = (this.mt[i] & 0x80000000) | (this.mt[(i + 1) % 624] & 0x7FFFFFFF);
+            const y =
+                (this.mt[i] & 0x80000000) | (this.mt[(i + 1) % 624] & 0x7fffffff);
             this.mt[i] = this.mt[(i + 397) % 624] ^ (y >>> 1);
             if (y % 2 !== 0) {
-                this.mt[i] ^= 0x9908B0DF;
+                this.mt[i] ^= 0x9908b0df;
             }
         }
         this.index = 0; // Reset index
@@ -203,7 +204,8 @@ export class MersenneTwister {
         this.mt[0] = seed >>> 0; // Ensure unsigned
 
         for (let i = 1; i < 624; i++) {
-            this.mt[i] = (1812433253 * (this.mt[i - 1] ^ (this.mt[i - 1] >>> 30)) + i) >>> 0;
+            this.mt[i] =
+                (1812433253 * (this.mt[i - 1] ^ (this.mt[i - 1] >>> 30)) + i) >>> 0;
         }
     }
 }
@@ -236,7 +238,7 @@ export class AudioPlayer {
         }
         const obj = new Howl({
             src: [src],
-            ...other
+            ...other,
         });
         this.objs[name] = obj;
         return obj;
@@ -394,7 +396,6 @@ export class AudioPlayer {
             this.remove(name);
         }
     }
-
 }
 
 export function isLandscape() {
@@ -407,7 +408,6 @@ export function isLandscape() {
     } else {
         return false;
     }
-
 }
 
 export class SaveServer {
@@ -417,8 +417,18 @@ export class SaveServer {
         // this.baseUrl = "http://127.0.0.1:5000"
     }
 
-    public upload(user: string, pwd: string, data: any, gt: object): Promise<any> {
-        return this.request("POST", "/upload", { user: user, pwd: pwd, data: data }, gt);
+    public upload(
+        user: string,
+        pwd: string,
+        data: any,
+        gt: object
+    ): Promise<any> {
+        return this.request(
+            "POST",
+            "/upload",
+            { user: user, pwd: pwd, data: data },
+            gt
+        );
     }
 
     public download(user: string, pwd: string): Promise<any> {
@@ -426,14 +436,19 @@ export class SaveServer {
     }
 
     public register(user: string, pwd: string, gt: object): Promise<any> {
-        return this.request("POST", "/reg", { user: user, pwd: pwd, }, gt);
+        return this.request("POST", "/reg", { user: user, pwd: pwd }, gt);
     }
 
     public remove(user: string, pwd: string, gt: object): Promise<any> {
-        return this.request("POST", "/remove", { user: user, pwd: pwd, }, gt);
+        return this.request("POST", "/remove", { user: user, pwd: pwd }, gt);
     }
 
-    private request(type: string, eurl: string, data: any | null = null, gt: object = null): Promise<any> {
+    private request(
+        type: string,
+        eurl: string,
+        data: any | null = null,
+        gt: object = null
+    ): Promise<any> {
         return new Promise((resolve, reject) => {
             const url = this.baseUrl + eurl;
             const xhr = new XMLHttpRequest();
@@ -442,11 +457,10 @@ export class SaveServer {
 
             xhr.onload = () => {
                 resolve(xhr);
-
             };
 
             xhr.onerror = () => {
-                reject(new Error('Network error occurred'));
+                reject(new Error("Network error occurred"));
             };
             if (gt) {
                 data.gt = gt;
@@ -457,9 +471,9 @@ export class SaveServer {
     }
 }
 
-export function get_character_by_dump(dump: Character): Character | null { 
+export function get_character_by_dump(dump: Character): Character | null {
     const CharacterConstructor = characters[dump.inside_name];
     const selected_our_character = new CharacterConstructor();
     selected_our_character.load(dump);
-    return selected_our_character
+    return selected_our_character;
 }

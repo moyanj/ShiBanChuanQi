@@ -8,8 +8,8 @@ function cmd_handler(value) {
     const saveStore = useSaveStore();
     const fightStore = useFightStore();
 
-    let cmds:Array<string> = value.split(" ");
-    let cmd:string = cmds[0];
+    let cmds: Array<string> = value.split(" ");
+    let cmd: string = cmds[0];
     // 根据命令执行对应操作
     switch (cmd) {
         case "help":
@@ -64,7 +64,44 @@ function cmd_handler(value) {
         case "devtool":
             window.openDevTools();
             break;
-
+        case "get_save_json":
+            const jsonStr = JSON.stringify(saveStore.$state, null, 2);
+            const blob = new Blob([jsonStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "save_state.json";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            break;
+        case "load_save_json":
+            const input = document.createElement("input");
+            input.type = "file";
+            input.accept = "application/json";
+            input.onchange = (e: any) => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const json = JSON.parse(event.target?.result as string);
+                        saveStore.$patch(json);
+                        alert("存档加载成功");
+                    }
+                    catch (error) {
+                        alert("存档加载失败");
+                    }
+                    input.value = "";
+                    this.show();
+                    this.hide();
+                };
+                reader.readAsText(file);
+            };
+            document.body.appendChild(input);
+            input.click();
+            document.body.removeChild(input);
+            break;
         default:
             // 当命令未知时提示用户
             alert("未知命令");

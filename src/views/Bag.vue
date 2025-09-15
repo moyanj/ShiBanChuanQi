@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { watch, ref } from 'vue';
-import { ElTable, ElTableColumn, ElDialog, ElForm, ElFormItem, ElSlider, ElTabs, ElTabPane } from 'element-plus';
+import { ElTable, ElTableColumn, ElDialog, ElForm, ElFormItem, ElSlider, ElTabs, ElTabPane, ElScrollbar } from 'element-plus';
 import sbutton from '../components/sbutton.vue';
 import { useSaveStore } from '../js/store';
 import { ThingList } from '../js/things';
@@ -98,16 +98,25 @@ const attributeTranslations: { [key: string]: string } = {
             </el-table>
         </el-tab-pane>
         <el-tab-pane label="圣遗物" name="items">
-            <el-table :data="items_table_data" class="table" empty-text="暂无圣遗物">
-                <el-table-column prop="name" label="套装名"></el-table-column>
-                <el-table-column label="属性">
-                    <template #default="scope">
-                        <span v-for="(value, key) in scope.row.random_attributes" :key="key">
-                            {{ attributeTranslations[key] || key }}: {{ value > 0 ? '+' : '' }}{{ value }}<br>
-                        </span>
-                    </template>
-                </el-table-column>
-            </el-table>
+            <el-scrollbar>
+                <el-table :data="items_table_data" class="table" empty-text="暂无圣遗物">
+                    <el-table-column prop="name" label="套装名"></el-table-column>
+                    <el-table-column label="属性">
+                        <template #default="scope">
+                            <span v-for="(value, key) in scope.row.random_attributes" :key="key">
+                                {{ attributeTranslations[key] || key }}: {{ value > 0 ? '+' : '' }}{{ value }}<br>
+                            </span>
+                        </template>
+                    </el-table-column>
+                    <el-table-column label="状态" width="80">
+                        <template #default="scope">
+                            <span :style="{ color: scope.row.equipped ? 'green' : 'gray' }">
+                                {{ scope.row.equipped ? '已装备' : '未装备' }}
+                            </span>
+                        </template>
+                    </el-table-column>
+                </el-table>
+            </el-scrollbar>
         </el-tab-pane>
     </el-tabs>
 
@@ -131,5 +140,9 @@ body {
     justify-content: center;
     min-height: 100vh;
 
+}
+
+.table {
+    height: 80vh;
 }
 </style>
