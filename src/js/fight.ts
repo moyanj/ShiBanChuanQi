@@ -316,7 +316,7 @@ export class Battle {
         let main_target_character = target_battle_characters.characters[target_character_name];
         let total_value_dealt = 0;
 
-        skill = main_target_character.onWillBeAttack(skill); // 角色即将被攻击钩子
+        skill = main_target_character.onWillBeingAttack(skill); // 角色即将被攻击钩子
 
         // 处理群体技能
         if (skill.targetScope === 'all_allies' || skill.targetScope === 'all_enemies') {
