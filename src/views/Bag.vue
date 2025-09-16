@@ -1,10 +1,11 @@
 <script lang="ts" setup>
-import { watch, ref } from 'vue';
+import { watch, ref, onMounted, onUnmounted } from 'vue';
 import { ElTable, ElTableColumn, ElDialog, ElForm, ElFormItem, ElSlider, ElTabs, ElTabPane, ElScrollbar } from 'element-plus';
 import sbutton from '../components/sbutton.vue';
 import { useSaveStore } from '../js/store';
 import { ThingList } from '../js/things';
 import { Item } from '../js/item';
+import { useMagicKeys } from '@vueuse/core';
 
 const save = useSaveStore();
 console.log(save);
@@ -14,6 +15,20 @@ var delete_args = ref({
     arg: null
 });
 var activeTab = ref('things'); // 默认激活物品标签页
+
+const keys = useMagicKeys();
+
+watch(keys["ArrowLeft"], () => {
+    if (activeTab.value === 'items') {
+        activeTab.value = 'things';
+    }
+});
+
+watch(keys["ArrowRight"], () => {
+    if (activeTab.value === 'things') {
+        activeTab.value = 'items';
+    }
+});
 
 function update_data() {
     let data = [];

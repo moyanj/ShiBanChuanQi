@@ -25,7 +25,7 @@ export default defineConfig({
       },
     }
   },
-  esbuild:{
+  esbuild: {
     drop: ['debugger']
   },
   build: {
@@ -39,7 +39,7 @@ export default defineConfig({
             const build_info = {
               version: version,
               timestamp: Date.now(),
-              time: new Date().toLocaleString(),
+              time: new Date().toLocaleString("zh-CN", { timeZone: "Asia/Shanghai" }),
               type: 'vite'
             }
             this.emitFile({
@@ -58,9 +58,9 @@ export default defineConfig({
           "framework": ["vue", "element-plus", "pinia"],  // 框架
           "utils": ["lodash-es", "crypto-js"],
           "media": ["howler", "video.js"]
+        }
       }
     }
   }
-}
 }
 );

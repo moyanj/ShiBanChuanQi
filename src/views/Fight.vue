@@ -58,6 +58,15 @@ const autoSelectActiveCharacter = () => {
         // 如果当前行动角色是我方角色，自动选择它
         fightStore.selected_our_character = activeChar.character;
         fightStore.selected_target_character = null;
+
+        // 自动选择第一个敌方角色作为目标
+        const firstEnemy = battle.value?.enemy.get_alive_characters()[0];
+        if (firstEnemy) {
+            fightStore.selected_target_character = { type: 'enemy', character: firstEnemy };
+            battle.value?.log(`你选择了 ${activeChar.character.name} 行动，并自动选择 ${firstEnemy.name} 作为目标。`);
+        } else {
+            battle.value?.log(`你选择了 ${activeChar.character.name} 行动。`);
+        }
     }
 };
 

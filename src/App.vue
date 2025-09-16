@@ -65,7 +65,7 @@ if (!dataStore.is_dev) {
     APM.play("background_music");
 }
 
-
+/*
 if (!dataStore.is_electron) {
     if (!dataStore.is_dev) {
         ElMessageBox.alert("当前为网页版，推荐使用electron版游戏体验更佳", '警告', {
@@ -73,10 +73,16 @@ if (!dataStore.is_electron) {
             type: 'warning',
         });
     }
-}
+}*/
+
 const keys = useMagicKeys();
 
 watch(keys["Alt+T"], console_handler);
+watch(keys["Escape"], () => {
+    if (dataStore.page_type !== 'main' && dataStore.page_type !== 'fight') {
+        dataStore.page_type = 'main';
+    }
+});
 
 
 </script>

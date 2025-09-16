@@ -15,7 +15,7 @@ export class ThingsManager {
     constructor() {
         this.things = {};
 
-        this.add(new XinHuo(), 102400)
+        this.add(new XinHuo(), 280000);
     }
     add(thing: Thing, n: number = 1): void {
         let name: string = thing.inside_name;
@@ -34,10 +34,10 @@ export class ThingsManager {
         }
         return this.things[id];
     }
-    get_all():object {
+    get_all(): object {
         return this.things;
     }
-    remove(id: string, n: number = 1):void {
+    remove(id: string, n: number = 1): void {
         this.things[id] -= n;
     }
 }
@@ -60,7 +60,7 @@ export class EXP extends Thing {
     }
 }
 
-export const ThingList:object = {
+export const ThingList: object = {
     "XinHuo": XinHuo,
     "EXP": EXP
 }
