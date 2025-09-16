@@ -52,27 +52,27 @@ export type TeamSynergy = {
 }
 
 export const teamSynergyConfig: TeamSynergy[] = [
-        {
-            id: 'FANSHIFU_ZONGTONG',
-            condition: (chars: BattleCharacters) =>
-                chars.characters["FanShiFu"] !== undefined &&
-                chars.characters["ZongTong"] !== undefined,
-            effect: (battleChars: Battle) => {
-                const zongTong = battleChars.our.characters["ZongTong"];
-                if (zongTong) {
-                    const speedBuff: ActiveEffect = {
-                        type: 'buff',
-                        attribute: 'speed',
-                        value: zongTong.speed * 0.25,
-                        duration: 9999,
-                        source_skill_name: '范师傅-总统协同'
-                    };
-                    zongTong.apply_effect(speedBuff);
-                    battleChars.log(`范师傅与总统触发协同效果：总统速度提升25%！`);
-                }
+    {
+        id: 'FANSHIFU_ZONGTONG',
+        condition: (chars: BattleCharacters) =>
+            chars.characters["FanShiFu"] !== undefined &&
+            chars.characters["ZongTong"] !== undefined,
+        effect: (battleChars: Battle) => {
+            const zongTong = battleChars.our.characters["ZongTong"];
+            if (zongTong) {
+                const speedBuff: ActiveEffect = {
+                    type: 'buff',
+                    attribute: 'speed',
+                    value: zongTong.speed * 0.25,
+                    duration: 9999,
+                    source_skill_name: '范师傅-总统协同'
+                };
+                zongTong.apply_effect(speedBuff);
+                battleChars.log(`范师傅与总统触发协同效果：总统速度提升25%！`);
             }
         }
-    ];
+    }
+];
 
 export class CharacterManager {
     characters: CharacterDatas;
@@ -324,20 +324,25 @@ export abstract class Character {
     }
 
     level_hp(): void {
-        // 计算等级对应血量
-        const new_max_hp = 460.45 * this.level + Math.pow(this.level, 1.863) + 650 + 13.4 * this.level;
-        this.hp = new_max_hp;
-        this.base_hp = new_max_hp; // 当前血量也等比例增加，或直接设置为max_hp
+        const base = 500;
+        const growth = base * this.level + 20 * Math.pow(this.level, 1.5);
+        this.base_hp = growth;
+        this.hp = growth;
     }
+
 
     level_def(): void {
         // 计算等级对应防御
-        this.base_def_ = 1 + Math.abs(13.2 * Math.pow(this.level, 1.04) + 5.678 * this.level) + 55;
+        const base = 50;
+        const growth = base + 10 * this.level + 2 * Math.pow(this.level, 1.05);
+        this.base_def_ = growth;
     }
 
     level_atk(): void {
         // 计算等级对应攻击力
-        this.base_atk = 1 + Math.abs(15.2 * Math.pow(this.level, 1.18) + 11.4 * this.level) + 350;
+        const base = 100;
+        const growth = base + 25 * this.level + 5 * Math.pow(this.level, 1.1);
+        this.base_atk = growth;
     }
 
     skill(): number {
@@ -447,16 +452,16 @@ export abstract class Character {
         };
     }
 
-    onTurnStart(): void {} // 回合开始时触发
-    onTurnEnd(): void {} // 回合结束时触发
-    onAfterCharacterAction(): void {} // 任意角色动作结束时触发
+    onTurnStart(): void { } // 回合开始时触发
+    onTurnEnd(): void { } // 回合结束时触发
+    onAfterCharacterAction(): void { } // 任意角色动作结束时触发
     onCharacterAction(): void {
     } // 任意角色动作开始时触发
-    onCharacterDeath(): void {} // 角色死亡时触发
+    onCharacterDeath(): void { } // 角色死亡时触发
     onWillBeingAttack(skill: Skill): Skill {
         return skill;
     } // 角色即将被攻击时触发
-    onAfterBeingAttacked(): void {} // 角色被攻击后触发
+    onAfterBeingAttacked(): void { } // 角色被攻击后触发
 }
 
 export class Fairy extends Character {
@@ -578,7 +583,7 @@ export class ChenGe extends Character {
         this.type = CharacterType.Nihility;
 
         this.desc = '”做啊！继续做啊！“';
-        
+
         this.general_name = "虚核"
         this.general_desc = "造成85%的伤害，并增加一个“光环”,最多12个光环"
 
@@ -950,7 +955,7 @@ export class WuYu extends Character {
         }
         return 0; // 大招不造成直接伤害
     }
-    
+
     // 重写技能对象方法，使其技能可以作用于己方
     getSkill(): Skill {
         return {
@@ -962,7 +967,7 @@ export class WuYu extends Character {
             description: this.skill_desc,
         };
     }
-    
+
     getSuperSkill(): Skill {
         return {
             name: this.super_skill_name,
