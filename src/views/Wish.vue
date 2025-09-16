@@ -31,10 +31,13 @@ const wish_list = []
 wish_list.push(...Object.keys(characters))
 
 function f(x: number): number {
-    const value = Math.min(0.0001 + (Math.exp(x / 35) / 175), 1);
-    const r = (value / 1); // 计算结果
+    const H = Math.min(0.0001 + (Math.exp(x / 35) / 175), 1);
 
-    return r;
+    const B = 0.0003 * Math.max(Math.sin(Math.PI * x / 5 - x / 2), 0);
+
+    const P = Math.min(H + B, 1);
+
+    return P; // 现在返回P(x)而不是原来的H(x)
 }
 
 function run(n: number = 1) {
