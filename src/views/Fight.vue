@@ -7,17 +7,18 @@ import { get_character_by_dump, icons, MersenneTwister } from '../js/utils';
 import sbutton from '../components/sbutton.vue';
 import fightCard from '../components/fight-card.vue';
 import { Battle, Skill } from '../js/fight';
-import { Character, CharacterType, characters } from '../js/character';
-import { ThingList } from '../js/things';
-import { generateRandomItem, Item } from '../js/item';
+import { BattleService, BattleResult } from '../js/battle/service';
+import { Character, CharacterType } from '../js/character';
+import { Item } from '../js/item';
 
 const data = useDataStore();
 const save = useSaveStore();
 const fightStore = useFightStore();
 const random = new MersenneTwister();
 
+const battleService = new BattleService(fightStore, save, data);
+
 var show_manager = ref(false);
-var battle_interval: number | null = null;
 var battle_ended = ref(false);
 var show_character_selection = ref(true);
 var available_characters = ref<Character[]>([]);
@@ -125,105 +126,86 @@ const isCharacterSelected = (character: any) => {
 
 // 战斗开始逻辑
 const startBattle = () => {
-    if (fightStore.selected_characters.length !== 3) {
-        ElMessage.error("请选择三名角色开始战斗！");
-        return;
-    }
-
-    fightStore.our = fightStore.selected_characters.map(c => {
-        // 使用类型断言解决类型不匹配问题
-        const char = c as Character;
-        const charInstance = get_character_by_dump(char);
-        charInstance.hp = charInstance.max_hp;
-        charInstance.is_our = true;
-        // 确保装备的道具也被复制到战斗实例中
-        charInstance.equipped_items = [...char.equipped_items];
-        return charInstance;
-    });
+    battleService.onSettlement = (result: BattleResult) => {
+        battle_ended.value = true;
+        battle_result.value = result.win ? 'win' : 'lose';
+        battle_exp_reward.value = result.exp;
+        battle_xinhuo_reward.value = result.xinhuo;
+        dropped_items.value = result.items;
+        show_settlement_dialog.value = true;
+    };
 
     show_character_selection.value = false;
-    generateEnemyCharacters();
-
-    // 使用类型断言解决类型不匹配问题
-    fightStore.battle_instance = new Battle(fightStore.enemy as Character[], fightStore.our as Character[]);
-    fightStore.battle_instance.ai_mode = fightStore.ai;
-
     battle_ended.value = false;
     fightStore.selected_our_character = null;
     fightStore.selected_target_character = null;
 
-    APM.stop("background_music"); // 停止主页背景音乐
-    if (!("battle_music" in APM.objs)) {
-        APM.add("battle_music", 'audio/background/battle.mp3', { loop: true, volume: 0.5 });
-    }
-    APM.play("battle_music");
-    // 启动战斗循环
-    battle_interval = setInterval(async () => {
-        if (!battle.value) return;
-
-        // next_turn 内部会检查战斗是否结束
-        const is_ended = await battle.value.next_turn();
-        console.log("is_ended", is_ended);
-        if (is_ended) {
-            endBattle();
-        }
-    }, 100) as unknown as number;
+    battleService.startBattle();
 };
 
-const endBattle = () => {
-    if (battle_interval) {
-        clearInterval(battle_interval);
-        battle_interval = null;
-        console.log("战斗结束");
+const toggleAI = () => {
+
+    fightStore.ai = !fightStore.ai;
+    if (battle.value) {
+        battle.value.ai_mode = fightStore.ai;
     }
-    if (battle_ended.value) return; // 防止重复执行
-    battle_ended.value = true;
-    APM.stop("battle_music");
-    APM.play("background_music");
+    ElMessage.info(`已切换为${fightStore.ai ? 'AI自动战斗' : '手动战斗'}`);
+    if (fightStore.ai) {
+        fightStore.selected_our_character = null;
+        fightStore.selected_target_character = null;
+    }
+};
 
-    let message = '';
-    let exp_reward = 0;
-    let xinhuo_reward = 0;
 
-    if (battle.value?.enemy.hp <= 0) {
-        if (!("battle_win" in APM.objs)) {
-            APM.add("battle_win", 'audio/battle_win.mp3');
-        }
-        APM.play("battle_win");
-        message = "恭喜你，战斗胜利！";
-        exp_reward = fightStore.enemy.reduce((sum, char) => sum + Math.round(char.level_xp(char.level) / 5), 0);
-        save.things.add(new (ThingList["EXP"] as any)(), exp_reward);
-        xinhuo_reward = random.randint(175, 840);
-        save.things.add(new (ThingList["XinHuo"] as any)(), xinhuo_reward);
-
-        fightStore.our.forEach(char => save.characters.get(char.inside_name)!.favorability += 5);
-
-        dropped_items.value = [];
-        const numItemsToDrop = random.randint(1, 3);
-        for (let i = 0; i < numItemsToDrop; i++) {
-            const droppedItem = generateRandomItem();
-            save.items.add(droppedItem);
-            dropped_items.value.push(droppedItem);
-        }
-        battle_result.value = 'win';
-    } else {
-        if (!("battle_lose" in APM.objs)) {
-            APM.add("battle_lose", 'audio/battle_lose.mp3');
-        }
-        APM.play("battle_lose");
-        message = "很遗憾，战斗失败！";
-        exp_reward = fightStore.enemy.reduce((sum, char) => sum + Math.round(char.level_xp(char.level) / 7), 0);
-        save.things.add(new (ThingList["EXP"] as any)(), exp_reward);
-        battle_result.value = 'lose';
+// 预判技能是否可以作用于指定目标
+const canSkillTarget = (target_party: 'enemy' | 'our') => {
+    // 如果没有选择技能类型，则默认可以作用于敌方，不能作用于己方
+    if (!current_selected_skill_type.value) {
+        return target_party === 'enemy';
     }
 
-    fightStore.our.forEach(char => {
-        // 使用类型断言解决类型不匹配问题
-        get_character_by_dump(char as Character).reset_status();
-    });
-    battle_exp_reward.value = exp_reward;
-    battle_xinhuo_reward.value = xinhuo_reward;
-    show_settlement_dialog.value = true;
+    // 获取当前行动角色
+    const activeChar = fightStore.selected_our_character;
+    if (!activeChar) return false;
+
+    // 根据选中的技能类型判断
+    switch (current_selected_skill_type.value) {
+        case 'general':
+        case 'skill':
+        case 'super_skill':
+            // 对于所有技能类型，获取对应的技能信息
+            let skill: Skill;
+            switch (current_selected_skill_type.value) {
+                case 'general':
+                    skill = activeChar.getGeneralSkill();
+                    break;
+                case 'skill':
+                    skill = activeChar.getSkill();
+                    break;
+                case 'super_skill':
+                    skill = activeChar.getSuperSkill();
+                    break;
+                default:
+                    return target_party === 'enemy'; // 默认只能作用于敌方
+            }
+
+            // 根据技能的targetScope判断
+            switch (skill.targetScope) {
+                case 'single':
+                    // 单体技能可以作用于任何单个目标（敌方或己方）
+                    return true;
+                case 'all_enemies':
+                    // 全体敌方技能只能作用于敌方
+                    return target_party === 'enemy';
+                case 'all_allies':
+                    // 全体己方技能只能作用于己方
+                    return target_party === 'our';
+                default:
+                    return target_party === 'enemy'; // 默认只能作用于敌方
+            }
+        default:
+            return target_party === 'enemy'; // 默认只能作用于敌方
+    }
 };
 
 // 玩家选择我方角色进行操作
@@ -314,99 +296,15 @@ const playerAttack = async (attack_type: 'general' | 'skill' | 'super_skill') =>
 
     // 手动操作后，立即检查一次战斗是否结束
     if (battle.value.enemy.hp <= 0 || battle.value.our.hp <= 0) {
-        endBattle();
-    }
-};
-
-const toggleAI = () => {
-    fightStore.ai = !fightStore.ai;
-    if (battle.value) {
-        battle.value.ai_mode = fightStore.ai;
-    }
-    ElMessage.info(`已切换为${fightStore.ai ? 'AI自动战斗' : '手动战斗'}`);
-    if (fightStore.ai) {
-        fightStore.selected_our_character = null;
-        fightStore.selected_target_character = null;
-    }
-};
-
-
-// 预判技能是否可以作用于指定目标
-const canSkillTarget = (target_party: 'enemy' | 'our') => {
-    // 如果没有选择技能类型，则默认可以作用于敌方，不能作用于己方
-    if (!current_selected_skill_type.value) {
-        return target_party === 'enemy';
-    }
-
-    // 获取当前行动角色
-    const activeChar = fightStore.selected_our_character;
-    if (!activeChar) return false;
-
-    // 根据选中的技能类型判断
-    switch (current_selected_skill_type.value) {
-        case 'general':
-        case 'skill':
-        case 'super_skill':
-            // 对于所有技能类型，获取对应的技能信息
-            let skill: Skill;
-            switch (current_selected_skill_type.value) {
-                case 'general':
-                    skill = activeChar.getGeneralSkill();
-                    break;
-                case 'skill':
-                    skill = activeChar.getSkill();
-                    break;
-                case 'super_skill':
-                    skill = activeChar.getSuperSkill();
-                    break;
-                default:
-                    return target_party === 'enemy'; // 默认只能作用于敌方
-            }
-
-            // 根据技能的targetScope判断
-            switch (skill.targetScope) {
-                case 'single':
-                    // 单体技能可以作用于任何单个目标（敌方或己方）
-                    return true;
-                case 'all_enemies':
-                    // 全体敌方技能只能作用于敌方
-                    return target_party === 'enemy';
-                case 'all_allies':
-                    // 全体己方技能只能作用于己方
-                    return target_party === 'our';
-                default:
-                    return target_party === 'enemy'; // 默认只能作用于敌方
-            }
-        default:
-            return target_party === 'enemy'; // 默认只能作用于敌方
-    }
-};
-
-const createWeakerEnemy = (baseCharacter: Character): Character => {
-    const weakerEnemy = get_character_by_dump(baseCharacter);
-    weakerEnemy.level = Math.max(1, baseCharacter.level - random.randint(-1, 3));
-    weakerEnemy.level_hp();
-    weakerEnemy.level_atk();
-    weakerEnemy.level_def();
-    weakerEnemy.hp = weakerEnemy.max_hp;
-    weakerEnemy.name = `[敌]${baseCharacter.name}`;
-    return weakerEnemy;
-};
-
-const generateEnemyCharacters = () => {
-    const ourAvgLevel = fightStore.our.reduce((sum, char) => sum + char.level, 0) / fightStore.our.length;
-    const allGameCharacters = Object.values(characters).map(C => new C());
-
-    fightStore.enemy = [];
-    for (let i = 0; i < 3; i++) {
-        const template = allGameCharacters[random.randint(0, allGameCharacters.length - 1)];
-        const enemy = createWeakerEnemy(template);
-        enemy.level = Math.max(1, Math.floor(ourAvgLevel) + random.randint(-2, 1));
-        enemy.level_hp();
-        enemy.level_atk();
-        enemy.level_def();
-        enemy.hp = enemy.max_hp;
-        fightStore.enemy.push(enemy);
+        // 让 battleService 处理结算
+        battleService.stopLoop();
+        // 我们需要手动调用结算，或者让 next_turn 在下一次循环检测到。
+        // 为了即时反馈，我们在这里手动触发一次 next_turn 检测。
+        const isEnded = await battle.value.next_turn();
+        if (isEnded) {
+            // 注意：这里可能需要从 battleService 获取结果，或者让 battleService 提供一个触发结算的方法
+            // 由于 startBattle 已经注册了 onSettlement，这里如果 next_turn 触发了逻辑，它会自动调用 handleSettlement
+        }
     }
 };
 
@@ -418,7 +316,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-    if (battle_interval) clearInterval(battle_interval);
+    battleService.stopLoop();
     APM.stop("battle_music");
     APM.play("background_music");
     // 重置store状态
