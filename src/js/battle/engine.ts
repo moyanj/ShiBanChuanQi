@@ -114,6 +114,26 @@ export class Battle implements IBattle {
         return null;
     }
 
+    get_action_order(): { type: 'enemy' | 'our', character: Character, distance: number }[] {
+        let order: { type: 'enemy' | 'our', character: Character, distance: number }[] = [];
+        
+        const process_team = (team: any, type: 'enemy' | 'our') => {
+            for (const name in team.atb) {
+                const chara = team.characters[name];
+                if (chara.hp > 0) {
+                    const atb = team.atb[name];
+                    const distance = Math.max(0, (100 - atb) / chara.speed);
+                    order.push({ type, character: chara, distance });
+                }
+            }
+        };
+
+        process_team(this.our, 'our');
+        process_team(this.enemy, 'enemy');
+
+        return order.sort((a, b) => a.distance - b.distance);
+    }
+
     // 更新所有角色的行动值
     update_atb_all(tick_amount: number = 1): void {
         this.tick += tick_amount * 10;

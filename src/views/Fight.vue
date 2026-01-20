@@ -6,6 +6,7 @@ import { useDataStore, useSaveStore, useFightStore, APM } from '../js/store';
 import { get_character_by_dump, icons, MersenneTwister } from '../js/utils';
 import sbutton from '../components/sbutton.vue';
 import fightCard from '../components/fight-card.vue';
+import ActionOrder from '../components/ActionOrder.vue';
 import { Battle, Skill } from '../js/fight';
 import { BattleService, BattleResult } from '../js/battle/service';
 import { Character, CharacterType } from '../js/character';
@@ -36,6 +37,17 @@ const battle = computed(() => fightStore.battle_instance);
 
 // 当前行动角色，用于判断是否轮到我方玩家操作
 const current_active_character = computed(() => battle.value?.get_now_character());
+
+// 行动序列
+const actionOrder = computed(() => {
+    if (!battle.value) return [];
+    return battle.value.get_action_order();
+});
+
+// 当前行动角色名
+const current_active_name = computed(() => {
+    return current_active_character.value?.character.inside_name || '';
+});
 
 // 当前选中的技能类型
 const selected_skill_type = computed(() => {
@@ -77,7 +89,7 @@ watch(current_active_character, (newVal, oldVal) => {
     if (!fightStore.ai && newVal && newVal.type === 'our') {
         autoSelectActiveCharacter();
     }
-});
+}, { deep: true });
 
 // 玩家选择的我方角色 (用于手动模式下，玩家点击我方角色后，准备选择技能)
 const selected_our_character = computed(() => fightStore.selected_our_character);
@@ -368,61 +380,100 @@ onUnmounted(() => {
 
         <!-- 战斗界面 -->
         <div class="content fight-c" v-else-if="battle">
-            <sbutton @click="show_manager = true" class="menu">
-                <el-image :src="icons.menu" style="width: 24px;height: 24px;" />
-            </sbutton>
-            <div class="toolbar">
-                <div>
-                    <el-avatar><img :src="`avatars/${enemy_avatar}.png`" id="avatar"></el-avatar>
-                </div>
-                <div>
-                    <el-avatar><img :src="save.user_avatar" id="avatar"></el-avatar>
-                    <div class="battle-points">战技点: {{ battle.battle_points }}/5</div>
-                </div>
-            </div>
-            <div class="enemy">
-                <div class="character-row">
+            <!-- 场景层：角色和敌人模型 -->
+            <div class="scene-layer">
+                <div class="enemies-container">
                     <fightCard v-for="char in battle.enemy.get_alive_characters()" :key="char.inside_name"
                         :character="char"
                         :is_active="current_active_character?.type === 'enemy' && current_active_character.character.inside_name === char.inside_name"
                         :is_enemy="true"
                         :is_selected="selected_target_character?.type === 'enemy' && selected_target_character.character.inside_name === char.inside_name"
-                        :active_effects="char.active_effects" @click="selectTargetCharacter('enemy', char)"></fightCard>
+                        :active_effects="char.active_effects" @click="selectTargetCharacter('enemy', char)">
+                    </fightCard>
                 </div>
-            </div>
-            <div class="our">
-                <div class="character-row">
+                
+                <div class="our-characters-container">
                     <fightCard v-for="char in battle.our.get_alive_characters()" :key="char.inside_name"
                         :character="char"
                         :is_active="current_active_character?.type === 'our' && current_active_character.character.inside_name === char.inside_name"
-                        :atb_value="battle.our.atb[char.inside_name]" :is_enemy="false"
+                        :atb_value="battle.our.atb[char.inside_name]" 
+                        :is_enemy="false"
                         :is_selected="selected_our_character?.inside_name === char.inside_name || (selected_target_character?.type === 'our' && selected_target_character.character.inside_name === char.inside_name)"
                         :active_effects="char.active_effects"
                         @click="fightStore.selected_our_character ? selectTargetCharacter('our', char) : selectOurCharacter(char)">
                     </fightCard>
                 </div>
-                <!-- 玩家手动攻击按钮 -->
-                <div class="atk"
-                    v-if="!fightStore.ai && selected_our_character && current_active_character?.type === 'our' && current_active_character.character.inside_name === selected_our_character.inside_name && selected_target_character">
-                    <div @click="playerAttack('general')">
-                        <img :src="icons.sword" id="general" />
-                        <p class="attack-name">{{ selected_our_character.general_name }}</p>
-                    </div>
-                    <div @click="playerAttack('skill')">
-                        <img :src="icons.sword" id="skill-icon" />
-                        <p class="attack-name">{{ selected_our_character.skill_name }}</p>
-                    </div>
-                    <div @click="playerAttack('super_skill')">
-                        <img :src="icons.wish" id="super-skill-icon" />
-                        <p class="attack-name">{{ selected_our_character.super_skill_name }}</p>
-                    </div>
-                </div>
             </div>
 
-            <div class="battle-log">
-                <el-scrollbar height="150px">
-                    <p v-for="(log, index) in battle_log" :key="index">{{ log }}</p>
-                </el-scrollbar>
+            <!-- UI层：HUD -->
+            <div class="hud-layer">
+                <!-- 右上：菜单按钮 -->
+                <div class="top-right-menu">
+                    <sbutton @click="show_manager = true" class="menu-btn" text>
+                        <el-image :src="icons.menu" style="width: 24px;height: 24px; filter: invert(1);" />
+                    </sbutton>
+                </div>
+
+                <!-- 左侧：行动序列 -->
+                <div class="left-action-order">
+                    <ActionOrder :order="actionOrder" :current_active_name="current_active_name" />
+                </div>
+
+                <!-- 顶部：战斗信息/Boss血条位置 (预留) -->
+                <div class="top-center-info">
+                    <!-- <div class="enemy-main-hp" v-if="battle.enemy.get_alive_characters().length > 0">
+                        {{ battle.enemy.get_alive_characters()[0].name }}
+                    </div> -->
+                </div>
+
+                <!-- 底部右侧：技能操作区 -->
+                <div class="bottom-skill-panel">
+                    <!-- 技能按钮组 -->
+                    <div class="skill-buttons"
+                        v-if="!fightStore.ai && selected_our_character && current_active_character?.type === 'our' && current_active_character.character.inside_name === selected_our_character.inside_name">
+                        
+                        <!-- 普攻 -->
+                        <div class="skill-btn general-btn" @click="playerAttack('general')" title="普通攻击">
+                            <div class="skill-icon-wrapper">
+                                <img :src="icons.sword" />
+                            </div>
+                            <span class="skill-label">普攻</span>
+                            <span class="skill-cost">+1</span>
+                        </div>
+
+                        <!-- 战技 -->
+                        <div class="skill-btn skill-btn-main" @click="playerAttack('skill')" 
+                             :class="{ 'disabled': battle.battle_points < selected_our_character.getSkill().cost }"
+                             :title="selected_our_character.skill_name">
+                            <div class="skill-icon-wrapper">
+                                <img :src="icons.sword" />
+                            </div>
+                            <span class="skill-label">战技</span>
+                            <span class="skill-cost">-{{ selected_our_character.getSkill().cost }}</span>
+                        </div>
+
+                        <!-- 终结技 -->
+                        <div class="skill-btn ult-btn" @click="playerAttack('super_skill')" title="终结技">
+                            <div class="skill-icon-wrapper">
+                                <img :src="icons.wish" />
+                            </div>
+                            <span class="skill-label">终结技</span>
+                        </div>
+                    </div>
+
+                    <!-- 战技点 -->
+                    <div class="battle-points-display">
+                        <div v-for="i in 5" :key="i" class="point-dot" :class="{ 'filled': i <= battle.battle_points }"></div>
+                        <span class="bp-text">{{ battle.battle_points }}/5</span>
+                    </div>
+                </div>
+
+                <!-- 战斗日志 (半透明悬浮) -->
+                <div class="battle-log-float">
+                    <el-scrollbar height="120px">
+                        <p v-for="(log, index) in battle_log" :key="index">{{ log }}</p>
+                    </el-scrollbar>
+                </div>
             </div>
         </div>
 
@@ -439,6 +490,9 @@ onUnmounted(() => {
                 <br>
                 <h3 v-if="battle_ended">战斗已结束</h3>
                 <h3 v-else-if="battle">回合数: {{ Math.floor(battle.tick / 100) }}</h3>
+                <div class="debug-info" style="margin-top: 10px; font-size: 12px; color: #aaa;">
+                    Battle Points: {{ battle?.battle_points }}
+                </div>
             </div>
         </div>
 
@@ -468,7 +522,7 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-/* 样式与之前保持一致，此处省略以减少篇幅 */
+/* 容器全屏设定 */
 .content {
     position: fixed;
     left: 0;
@@ -477,17 +531,233 @@ onUnmounted(() => {
     height: 100vh;
 }
 
-.back {
-    display: none;
+.fight-c {
+    background: no-repeat url('../assets/bg/fight.jpeg');
+    background-size: cover;
+    background-position: center;
+    overflow: hidden;
+    user-select: none;
 }
 
-.menu {
-    position: fixed;
-    left: 15px;
-    top: 15px;
-    z-index: 1002;
+/* --- 场景层 (角色展示) --- */
+.scene-layer {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    perspective: 1000px;
 }
 
+.enemies-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-bottom: 5vh;
+    transform: scale(0.9);
+}
+
+.our-characters-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-top: 10vh;
+    transform: scale(1.1);
+}
+
+/* --- HUD 层 (UI界面) --- */
+.hud-layer {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    pointer-events: none; /* 让点击穿透到场景层，但子元素恢复点击 */
+}
+
+/* 所有 HUD 子元素恢复点击交互 */
+.hud-layer > * {
+    pointer-events: auto;
+}
+
+/* 右上菜单 */
+.top-right-menu {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+}
+
+/* 左侧行动序列 */
+.left-action-order {
+    position: absolute;
+    top: 20px;
+    left: 0;
+    bottom: 20px; 
+    display: flex;
+    align-items: flex-start;
+}
+
+/* 底部右侧：技能面板 */
+.bottom-skill-panel {
+    position: absolute;
+    bottom: 30px;
+    right: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 15px;
+}
+
+.battle-points-display {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 5px 15px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+}
+
+.point-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    background: transparent;
+    transform: rotate(45deg); /* 菱形点 */
+}
+
+.point-dot.filled {
+    background: #FFF;
+    box-shadow: 0 0 5px #FFF;
+}
+
+.bp-text {
+    color: #FFF;
+    font-size: 14px;
+    margin-left: 10px;
+    font-weight: bold;
+}
+
+.skill-buttons {
+    display: flex;
+    gap: 20px;
+    align-items: flex-end;
+}
+
+.skill-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.skill-btn:hover {
+    transform: scale(1.1);
+}
+
+.skill-btn:active {
+    transform: scale(0.95);
+}
+
+.skill-btn.disabled {
+    opacity: 0.5;
+    filter: grayscale(100%);
+    cursor: not-allowed;
+}
+
+.skill-icon-wrapper {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.6);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 5px;
+    backdrop-filter: blur(5px);
+    transition: all 0.3s;
+}
+
+.skill-btn:hover .skill-icon-wrapper {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: #FFF;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+}
+
+.skill-btn-main .skill-icon-wrapper {
+    width: 90px;
+    height: 90px;
+    border-color: rgba(33, 150, 243, 0.6);
+}
+
+.skill-btn-main:hover .skill-icon-wrapper {
+    border-color: #2196F3;
+    box-shadow: 0 0 20px rgba(33, 150, 243, 0.5);
+}
+
+.ult-btn .skill-icon-wrapper {
+    width: 100px;
+    height: 100px;
+    border-color: rgba(255, 193, 7, 0.6);
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.1), rgba(0,0,0,0.6));
+}
+
+.ult-btn:hover .skill-icon-wrapper {
+    border-color: #FFC107;
+    box-shadow: 0 0 25px rgba(255, 193, 7, 0.6);
+}
+
+.skill-icon-wrapper img {
+    width: 60%;
+    height: 60%;
+    filter: invert(1);
+}
+
+.skill-label {
+    font-size: 12px;
+    color: #FFF;
+    text-shadow: 0 0 3px #000;
+}
+
+.skill-cost {
+    position: absolute;
+    top: -5px;
+    right: 0;
+    background: #333;
+    color: #FFF;
+    font-size: 10px;
+    padding: 2px 5px;
+    border-radius: 10px;
+    border: 1px solid #555;
+}
+
+/* 战斗日志 */
+.battle-log-float {
+    position: absolute;
+    top: 100px;
+    right: 20px;
+    width: 250px;
+    background: linear-gradient(to left, rgba(0, 0, 0, 0.8), transparent);
+    padding: 10px;
+    border-radius: 5px;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 12px;
+    text-shadow: 1px 1px 2px #000;
+}
+
+.battle-log-float p {
+    margin: 4px 0;
+}
+
+/* Manager 样式保持不变，但为了防止冲突，保留 .manager 等 */
 .manager {
     margin: 15px;
     display: flex;
@@ -501,162 +771,7 @@ onUnmounted(() => {
     margin-bottom: 10px;
 }
 
-.fight-c {
-    background: no-repeat url('../assets/bg/fight.jpeg');
-    background-size: cover;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
-.enemy,
-.our {
-    width: 100vw;
-    height: 40vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 10px 0;
-}
-
-.enemy .character-row,
-.our .character-row {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-}
-
-.toolbar {
-    border-radius: 10px;
-    position: fixed;
-    top: calc(50vh - 150px / 2);
-    width: 30px;
-    height: 150px;
-    background-color: #2a2a2a;
-    margin-left: 10px;
-    box-shadow: 2px 2px 2px 2px rgba(0, 0, 0, 0.3);
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
-    align-items: center;
-}
-
-.toolbar div {
-    height: 50%;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
-
-.toolbar .el-avatar {
-    width: 40px;
-    height: 40px;
-    margin-bottom: 5px;
-}
-
-.team-hp {
-    font-size: 10px;
-    color: white;
-    text-align: center;
-}
-
-.battle-points {
-    font-size: 10px;
-    color: white;
-    text-align: center;
-    margin-top: 2px;
-    /* Add a small margin for separation */
-}
-
-.atk {
-    position: fixed;
-    bottom: 25px;
-    right: 25px;
-    width: auto;
-    height: 70px;
-    display: flex;
-    align-items: center;
-    background-color: rgba(0, 0, 0, 0.6);
-    border-radius: 35px;
-    padding: 0 15px;
-}
-
-.atk div {
-    background-color: #4CAF50;
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    margin: 0 10px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    transition: background-color 0.3s, transform 0.2s;
-    position: relative;
-    overflow: hidden;
-}
-
-.atk div:hover {
-    transform: scale(1.1);
-}
-
-.atk div img {
-    width: 60%;
-    height: auto;
-    filter: invert(1);
-}
-
-.atk div:nth-child(2) {
-    background-color: #2196F3;
-}
-
-.atk div:nth-child(3) {
-    background-color: #FFC107;
-}
-
-.attack-name {
-    position: absolute;
-    bottom: 0px;
-    font-size: 10px;
-    color: white;
-    text-align: center;
-    width: 100%;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    background-color: rgba(0, 0, 0, 0.5);
-    padding-top: 2px;
-}
-
-#general,
-#skill-icon,
-#super-skill-icon {
-    margin-top: -5px;
-}
-
-.battle-log {
-    position: fixed;
-    bottom: 25px;
-    left: 25px;
-    width: 300px;
-    height: 150px;
-    background-color: rgba(0, 0, 0, 0.7);
-    border-radius: 10px;
-    padding: 10px;
-    color: white;
-    font-size: 12px;
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
-}
-
-.battle-log p {
-    margin: 2px 0;
-    line-height: 1.2;
-}
-
+/* Character Selection Styles (Reused) */
 .character-selection-overlay {
     position: fixed;
     top: 0;
