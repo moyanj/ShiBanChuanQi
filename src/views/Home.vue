@@ -72,6 +72,17 @@ const handleImgError = () => {
 // 资源数据
 const xinhuo = computed(() => save.things.get('XinHuo'));
 
+// 属性图标映射
+const typeMap: Record<string, string> = {
+    "火": icons.element.fire,
+    "水": icons.element.water,
+    "雷": icons.element.thunder,
+    "草": icons.element.grass,
+    "物理": icons.element.physics,
+    "量子": icons.element.liangzi,
+    "虚无": icons.element.nihility
+};
+
 onMounted(() => {
     initKanban();
 });
@@ -96,7 +107,7 @@ const navigate = (page: string) => {
                 <div class="char-banner" v-if="currentCharacter">
                     <div class="char-header">
                         <span class="char-name">{{ currentCharacter.name }}</span>
-                        <span class="char-type-badge" v-if="currentCharacter.type">{{ currentCharacter.type }}</span>
+                        <img :src="typeMap[currentCharacter.type]" class="char-type-icon" v-if="currentCharacter.type && typeMap[currentCharacter.type]" />
                     </div>
                     <div class="char-desc-line"></div>
                     <div class="char-desc">{{ currentCharacter.desc || '暂无介绍' }}</div>
@@ -307,16 +318,14 @@ const navigate = (page: string) => {
     font-weight: bold;
     color: #fff;
     letter-spacing: 1px;
+    font-family: 'MiSans', sans-serif; /* 强制使用全局字体 */
 }
 
-.char-type-badge {
-    background: #FDD835;
-    color: #000;
-    font-size: 12px;
-    font-weight: bold;
-    padding: 2px 6px;
-    border-radius: 2px;
-    text-transform: uppercase;
+.char-type-icon {
+    width: 28px;
+    height: 28px;
+    margin-left: 8px;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
 }
 
 .char-desc-line {
