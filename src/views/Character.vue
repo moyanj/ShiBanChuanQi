@@ -156,6 +156,7 @@ const formatItemLabel = (item: Item) => {
 </script>
 
 <template>
+    <div class="page-container">
     <el-row>
         <el-col :span="3">
             <el-scrollbar class="menu">
@@ -300,9 +301,16 @@ const formatItemLabel = (item: Item) => {
             <p>背包中没有可用的道具。</p>
         </div>
     </el-dialog>
+    </div>
 </template>
 
 <style scoped>
+.page-container {
+    padding: 20px;
+    height: 100vh;
+    box-sizing: border-box;
+}
+
 .menu {
     height: 95vh;
     width: 100%;

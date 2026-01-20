@@ -123,6 +123,7 @@ function reset_avatar() {
 </script>
 
 <template>
+    <div class="page-container">
     <h1 align="right">设置</h1>
 
     <el-scrollbar class="content">
@@ -189,15 +190,20 @@ function reset_avatar() {
                 <sbutton type="primary" @click="load">加载</sbutton>
             </el-form-item>
         </el-form>
+    
     </el-dialog>
-
+    </div>
 </template>
 
 <style scoped>
-.content {
+.page-container {
+    padding: 20px;
     height: 100vh;
-    width: 100vw;
-    padding-left: 10px;
-    padding-right: 10px;
+    box-sizing: border-box;
+}
+
+.content {
+    height: 90vh; /* 留出标题空间 */
+    width: 100%;
 }
 </style>

@@ -26,8 +26,9 @@ const zx_list = [
 </script>
 
 <template>
-    <el-row>
-        <el-col :span="12">
+    <div class="page-container">
+        <el-row>
+            <el-col :span="12">
             <div class="grid-content container">
                 <h1 id="title">十班全明星</h1>
                 <br>
@@ -76,10 +77,16 @@ const zx_list = [
             </div>
         </el-col>
     </el-row>
-
+    </div>
 </template>
 
 <style scoped>
+.page-container {
+    padding: 20px;
+    height: 100vh;
+    box-sizing: border-box;
+}
+
 .container {
     display: flex;
     flex-direction: column;
