@@ -46,6 +46,7 @@ export interface IBattle {
     log(message: string): void;
     onCharacterAction(): void;
     onAfterCharacterAction(): void;
+    get_action_order(): any[];
     
     on(event: BattleEvent, handler: BattleEventHandler): void;
     off(event: BattleEvent, handler: BattleEventHandler): void;
