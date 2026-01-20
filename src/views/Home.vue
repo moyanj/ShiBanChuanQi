@@ -34,7 +34,7 @@ const initKanban = () => {
         characterImg.value = placeholderImg; // 直接使用占位图
         console.log("Fallback Char: FanShiFu", "Img Path:", characterImg.value);
     }
-    
+
     // 简单的淡入动画
     setTimeout(() => {
         showCharacter.value = true;
@@ -89,7 +89,8 @@ const navigate = (page: string) => {
         <!-- 看板娘层 -->
         <div class="kanban-layer" :class="{ 'fade-in': showCharacter }">
             <div class="kanban-wrapper">
-                <img :src="characterImg" class="kanban-img" @click="onKanbanClick" @error="handleImgError" alt="Kanban" />
+                <img :src="characterImg" class="kanban-img" @click="onKanbanClick" @error="handleImgError"
+                    alt="Kanban" />
 
                 <!-- 角色信息 Banner -->
                 <div class="char-banner" v-if="currentCharacter">
@@ -121,7 +122,7 @@ const navigate = (page: string) => {
 
                 <div class="resources">
                     <div class="res-item">
-                        <img :src="icons.wish" class="res-icon" />
+                        <img src="/things/XinHuo.png" class="res-icon" />
                         <span class="res-value">{{ xinhuo }}</span>
                         <div class="res-add">+</div>
                     </div>
@@ -136,7 +137,7 @@ const navigate = (page: string) => {
                 </div>
                 <div class="left-btn" @click="navigate('about')">
                     <img :src="icons.info" />
-                    <span>公告</span>
+                    <span>关于</span>
                 </div>
             </div>
 
@@ -177,8 +178,6 @@ const navigate = (page: string) => {
                     </div>
                 </div>
             </div>
-
-            <!-- 底部装饰已移除 -->
 
         </div>
     </div>
