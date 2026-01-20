@@ -1,17 +1,19 @@
 import { Character, teamSynergyConfig } from "../character";
 import { useFightStore } from '../store';
-import { Skill, SkillType, IBattle } from "./types";
+import { Skill, SkillType, IBattle, BattleEvent, BattleEventHandler } from "./types";
 import { BattleCharacters } from "./participants";
 
 export class Battle implements IBattle {
     enemy: BattleCharacters;
     our: BattleCharacters;
-    now_character: { type: 'enemy' | 'our', name: string } | null; // 当前行动的角色
-    tick: number; // 当前回合数
-    battle_log: string[]; // 战斗日志
-    ai_mode: boolean; // 战斗是否处于AI模式
-    battle_points: number; // 战技点
+    now_character: { type: 'enemy' | 'our', name: string } | null;
+    tick: number;
+    battle_log: string[];
+    ai_mode: boolean;
+    battle_points: number;
     fightStore: ReturnType<typeof useFightStore>;
+    
+    private eventHandlers: Map<BattleEvent, Set<BattleEventHandler>> = new Map();
 
     constructor(enemy_characters: Character[], our_characters: Character[]) {
         this.enemy = new BattleCharacters(enemy_characters);
@@ -19,15 +21,31 @@ export class Battle implements IBattle {
         this.tick = 0;
         this.now_character = null;
         this.battle_log = [];
-        this.ai_mode = false; // 默认为手动模式
-        this.battle_points = 5; // 初始化战技点为5
+        this.ai_mode = false;
+        this.battle_points = 5;
         this.fightStore = useFightStore();
 
         this.our.register_env(this);
         this.enemy.register_env(this);
 
+        this.emit(BattleEvent.BATTLE_START, this);
         this.log("战斗开始！");
-        this.check_team_synergy(); // 在战斗开始时检查队伍协同
+        this.check_team_synergy();
+    }
+
+    on(event: BattleEvent, handler: BattleEventHandler): void {
+        if (!this.eventHandlers.has(event)) {
+            this.eventHandlers.set(event, new Set());
+        }
+        this.eventHandlers.get(event)!.add(handler);
+    }
+
+    off(event: BattleEvent, handler: BattleEventHandler): void {
+        this.eventHandlers.get(event)?.delete(handler);
+    }
+
+    emit(event: BattleEvent, data: any): void {
+        this.eventHandlers.get(event)?.forEach(handler => handler(data));
     }
 
     // 记录战斗日志
@@ -46,6 +64,8 @@ export class Battle implements IBattle {
         for (const chara of characters_in_party) {
             if (chara.hp > 0 && skill.attribute && skill.duration !== undefined) {
                 const effect = {
+                    id: `party_${skill.name}_${party_type}`,
+                    name: skill.name,
                     type: (skill.type === SkillType.PartyBuff ? 'buff' : 'debuff') as 'buff' | 'debuff',
                     attribute: skill.attribute,
                     value: skill.value,
@@ -102,7 +122,9 @@ export class Battle implements IBattle {
     }
 
     execute_skill(target_party: 'enemy' | 'our', target_character_name: string, skill: Skill, attacker_character: Character): number {
-        this.onCharacterAction(); // 角色动作开始钩子
+        this.emit(BattleEvent.BEFORE_ACTION, attacker_character);
+        this.emit(BattleEvent.SKILL_EXECUTE, { attacker: attacker_character, skill, target_party, target_character_name });
+        this.onCharacterAction();
         // 战技点消耗逻辑 (必须在最前面)
         if (attacker_character.is_our && skill.cost > 0) {
             if (this.battle_points >= skill.cost) {
@@ -144,8 +166,9 @@ export class Battle implements IBattle {
             this.battle_points = Math.min(5, this.battle_points + 1);
             this.log(`${attacker_character.name} 使用普通攻击，战技点回复1点，当前战技点：${this.battle_points}`);
         }
-        this.onAfterCharacterAction(); // 角色动作结束钩子
-        main_target_character.onAfterBeingAttacked(); // 角色被攻击后钩子
+        this.onAfterCharacterAction();
+        this.emit(BattleEvent.AFTER_ACTION, attacker_character);
+        main_target_character.onAfterBeingAttacked();
         return total_value_dealt;
     }
 
@@ -207,6 +230,7 @@ export class Battle implements IBattle {
 
         const { type: active_party_type, character: active_character } = active_info;
 
+        this.emit(BattleEvent.TURN_START, active_character);
         this.onTurnStart(); // 回合开始钩子
 
         // 更新当前行动角色的所有效果持续时间
@@ -255,7 +279,8 @@ export class Battle implements IBattle {
             this.execute_skill('enemy', target.inside_name, skill_to_execute, active_character);
         }
 
-        this.onTurnEnd(); // 回合结束钩子
+        this.onTurnEnd();
+        this.emit(BattleEvent.TURN_END, active_character);
 
         // 再次检查战斗是否结束
         if (this.enemy.hp <= 0 || this.our.hp <= 0) {

@@ -20,6 +20,8 @@ export const teamSynergyConfig: TeamSynergy[] = [
             const zongTong = (battleChars.our as BattleCharacters).characters["ZongTong"];
             if (zongTong) {
                 const speedBuff = {
+                    id: 'synergy_fanshifu_zongtong',
+                    name: '范师傅-总统协同',
                     type: 'buff' as const,
                     attribute: 'speed' as const,
                     value: zongTong.speed * 0.25,

@@ -1,4 +1,4 @@
-import { IBattle, Skill, SkillType } from "../battle/types";
+import { IBattle, Skill, SkillType, BattleEvent, BattleEventHandler } from "../battle/types";
 import { Item } from "../item";
 
 export interface CharacterData {
@@ -14,12 +14,21 @@ export interface CharacterData {
 }
 
 export interface ActiveEffect {
+    id: string;
+    name: string;
     type: 'buff' | 'debuff';
-    attribute: 'atk' | 'def_' | 'speed' | 'hp';
-    value: number;
+    attribute?: 'atk' | 'def_' | 'speed' | 'hp';
+    value?: number;
     duration: number;
+    stacks?: number;
+    maxStacks?: number;
     source_skill_name: string;
+    
+    onTick?: (target: Character, battle: IBattle) => void;
+    onApply?: (target: Character, battle: IBattle) => void;
+    onRemove?: (target: Character, battle: IBattle) => void;
 }
+
 
 export interface AttrBonusType {
     [CharacterType.Fire]: number;
@@ -65,7 +74,45 @@ export abstract class Character {
     base_speed: number;
     favorability: number;
     attr_bonus: AttrBonusType;
-    env: IBattle | null;
+    private _env: IBattle | null = null;
+    get env(): IBattle | null { return this._env; }
+    set env(value: IBattle | null) {
+        if (this._env) {
+            this.unregister_battle_events();
+        }
+        this._env = value;
+        if (this._env) {
+            this.register_battle_events();
+        }
+    }
+
+    private event_handlers: Map<BattleEvent, BattleEventHandler> = new Map();
+
+    private register_battle_events() {
+        if (!this._env) return;
+        
+        const events_to_listen = [
+            { event: BattleEvent.TURN_START, method: this.onTurnStart },
+            { event: BattleEvent.TURN_END, method: this.onTurnEnd },
+            { event: BattleEvent.BEFORE_ACTION, method: this.onCharacterAction },
+            { event: BattleEvent.AFTER_ACTION, method: this.onAfterCharacterAction },
+            { event: BattleEvent.CHARACTER_DEATH, method: this.onCharacterDeath }
+        ];
+
+        events_to_listen.forEach(({ event, method }) => {
+            const handler = (data: any) => method.call(this, data);
+            this._env?.on(event, handler);
+            this.event_handlers.set(event, handler);
+        });
+    }
+
+    private unregister_battle_events() {
+        if (!this._env) return;
+        this.event_handlers.forEach((handler, event) => {
+            this._env?.off(event, handler);
+        });
+        this.event_handlers.clear();
+    }
     active_effects: ActiveEffect[];
     equipped_items: Item[];
 
@@ -258,17 +305,46 @@ export abstract class Character {
     }
 
     apply_effect(effect: ActiveEffect): void {
+        const existing = this.active_effects.find(e => e.id === effect.id);
+        if (existing) {
+            if (existing.maxStacks && existing.stacks) {
+                existing.stacks = Math.min(existing.maxStacks, existing.stacks + (effect.stacks || 1));
+            }
+            existing.duration = Math.max(existing.duration, effect.duration);
+            return;
+        }
+
+        if (effect.stacks === undefined) effect.stacks = 1;
         this.active_effects.push(effect);
+        if (this.env) {
+            effect.onApply?.(this, this.env);
+        }
     }
 
-    remove_effect(effect_name: string): void {
-        this.active_effects = this.active_effects.filter(effect => effect.source_skill_name !== effect_name);
+    remove_effect(effect_id: string): void {
+        const index = this.active_effects.findIndex(e => e.id === effect_id);
+        if (index !== -1) {
+            const effect = this.active_effects[index];
+            if (this.env) {
+                effect.onRemove?.(this, this.env);
+            }
+            this.active_effects.splice(index, 1);
+        }
     }
 
     update_effects(): void {
         this.active_effects = this.active_effects.filter(effect => {
+            if (this.env) {
+                effect.onTick?.(this, this.env);
+            }
             effect.duration--;
-            return effect.duration > 0;
+            if (effect.duration <= 0) {
+                if (this.env) {
+                    effect.onRemove?.(this, this.env);
+                }
+                return false;
+            }
+            return true;
         });
     }
 
@@ -305,11 +381,11 @@ export abstract class Character {
         };
     }
 
-    onTurnStart(): void { }
-    onTurnEnd(): void { }
-    onAfterCharacterAction(): void { }
-    onCharacterAction(): void { }
-    onCharacterDeath(): void { }
+    onTurnStart(data?: any): void { }
+    onTurnEnd(data?: any): void { }
+    onAfterCharacterAction(data?: any): void { }
+    onCharacterAction(data?: any): void { }
+    onCharacterDeath(data?: any): void { }
     onWillBeingAttack(skill: Skill): Skill {
         return skill;
     }

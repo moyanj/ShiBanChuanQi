@@ -153,10 +153,12 @@ export class ChenGe extends Character {
                 const chara = this.env.our.characters[chara_name];
                 if (chara.is_our) { // 只对我方角色生效
                     chara.apply_effect({
+                        id: `skill_${this.skill_name}_${chara.inside_name}`,
+                        name: this.skill_name,
                         type: 'buff',
                         attribute: 'atk',
                         value: chara.atk * atk_bonus_value,
-                        duration: 1, // 持续1回合，或者根据实际需求调整
+                        duration: 1,
                         source_skill_name: this.skill_name
                     });
                 }
@@ -177,10 +179,12 @@ export class ChenGe extends Character {
                 const chara = this.env.our.characters[chara_name];
                 if (chara.is_our) { // 只对我方角色生效
                     chara.apply_effect({
+                        id: `superskill_${this.super_skill_name}_${chara.inside_name}`,
+                        name: this.super_skill_name,
                         type: 'buff',
                         attribute: 'atk',
-                        value: chara.atk * 0.03, // 增加3%攻击力
-                        duration: 1, // 持续1回合，或者根据实际需求调整
+                        value: chara.atk * 0.03,
+                        duration: 1,
                         source_skill_name: this.super_skill_name
                     });
                 }
@@ -216,9 +220,11 @@ export class ZongTong extends Character {
                 const chara = this.env.our.characters[chara_name];
                 if (chara.is_our) { // 只对我方角色生效
                     chara.apply_effect({
+                        id: `superskill_${this.super_skill_name}_${chara.inside_name}`,
+                        name: this.super_skill_name,
                         type: 'buff',
                         attribute: 'speed',
-                        value: chara.speed * 0.2, // 提高20%速度
+                        value: chara.speed * 0.2,
                         duration: 3,
                         source_skill_name: this.super_skill_name
                     });
@@ -228,9 +234,11 @@ export class ZongTong extends Character {
 
         // 3. 自身防御力降低10%，持续三个回合
         this.apply_effect({
+            id: `superskill_debuff_${this.super_skill_name}`,
+            name: this.super_skill_name,
             type: 'debuff',
             attribute: 'def_',
-            value: this.def_ * 0.1, // 降低10%防御
+            value: this.def_ * 0.1,
             duration: 3,
             source_skill_name: this.super_skill_name
         });

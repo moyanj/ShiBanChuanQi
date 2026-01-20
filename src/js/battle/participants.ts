@@ -1,5 +1,5 @@
 import { Character, ActiveEffect } from "../character/base";
-import { Skill, SkillType, ATB, IBattle } from "./types";
+import { Skill, SkillType, ATB, IBattle, BattleEvent } from "./types";
 
 interface CharactersMap {
     [property: string]: Character;
@@ -7,9 +7,10 @@ interface CharactersMap {
 
 export class BattleCharacters {
     characters: CharactersMap;
-    atb: ATB; // 行动值
-    hp: number; // 队伍总血量
-    appliedSynergies: Set<string>; // 记录已应用的协同效果ID
+    atb: ATB;
+    hp: number;
+    appliedSynergies: Set<string>;
+    env: IBattle | null = null;
 
     constructor(characters: Character[]) {
         this.characters = {};
@@ -34,8 +35,9 @@ export class BattleCharacters {
 
     // 注册战斗环境
     register_env(obj: IBattle) {
+        this.env = obj;
         for (let i in this.characters) {
-            this.characters[i].env = obj as any;
+            this.characters[i].env = obj;
         }
     }
 
@@ -71,7 +73,10 @@ export class BattleCharacters {
             
             // 检查角色是否刚死亡（血量从非0降到0）
             if (old_hp > 0 && character.hp <= 0) {
-                character.onCharacterDeath(); // 调用角色死亡钩子
+                character.onCharacterDeath();
+                if (this.env) {
+                    this.env.emit(BattleEvent.CHARACTER_DEATH, character);
+                }
             }
             
             return actual_damage;
@@ -126,6 +131,8 @@ export class BattleCharacters {
             case SkillType.Debuff:
                 if (skill.attribute && skill.duration !== undefined) {
                     const effect: ActiveEffect = {
+                        id: `skill_${skill.name}`,
+                        name: skill.name,
                         type: skill.type === SkillType.Buff ? 'buff' : 'debuff',
                         attribute: skill.attribute,
                         value: skill.value,
@@ -136,6 +143,7 @@ export class BattleCharacters {
                     actual_value_dealt = skill.value;
                 }
                 break;
+
             case SkillType.PartyBuff:
             case SkillType.PartyDebuff:
                 actual_value_dealt = skill.value;

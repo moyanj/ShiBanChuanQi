@@ -22,6 +22,22 @@ export interface ATB {
     [property: string]: number;
 }
 
+export enum BattleEvent {
+    BATTLE_START = "BATTLE_START",
+    TURN_START = "TURN_START",
+    TURN_END = "TURN_END",
+    BEFORE_ACTION = "BEFORE_ACTION",
+    AFTER_ACTION = "AFTER_ACTION",
+    BEFORE_DAMAGE = "BEFORE_DAMAGE",
+    AFTER_DAMAGE = "AFTER_DAMAGE",
+    BEFORE_HEAL = "BEFORE_HEAL",
+    AFTER_HEAL = "AFTER_HEAL",
+    CHARACTER_DEATH = "CHARACTER_DEATH",
+    SKILL_EXECUTE = "SKILL_EXECUTE",
+}
+
+export type BattleEventHandler = (data: any) => void;
+
 export interface IBattle {
     enemy: any;
     our: any;
@@ -30,4 +46,8 @@ export interface IBattle {
     log(message: string): void;
     onCharacterAction(): void;
     onAfterCharacterAction(): void;
+    
+    on(event: BattleEvent, handler: BattleEventHandler): void;
+    off(event: BattleEvent, handler: BattleEventHandler): void;
+    emit(event: BattleEvent, data: any): void;
 }

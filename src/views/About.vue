@@ -7,13 +7,14 @@ const data: DataStoreState = useDataStore();
 const electron = window.electron;
 
 const zx_list = [
-    "Google Inc.",
-    "微软科技",
-    "北京阿里云计算科技",
+    "Microsoft",
+    "Qwen AI团队",
     "VueJS团队",
     "Github",
     "Suno AI",
+    "Google AI Labs",
     "Stable Diffusion团队",
+    "OpenCode团队",
     "Electron团队",
     "北京北大方正电子有限公司",
     "小米科技有限责任公司",
