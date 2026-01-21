@@ -181,7 +181,7 @@ export abstract class Character {
     }
 
     get atk(): number {
-        let value = this.base_atk * (1 + this.level * 0.1);
+        let value = this.base_atk;
         for (const effect of this.active_effects) {
             if (effect.attribute === 'atk') {
                 value += (effect.type === 'buff' ? effect.value : -effect.value);
@@ -199,7 +199,7 @@ export abstract class Character {
     }
 
     get def_(): number {
-        let value = this.base_def_ * (1 + this.level * 0.1);
+        let value = this.base_def_;
         for (const effect of this.active_effects) {
             if (effect.attribute === 'def_') {
                 value += (effect.type === 'buff' ? effect.value : -effect.value);
@@ -215,7 +215,7 @@ export abstract class Character {
     }
 
     get speed(): number {
-        let value = this.base_speed * (1 + this.level * 0.1);
+        let value = this.base_speed;
         for (const effect of this.active_effects) {
             if (effect.attribute === 'speed') {
                 value += (effect.type === 'buff' ? effect.value : -effect.value);
@@ -250,33 +250,33 @@ export abstract class Character {
 
     level_hp(): void {
         const base = 500;
-        const growth = base * this.level + 20 * Math.pow(this.level, 1.5);
+        const growth = base + 120 * this.level + 15 * Math.pow(this.level, 1.25);
         this.base_hp = growth;
         this.hp = growth;
     }
 
     level_def(): void {
         const base = 50;
-        const growth = base + 10 * this.level + 2 * Math.pow(this.level, 1.05);
+        const growth = base + 15 * this.level + 2 * Math.pow(this.level, 1.1);
         this.base_def_ = growth;
     }
 
     level_atk(): void {
         const base = 100;
-        const growth = base + 25 * this.level + 5 * Math.pow(this.level, 1.1);
+        const growth = base + 25 * this.level + 4 * Math.pow(this.level, 1.15);
         this.base_atk = growth;
     }
 
     skill(): number {
-        return this.atk * 1.5;
+        return this.atk * 2.0;
     }
 
     general(): number {
-        return this.atk * 0.9;
+        return this.atk * 1.0;
     }
 
     super_skill(): number {
-        return this.atk * 2;
+        return this.atk * 4.0;
     }
 
     dump(): CharacterData {

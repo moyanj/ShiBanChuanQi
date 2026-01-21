@@ -55,4 +55,7 @@ python python/server.py # Backend (Manual start required)
 # Build
 pnpm build            # Build Frontend -> html/
 python build.py       # Package Electron (Requires html/)
+
+# Check
+pnpm type-check
 ```

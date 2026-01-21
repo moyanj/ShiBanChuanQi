@@ -127,8 +127,7 @@ export class BattleCharacters {
 
         switch (skill.type) {
             case SkillType.Damage:
-                const modified_atk = attacker_character.atk;
-                actual_value_dealt = this.take_damage(target_character_name, skill.value + modified_atk);
+                actual_value_dealt = this.take_damage(target_character_name, skill.value);
                 break;
             case SkillType.Heal:
                 actual_value_dealt = Math.min(skill.value, target_character.max_hp - target_character.hp);

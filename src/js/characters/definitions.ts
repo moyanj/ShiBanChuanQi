@@ -9,26 +9,26 @@ export class Fairy extends Character {
         this.desc = "Ⅲ型总序式集成泛用人工智能";
 
         this.general_name = "嘴贱";
-        this.general_desc = "造成90%的伤害";
+        this.general_desc = "造成100%的伤害";
 
         this.skill_name = "双倍耗电";
-        this.skill_desc = "造成250%的伤害";
+        this.skill_desc = "造成220%的伤害";
 
         this.super_skill_name = "三倍耗电";
-        this.super_skill_desc = "造成500%的伤害";
+        this.super_skill_desc = "造成450%的伤害";
 
         this.type = CharacterType.LiangZi;
     }
     general(): number {
-        return this.atk * 0.9;
+        return this.atk * 1.0;
     }
 
     skill(): number {
-        return this.atk * 2.5;
+        return this.atk * 2.2;
     }
 
     super_skill(): number {
-        return this.atk * 5;
+        return this.atk * 4.5;
     }
 }
 
@@ -41,35 +41,31 @@ export class FanShiFu extends Character {
 
         this.desc = "人生殊梦一场，大梦归离而已";
         this.general_name = "控梦";
-        this.general_desc = "造成自身攻击力90%的伤害";
+        this.general_desc = "造成自身攻击力100%的伤害";
         this.skill_name = "幻灭之境";
-        this.skill_desc = "消耗自身20%的生命值，对敌方造成150%的伤害";
+        this.skill_desc = "消耗自身20%的生命值，对敌方造成200%的伤害";
         this.super_skill_name = "恶咒归梦";
-        this.super_skill_desc = "消耗自身75%生命，对敌方造成257%的伤害";
+        this.super_skill_desc = "消耗自身75%生命，对敌方造成350%的伤害";
     }
 
     general(): number {
-        return this.atk * 0.9;
+        return this.atk * 1.0;
     }
 
     skill(): number {
-        // 消耗自身20%的生命值
         this.hp -= this.max_hp * 0.2;
         if (this.hp < 0) {
             this.hp = 0;
         }
-        // 对敌方造成150%的伤害
-        return this.atk * 1.5;
+        return this.atk * 2.0;
     }
 
     super_skill(): number {
-        // 消耗自身75%生命
         this.hp -= this.max_hp * 0.75;
         if (this.hp < 0) {
             this.hp = 0;
         }
-        // 对敌方造成257%的伤害
-        return this.atk * 2.57;
+        return this.atk * 3.5;
     }
 }
 
@@ -82,19 +78,19 @@ export class ShuiLiFang extends Character {
 
         this.desc = "海的那边是自由";
         this.general_name = "水之波动";
-        this.general_desc = "造成自身30%生命值+30%攻击力的伤害";
+        this.general_desc = "造成自身10%生命值+50%攻击力的伤害";
         this.skill_name = "潮汐冲击";
-        this.skill_desc = "造成自身20%生命值+70%攻击力的伤害";
+        this.skill_desc = "造成自身15%生命值+120%攻击力的伤害";
         this.super_skill_name = "海神领域";
-        this.super_skill_desc = "对敌方造成230%伤害，并为我方所有角色水属性攻击加成提高20%";
+        this.super_skill_desc = "对敌方造成320%伤害，并为我方所有角色水属性攻击加成提高20%";
     }
 
     general(): number {
-        return this.hp * 0.3 + this.atk * 0.3;
+        return this.hp * 0.1 + this.atk * 0.5;
     }
 
     skill(): number {
-        return this.hp * 0.2 + this.atk * 0.7;
+        return this.hp * 0.15 + this.atk * 1.2;
     }
 
     super_skill(): number {
@@ -107,7 +103,7 @@ export class ShuiLiFang extends Character {
                 }
             }
         }
-        return this.atk * 2.3;
+        return this.atk * 3.2;
     }
 }
 export class ChenGe extends Character {
@@ -122,21 +118,19 @@ export class ChenGe extends Character {
         this.desc = '”做啊！继续做啊！“';
 
         this.general_name = "虚核"
-        this.general_desc = "造成85%的伤害，并增加一个“光环”,最多12个光环"
+        this.general_desc = "造成100%的伤害，并增加一个“光环”,最多12个光环"
 
         this.skill_name = "融核"
-        this.skill_desc = "造成60%的伤害，并为我方全体增加3%乘以光环数量的攻击力，并消耗一个光环"
+        this.skill_desc = "造成120%的伤害，并为我方全体增加3%乘以光环数量的攻击力，并消耗一个光环"
 
         this.super_skill_name = "超核"
-        this.super_skill_desc = "消耗全部光环，造成190%的伤害，并为全队增加3%的攻击力"
+        this.super_skill_desc = "消耗全部光环，造成380%的伤害，并为全队增加3%的攻击力"
 
         this.halo_count = 0; // 初始化光环数量
     }
 
     general(): number {
-        // 造成85%的伤害
-        const damage = this.atk * 0.85;
-        // 增加一个“光环”,最多12个光环
+        const damage = this.atk * 1.0;
         if (this.halo_count < 12) {
             this.halo_count++;
         }
@@ -144,14 +138,12 @@ export class ChenGe extends Character {
     }
 
     skill(): number {
-        // 造成60%的伤害
-        const damage = this.atk * 0.6;
-        // 为我方全体增加3%乘以光环数量的攻击力，并消耗一个光环
+        const damage = this.atk * 1.2;
         if (this.env && this.halo_count > 0) {
-            const atk_bonus_value = 0.03 * this.halo_count; // 3%乘以光环数量
+            const atk_bonus_value = 0.03 * this.halo_count;
             for (const chara_name in this.env.our.characters) {
                 const chara = this.env.our.characters[chara_name];
-                if (chara.is_our) { // 只对我方角色生效
+                if (chara.is_our) {
                     chara.apply_effect({
                         id: `skill_${this.skill_name}_${chara.inside_name}`,
                         name: this.skill_name,
@@ -163,21 +155,18 @@ export class ChenGe extends Character {
                     });
                 }
             }
-            this.halo_count--; // 消耗一个光环
+            this.halo_count--;
         }
         return damage;
     }
 
     super_skill(): number {
-        // 消耗全部光环
         this.halo_count = 0;
-        // 造成190%的伤害
-        const damage = this.atk * 1.9;
-        // 为全队增加3%的攻击力
+        const damage = this.atk * 3.8;
         if (this.env) {
             for (const chara_name in this.env.our.characters) {
                 const chara = this.env.our.characters[chara_name];
-                if (chara.is_our) { // 只对我方角色生效
+                if (chara.is_our) {
                     chara.apply_effect({
                         id: `superskill_${this.super_skill_name}_${chara.inside_name}`,
                         name: this.super_skill_name,
@@ -434,27 +423,25 @@ export class WuYu extends Character {
         this.type = CharacterType.Thunder;
 
         this.general_name = "农夫山泉"
-        this.general_desc = "对敌方单体造成自生生命值40%+自身攻击力20%的伤害"
+        this.general_desc = "对敌方单体造成自身生命值10%+自身攻击力60%的伤害"
 
         this.skill_name = "华润怡宝"
         this.skill_desc = "消耗15%的生命值，对己方生命值最低的回复45%攻击力的生命值"
 
         this.super_skill_name = "百岁山"
-        this.super_skill_desc = "回复己方生命值最低的角色30%的生命值，并额外回复10%自身攻击力的"
+        this.super_skill_desc = "回复己方生命值最低的角色30%的生命值，并额外回复10%自身攻击力的生命值"
     }
 
     general(): number {
-        return this.hp * 0.4 + this.atk * 0.2;
+        return this.hp * 0.1 + this.atk * 0.6;
     }
 
     skill(): number {
-        // 消耗15%的生命值
         this.hp -= this.max_hp * 0.15;
         if (this.hp < 0) {
             this.hp = 0;
         }
 
-        // 对己方生命值最低的回复45%攻击力的生命值
         if (this.env) {
             let lowest_hp_chara: Character | null = null;
             let min_hp = Infinity;
@@ -474,11 +461,10 @@ export class WuYu extends Character {
                 }
             }
         }
-        return 0; // 技能不造成直接伤害
+        return 0;
     }
 
     super_skill(): number {
-        // 回复己方生命值最低的角色30%的生命值，并额外回复10%自身攻击力的生命值
         if (this.env) {
             let lowest_hp_chara: Character | null = null;
             let min_hp = Infinity;
@@ -498,7 +484,7 @@ export class WuYu extends Character {
                 }
             }
         }
-        return 0; // 大招不造成直接伤害
+        return 0;
     }
 
     // 重写技能对象方法，使其技能可以作用于己方
@@ -534,40 +520,32 @@ export class Song extends Character {
         this.inside_name = "Song";
         this.type = CharacterType.LiangZi;
 
-        this.general_desc = "造成等同于自身生命值40%的伤害"
+        this.general_desc = "造成自身生命值12%+40%攻击力的伤害"
 
-        this.skill_desc = "增加一颗松子，无视对方50%的防御力，造成85%攻击力的伤害"
+        this.skill_desc = "增加一颗松子，无视对方50%的防御力，造成180%攻击力的伤害"
 
-        this.super_skill_desc = "在其之前增加一颗松子，造成100%攻击力的伤害，若攒至3颗，则消耗三颗松子，造成250%的伤害"
+        this.super_skill_desc = "增加一颗松子，造成250%攻击力的伤害，若攒至3颗，则消耗三颗松子，造成500%的伤害"
 
         this.pine_nut_count = 0; // 初始化松子数量
     }
 
     general(): number {
-        // 造成等同于自身生命值40%的伤害
-        return this.hp * 0.4;
+        return this.hp * 0.12 + this.atk * 0.4;
     }
 
     skill(): number {
-        // 增加一颗松子
         this.pine_nut_count++;
-        // 无视对方50%的防御力，造成85%攻击力的伤害
-        // 注意：这里只是计算伤害值，实际的防御力减免逻辑需要在战斗系统中处理
-        return this.atk * 0.85;
+        return this.atk * 1.8;
     }
 
     super_skill(): number {
-        // 在其之前增加一颗松子
         this.pine_nut_count++;
 
         if (this.pine_nut_count >= 3) {
-            // 消耗三颗松子
             this.pine_nut_count -= 3;
-            // 造成250%的伤害
-            return this.atk * 2.5;
+            return this.atk * 5.0;
         } else {
-            // 造成100%攻击力的伤害
-            return this.atk * 1;
+            return this.atk * 2.5;
         }
     }
 }
