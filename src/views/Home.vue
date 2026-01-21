@@ -146,11 +146,9 @@ const navigate = (page: string) => {
             <div class="left-bar">
                 <div class="left-btn" @click="navigate('setting')">
                     <img :src="icons.setting" />
-                    <span>设置</span>
                 </div>
                 <div class="left-btn" @click="navigate('about')">
                     <img :src="icons.info" />
-                    <span>关于</span>
                 </div>
             </div>
 
@@ -195,18 +193,16 @@ const navigate = (page: string) => {
         </div>
     </div>
 </template>
-
 <style scoped>
-/* 全局字体 */
+/* 全局样式 */
 .dashboard {
     width: 100vw;
     height: 100vh;
     overflow: hidden;
     position: relative;
-    font-family: 'ZiHunJianQi', 'MiSans', sans-serif;
+    font-family: "PingFang SC", "Microsoft YaHei", "MiSans", sans-serif;
     user-select: none;
-    background-color: #1a1a1a;
-    /* 更深邃的背景色 */
+    background-color: #0c0c0e;
 }
 
 /* 背景层 */
@@ -216,12 +212,9 @@ const navigate = (page: string) => {
     left: 0;
     width: 100%;
     height: 100%;
-    /* 使用 assets/bg/home.jpeg 
-    background: url('../assets/bg/home.jpeg') no-repeat center center;
-    background-size: cover;*/
     z-index: 0;
-    /* 压暗并轻微模糊，突出前景插画 */
-    filter: brightness(0.6) blur(2px);
+    background: radial-gradient(circle at 30% 50%, rgba(45, 55, 72, 0.4) 0%, transparent 70%);
+    filter: brightness(0.8);
 }
 
 /* 看板娘层 */
@@ -232,208 +225,170 @@ const navigate = (page: string) => {
     width: 100%;
     height: 100%;
     z-index: 5;
-    /* 提高层级，确保在背景之上 */
     pointer-events: none;
-
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
+    padding-left: 20vw;
 }
 
 .kanban-wrapper {
     position: relative;
     pointer-events: auto;
-    /* 移除之前的 opacity 动画依赖，直接显示 */
-    animation: fadeIn 0.5s ease-out forwards;
+    animation: slideInLeft 0.8s ease-out forwards;
     opacity: 0;
-    margin-right: 15vw;
-    /* 让其在视觉上偏左，为右侧按钮留出空间 */
 }
 
-@keyframes fadeIn {
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+
     to {
         opacity: 1;
+        transform: translateX(0);
     }
 }
 
-/* 插画相框效果 */
+/* 插画展示 - 移除白框，改为呼吸投影 */
 .kanban-img {
-    height: 65vh;
+    height: 85vh;
     width: auto;
     display: block;
-    /* 确保块级显示 */
-    object-fit: cover;
-    border-radius: 8px;
-    border: 3px solid rgba(255, 255, 255, 0.9);
-    box-shadow:
-        0 8px 25px rgba(0, 0, 0, 0.6),
-        0 0 0 1px rgba(0, 0, 0, 0.3);
-
+    object-fit: contain;
+    filter: drop-shadow(0 0 30px rgba(0, 0, 0, 0.8));
     cursor: pointer;
-    background-color: #222;
-    /* 图片未加载时的占位色 */
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .kanban-img:hover {
-    transform: scale(1.02);
-    box-shadow:
-        0 12px 35px rgba(0, 0, 0, 0.7),
-        0 0 15px rgba(255, 255, 255, 0.3);
+    transform: scale(1.03) translateY(-10px);
 }
 
-.kanban-img:active {
-    transform: scale(0.98);
-}
-
-/* 角色信息 Banner */
+/* 角色信息 Banner - 扁平化透明设计 */
 .char-banner {
     position: absolute;
-    bottom: 20px;
-    left: -40px;
-    /* 悬出左侧一点，增加设计感 */
-    width: 280px;
-    background: rgba(0, 0, 0, 0.75);
-    backdrop-filter: blur(8px);
-    border-left: 4px solid #FDD835;
-    /* 金色左边框 */
-    padding: 15px 20px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    bottom: 10vh;
+    left: 50%;
+    width: 350px;
+    background: linear-gradient(90deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 100%);
+    border-left: 4px solid #f7d358;
+    padding: 20px 30px;
     pointer-events: auto;
-
-    /* 切角设计 (右下角) */
-    clip-path: polygon(0 0,
-            100% 0,
-            100% 85%,
-            92% 100%,
-            0 100%);
+    backdrop-filter: blur(5px);
 }
 
 .char-header {
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 5px;
-}
-
-.char-name {
-    font-size: 28px;
-    font-weight: bold;
-    color: #fff;
-    letter-spacing: 1px;
-    font-family: 'MiSans', sans-serif;
-    /* 强制使用全局字体 */
-}
-
-.char-type-icon {
-    width: 28px;
-    height: 28px;
-    margin-left: 8px;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
-}
-
-.char-desc-line {
-    width: 100%;
-    height: 1px;
-    background: linear-gradient(to right, rgba(255, 255, 255, 0.5), transparent);
+    gap: 15px;
     margin-bottom: 8px;
 }
 
+.char-name {
+    font-size: 36px;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px rgba(247, 211, 88, 0.3);
+}
+
+.char-type-icon {
+    width: 32px;
+    height: 32px;
+}
+
+.char-desc-line {
+    width: 60px;
+    height: 2px;
+    background: #f7d358;
+    margin-bottom: 12px;
+}
+
 .char-desc {
-    font-size: 14px;
-    color: rgba(255, 255, 255, 0.8);
-    font-style: italic;
-    line-height: 1.4;
+    font-size: 16px;
+    color: #ccc;
+    line-height: 1.5;
 }
 
-/* UI 层 */
-.ui-layer {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 10;
-    pointer-events: none;
-    /* 让点击穿透空白区域 */
-}
-
-/* 通用 UI 元素可点击 */
-.ui-layer>* {
-    pointer-events: auto;
-}
-
-/* 顶部栏 */
+/* 顶部栏 - 玩家状态 */
 .top-bar {
     position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
-    padding: 20px 40px;
+    right: 0;
+    padding: 30px 50px;
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
+    z-index: 100;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.8) 0%, transparent 100%);
     box-sizing: border-box;
-    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6) 0%, transparent 100%);
 }
 
 .player-info {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 20px;
 }
 
 .avatar-container {
     position: relative;
+    cursor: pointer;
 }
 
 .avatar-border {
-    border: 2px solid #fff;
-    box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 0 15px rgba(247, 211, 88, 0.2);
+    transition: all 0.3s;
+}
+
+.avatar-container:hover .avatar-border {
+    border-color: #f7d358;
+    transform: scale(1.05);
 }
 
 .level-badge {
     position: absolute;
     bottom: -5px;
     right: -5px;
-    background: #FFC107;
+    background: #f7d358;
     color: #000;
-    font-size: 10px;
-    font-weight: bold;
-    padding: 2px 6px;
-    border-radius: 10px;
-    border: 1px solid #fff;
-}
-
-.player-details {
-    color: #fff;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+    font-size: 12px;
+    font-weight: 900;
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 2px solid #000;
 }
 
 .player-name {
-    font-size: 20px;
+    font-size: 24px;
     font-weight: bold;
+    color: #fff;
 }
 
 .player-uid {
-    font-size: 12px;
-    opacity: 0.8;
+    font-size: 14px;
+    color: #888;
+    letter-spacing: 1px;
 }
 
-/* 资源栏 */
+/* 资源组 */
 .resources {
     display: flex;
-    gap: 20px;
+    gap: 25px;
 }
 
 .res-item {
-    background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(5px);
-    border-radius: 20px;
-    padding: 5px 15px 5px 5px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    padding: 5px 15px;
     display: flex;
     align-items: center;
-    gap: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    gap: 12px;
+    backdrop-filter: blur(10px);
 }
 
 .res-icon {
@@ -442,155 +397,138 @@ const navigate = (page: string) => {
 }
 
 .res-value {
-    color: #fff;
-    font-weight: bold;
-    font-size: 16px;
+    color: #f7d358;
+    font-weight: 900;
+    font-size: 18px;
 }
 
 .res-add {
-    width: 16px;
-    height: 16px;
-    background: #fff;
-    color: #000;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    font-weight: bold;
-    margin-left: 5px;
+    color: #fff;
     cursor: pointer;
+    font-weight: bold;
+    opacity: 0.5;
+    transition: opacity 0.3s;
 }
 
-/* 左侧栏 */
+.res-add:hover {
+    opacity: 1;
+}
+
+/* 左侧辅助菜单 */
 .left-bar {
     position: absolute;
     left: 40px;
     bottom: 40px;
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 20px;
+    z-index: 10;
 }
 
 .left-btn {
-    width: 50px;
-    height: 50px;
+    width: 54px;
+    height: 54px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(5px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.3s;
+    backdrop-filter: blur(10px);
 }
 
 .left-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: scale(1.1);
+    background: rgba(247, 211, 88, 0.1);
+    border-color: #f7d358;
+    transform: translateY(-5px);
 }
 
 .left-btn img {
-    width: 20px;
-    height: 20px;
-    margin-bottom: 2px;
+    width: 24px;
+    height: 24px;
+    filter: brightness(0.9);
 }
 
-.left-btn span {
-    font-size: 10px;
-    color: #fff;
-}
-
-/* 右侧核心区 */
+/* 右侧主菜单区 */
 .right-zone {
     position: absolute;
-    right: 40px;
-    bottom: 40px;
+    right: 60px;
+    bottom: 60px;
     display: flex;
+    flex-direction: column;
     align-items: flex-end;
-    gap: 30px;
+    gap: 40px;
+    z-index: 10;
 }
 
-/* 垂直菜单 */
 .menu-list {
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    margin-bottom: 20px;
-    /* 对齐出击按钮中心偏上 */
+    gap: 15px;
 }
 
 .menu-item {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
-    gap: 10px;
+    gap: 20px;
+    padding: 10px 25px;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 100%);
+    border-right: 3px solid transparent;
     cursor: pointer;
-    transition: transform 0.2s;
+    transition: all 0.3s;
 }
 
 .menu-item:hover {
+    background: linear-gradient(90deg, rgba(247, 211, 88, 0.1) 0%, rgba(247, 211, 88, 0) 100%);
+    border-right-color: #f7d358;
     transform: translateX(-10px);
 }
 
 .menu-item span {
     color: #fff;
-    font-size: 18px;
-    font-weight: bold;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: 2px;
 }
 
 .menu-icon-bg {
-    width: 60px;
-    height: 60px;
-    background: linear-gradient(135deg, rgba(30, 30, 30, 0.9), rgba(60, 60, 60, 0.9));
-    border-radius: 12px;
+    width: 48px;
+    height: 48px;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-    border: 2px solid rgba(255, 255, 255, 0.1);
-    transform: skew(-10deg);
 }
 
 .menu-icon-bg img {
     width: 32px;
     height: 32px;
-    transform: skew(10deg);
-    /* 反向倾斜图标 */
 }
 
-/* 出击按钮 */
+/* 出击按钮 - 戏剧化设计 */
 .start-btn-container {
-    width: 220px;
-    height: 220px;
-    position: relative;
+    width: 280px;
+    height: 100px;
     cursor: pointer;
-    transition: transform 0.2s;
-}
-
-.start-btn-container:hover {
-    transform: scale(1.05);
-}
-
-.start-btn-container:active {
-    transform: scale(0.95);
 }
 
 .start-btn {
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, #FDD835, #F57F17);
-    border-radius: 50%;
+    background: #f7d358;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 0 30px rgba(253, 216, 53, 0.4);
     position: relative;
     overflow: hidden;
-    border: 4px solid rgba(255, 255, 255, 0.8);
+    clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
+    transition: all 0.3s;
+}
+
+.start-btn:hover {
+    background: #fff;
+    transform: skew(-2deg) scale(1.05);
 }
 
 .start-inner {
@@ -598,68 +536,43 @@ const navigate = (page: string) => {
     flex-direction: column;
     align-items: center;
     z-index: 2;
-    transform: rotate(-5deg);
 }
 
 .start-text {
-    font-size: 48px;
+    font-size: 32px;
     font-weight: 900;
-    color: #fff;
-    text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
-    letter-spacing: 2px;
+    color: #000;
 }
 
 .start-sub {
-    font-size: 16px;
+    font-size: 12px;
     font-weight: bold;
-    color: rgba(255, 255, 255, 0.9);
-    letter-spacing: 4px;
+    color: rgba(0, 0, 0, 0.6);
+    letter-spacing: 3px;
+    margin-top: -5px;
 }
 
 .start-glow {
     position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.4) 0%, transparent 60%);
-    animation: rotate 10s linear infinite;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+    animation: sweep 3s infinite;
 }
 
-@keyframes rotate {
-    from {
-        transform: rotate(0deg);
+@keyframes sweep {
+    0% {
+        left: -100%;
     }
 
-    to {
-        transform: rotate(360deg);
+    50% {
+        left: 100%;
     }
-}
 
-/* 底部装饰 */
-.bottom-deco {
-    position: absolute;
-    bottom: 20px;
-    left: 120px;
-    right: 300px;
-    height: 30px;
-    /* 装饰性线条 */
-    background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0) 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.chat-preview {
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 14px;
-    background: rgba(0, 0, 0, 0.5);
-    padding: 5px 15px;
-    border-radius: 15px;
-}
-
-.channel {
-    color: #64B5F6;
-    margin-right: 5px;
+    100% {
+        left: 100%;
+    }
 }
 </style>

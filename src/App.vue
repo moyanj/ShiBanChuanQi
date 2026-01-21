@@ -1,5 +1,23 @@
+<template>
+    <div class="app-root">
+        <div class="ui-fixed-layer">
+            <sbutton @click="dataStore.page_type = 'main'" class="back-btn" text
+                v-show="dataStore.page_type != 'fight' && dataStore.page_type != 'main'">
+                <img :src="icons.left" />
+                <span>返回</span>
+            </sbutton>
+            
+            <div @click="console_handler()" class="console-trigger"></div>
+        </div>
+
+        <Transition name="page-fade">
+            <component :is="currentPageComponent" :key="dataStore.page_type" />
+        </Transition>
+    </div>
+</template>
+
 <script setup lang="ts">
-// 导入页面组件
+import { computed, watch } from 'vue';
 import Home from './views/Home.vue';
 import Fight from './views/Fight.vue';
 import About from './views/About.vue';
@@ -8,26 +26,32 @@ import Bag from './views/Bag.vue';
 import Character from './views/Character.vue';
 import Wish from './views/Wish.vue';
 
-
-import sbutton from './components/sbutton.vue';
 import { icons, isLandscape } from './js/utils';
 import { console_handler } from './js/key';
 import { useDataStore, APM } from './js/stores';
-
-import { ElMessageBox, ElImage } from 'element-plus';
-
-import { watch } from 'vue';
+import { ElMessageBox } from 'element-plus';
 import { useMagicKeys } from '@vueuse/core';
 
-// 初始化数据存储
 const dataStore = useDataStore();
+
+const currentPageComponent = computed(() => {
+    switch (dataStore.page_type) {
+        case 'main': return Home;
+        case 'fight': return Fight;
+        case 'about': return About;
+        case 'setting': return Setting;
+        case 'bag': return Bag;
+        case 'character': return Character;
+        case 'wish': return Wish;
+        default: return null;
+    }
+});
 
 if (isLandscape() === false) {
     ElMessageBox.alert("请切换至横屏，以获得更好的游戏体验", '警告', {
         confirmButtonText: '确定',
         type: 'warning',
         showClose: false,
-
     });
 }
 
@@ -40,23 +64,17 @@ if (window.electron) {
 fetch('build_info.json')
     .then(response => response.json())
     .then(data => {
-        // 将数据存储到数据存储中
         dataStore.build_info = data;
     })
     .catch(error => {
-        if (dataStore.is_dev) {
-            console.log(error);
-        } else {
+        if (!dataStore.is_dev) {
             ElMessageBox.alert("配置文件加载错误，请重新下载游戏", '错误', {
                 confirmButtonText: '确定',
                 type: 'error',
             }).then(() => {
                 window.close();
-            }).catch(() => {
-                window.close();
             });
         }
-
     });
 
 APM.add("background_music", 'audio/background/main.mp3', { loop: true });
@@ -65,91 +83,74 @@ if (!dataStore.is_dev) {
     APM.play("background_music");
 }
 
-/*
-if (!dataStore.is_electron) {
-    if (!dataStore.is_dev) {
-        ElMessageBox.alert("当前为网页版，推荐使用electron版游戏体验更佳", '警告', {
-            confirmButtonText: '确定',
-            type: 'warning',
-        });
-    }
-}*/
-
 const keys = useMagicKeys();
-
 watch(keys["Alt+T"], console_handler);
 watch(keys["Escape"], () => {
     if (dataStore.page_type !== 'main' && dataStore.page_type !== 'fight') {
         dataStore.page_type = 'main';
     }
 });
-
-
 </script>
 
-<template>
-    <div>
-        <sbutton @click="dataStore.page_type = 'main'" class="back"
-            v-show="dataStore.page_type != 'fight' && dataStore.page_type != 'main'">
-            <el-image :src="icons.left" style="width: 25px;height: 25px;" />
-        </sbutton>
-        <sbutton @click="console_handler()" class="console-button">
-            控制台
-        </sbutton>
-        <Transition>
-            <!-- 根据数据存储中的 page_type 显示不同页面 -->
-            <Home v-if="dataStore.page_type == 'main'" />
-            <Fight v-else-if="dataStore.page_type == 'fight'" />
-            <About v-else-if="dataStore.page_type == 'about'" />
-            <Setting v-else-if="dataStore.page_type == 'setting'" />
-            <Bag v-else-if="dataStore.page_type == 'bag'" />
-            <Character v-else-if="dataStore.page_type == 'character'" />
-            <Wish v-else-if="dataStore.page_type == 'wish'" />
+<style>
+/* 全局重置与基础样式 */
+body, html {
+    margin: 0;
+    padding: 0;
+    background-color: #0c0c0e;
+    color: #ececec;
+    overflow: hidden;
+    user-select: none;
+}
 
-            <div v-else align="center">
-                <h1>404</h1>
-                <sbutton @click="dataStore.page_type = 'main'">返回</sbutton>
-            </div>
+.app-root {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+    background-color: #0c0c0e;
+}
 
-        </Transition>
-    </div>
-
-</template>
-
-<style scoped>
-.back {
+/* 固定 UI 层 */
+.ui-fixed-layer {
     position: fixed;
-    top: 10px;
-    left: 10px;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 2000;
+}
+
+.back-btn {
+    position: absolute;
+    top: 15px;
+    left: 20px;
+    pointer-events: auto;
+    z-index: 1000;
+}
+
+.back-btn img { width: 16px; height: 16px; margin-right: 5px; filter: invert(1); }
+
+.console-trigger {
+    position: absolute;
+    bottom: 0;
+    right: 0;
     width: 30px;
     height: 30px;
-    z-index: 1000;
+    pointer-events: auto;
+    cursor: default;
 }
 
-.console-button {
-    position: fixed;
-    bottom: 10px;
-    right: 10px;
-    width: 20px;
-    height: 20px;
-    z-index: 1000;
-    opacity: 0.01;
-    font-size: 0;
-    /* 隐藏文字 */
+/* 页面切换动画 */
+.page-fade-enter-active,
+.page-fade-leave-active {
+    transition: opacity 0.4s ease, transform 0.4s ease;
 }
 
-.v-enter-active,
-.v-leave-active {
-    transition: all 0.5s ease-out;
-}
-
-.v-enter-from {
+.page-fade-enter-from {
     opacity: 0;
-    transform: translateY(100vh);
+    transform: scale(1.05);
 }
 
-.v-leave-to {
+.page-fade-leave-to {
     opacity: 0;
-    transform: translateY(-100vh);
+    transform: scale(0.95);
 }
 </style>

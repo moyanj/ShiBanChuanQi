@@ -265,6 +265,10 @@ const getRarityColor = (rarity: number = 1) => {
         default: return '#909399'; // Gray
     }
 };
+
+const getItemIcon = (item: any) => {
+    return item.icon || icons.empty;
+};
 </script>
 
 <template>
@@ -407,8 +411,8 @@ const getRarityColor = (rarity: number = 1) => {
                                 <div v-for="item in nowCharacter.equipped_items" :key="item.id" class="relic-item">
                                     <div class="relic-card-inner">
                                         <div class="relic-top">
-                                            <div class="relic-icon-placeholder"
-                                                :style="{ backgroundColor: getRarityColor(item.rarity) + '44', borderColor: getRarityColor(item.rarity) }">
+                                            <div class="relic-icon-placeholder" :style="{ backgroundColor: getRarityColor(item.rarity) + '44', borderColor: getRarityColor(item.rarity) }">
+                                                <img :src="getItemIcon(item)" class="relic-icon" />
                                                 <span class="relic-lv">+{{ item.level }}</span>
                                             </div>
                                             <div class="relic-main-info">
@@ -952,6 +956,13 @@ const getRarityColor = (rarity: number = 1) => {
     justify-content: center;
     align-items: center;
     position: relative;
+    overflow: hidden;
+}
+
+.relic-icon {
+    width: 80%;
+    height: 80%;
+    object-fit: contain;
 }
 
 .relic-lv {

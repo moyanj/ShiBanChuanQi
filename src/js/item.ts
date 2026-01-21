@@ -27,6 +27,7 @@ export interface Item {
         speed?: number;
     };
     equipped?: boolean; // 是否已被装备的标记
+    icon?: string; // 道具图标路径
 }
 
 // 经验表: 每一级所需的经验 (简化版: 每级递增)
@@ -260,7 +261,8 @@ export function generateRandomItem(forcedRarity?: number): Item {
         exp: 0,
         main_attribute: main_attribute,
         random_attributes: selectedAttributes,
-        equipped: false, // 默认未装备
+        equipped: false,
+        icon: "",
     };
 }
 

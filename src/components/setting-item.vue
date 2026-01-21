@@ -16,15 +16,29 @@ const props = defineProps({
 
 <style scoped>
 .item {
-    margin-bottom: 20px;
-    padding: 7px 15px 10px 15px;
-    width: 95vw;
-    border: 1px solid #58585B;
-    border-radius: 5px;
-    box-shadow: rgba(106, 98, 90, 0.1) 0px 8px 5px;
+    margin-bottom: 25px;
+    padding: 20px 25px;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    box-sizing: border-box;
+    transition: all 0.3s;
+}
+
+.item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.2);
 }
 
 .title {
-    font-size: 18px;
+    font-size: 0.85rem;
+    color: #f7d358;
+    text-transform: uppercase;
+    font-weight: bold;
+    letter-spacing: 1.5px;
+    margin-bottom: 15px;
+    border-left: 3px solid #f7d358;
+    padding-left: 12px;
 }
 </style>

@@ -1,25 +1,34 @@
 <script lang="ts" setup>
-import { watch, ref, onMounted, onUnmounted, computed } from 'vue';
-import { ElTable, ElTableColumn, ElDialog, ElForm, ElFormItem, ElSlider, ElTabs, ElTabPane, ElScrollbar, ElPagination } from 'element-plus';
+import { watch, ref, onMounted, computed } from 'vue';
+import { ElDialog, ElForm, ElFormItem, ElSlider, ElTabs, ElTabPane, ElScrollbar, ElImage } from 'element-plus';
 import sbutton from '../components/sbutton.vue';
 import { useSaveStore } from '../js/stores';
 import { ThingList } from '../js/things';
 import { Item } from '../js/item';
 import { useMagicKeys } from '@vueuse/core';
 import { icons } from '../js/utils';
+import icon_xinhuo from '../assets/things/XinHuo.png';
 
 const save = useSaveStore();
-console.log(save);
-var deleteDialog_show = ref(false);
-var delete_args = ref({
+
+const materialIcons: Record<string, string> = {
+    'XinHuo': icon_xinhuo,
+};
+
+const getItemIcon = (item: any) => {
+    if (item.isThing) {
+        return materialIcons[item.id] || icons.empty;
+    }
+    return item.icon || icons.empty;
+};
+
+const deleteDialog_show = ref(false);
+const delete_args = ref({
     n: 1,
     arg: null
 });
-var activeTab = ref('things'); // 默认激活物品标签页
-
-// Pagination state
-const currentPage = ref(1);
-const pageSize = ref(20);
+const activeTab = ref('things'); // 默认激活物品标签页
+const selectedItem = ref<any>(null); // 当前选中的物品或圣遗物
 
 const keys = useMagicKeys();
 
@@ -35,90 +44,72 @@ watch(keys["ArrowRight"], () => {
     }
 });
 
-function update_data() {
-    let data = [];
+function get_things_data() {
+    let data: any[] = [];
     const things = save.things.get_all();
     for (let id in things) {
-
-        let thing = ThingList[id];
-        if (!thing) {
-            continue;
-        }
-        thing = new thing();
+        let thingClass = ThingList[id];
+        if (!thingClass) continue;
+        let thing = new thingClass();
         let count = save.things.get(id);
-        if (count == 0) {
-            continue;
-        }
+        if (count === 0) continue;
         data.push({
             id: id,
             name: thing.name,
             desc: thing.desc,
             count: count,
+            isThing: true
         });
-
     }
     return data;
 }
 
-// Optimization: Cache the full list of items
-// Ideally, save.items should notify us of specific changes, but here we just optimize the read.
-// We use a shallowRef or just a regular ref for the full list if it's huge, 
-// but since we paginate, we only render a slice.
 const allItems = ref<Item[]>([]);
+const thingsData = ref(get_things_data());
 
 function update_items_data() {
-    // Only fetch getAll() when necessary or on mount
-    const items = save.items.getAll();
-    allItems.value = items;
+    allItems.value = save.items.getAll();
 }
 
-// Call once on mount
 onMounted(() => {
     update_items_data();
+    if (thingsData.value.length > 0) {
+        selectedItem.value = thingsData.value[0];
+    }
 });
 
-function remove(data) {
-    console.log(data.n);
-    let id = data.arg.row.id;
-
-    if (id) {
-        save.things.remove(id, data.n);
-    }
-    data.n = 1;
-    deleteDialog_show.value = false;
-}
-
-// 转换为el-table的格式
-const table_data = ref(update_data());
-
-// Watch for changes in store but debounce or throttle if needed for huge lists.
-// Here we just update the local cache.
 watch(save.things, () => {
-    table_data.value = update_data();
+    thingsData.value = get_things_data();
 });
 
 watch(save.items, () => {
     update_items_data();
 });
 
-// Computed property for paginated items
-const paginatedItems = computed(() => {
-    const start = (currentPage.value - 1) * pageSize.value;
-    const end = start + pageSize.value;
-    return allItems.value.slice(start, end);
+// 处理物品选中
+const selectItem = (item: any) => {
+    selectedItem.value = item;
+};
+
+// 监听标签页切换，重置选中项
+watch(activeTab, (newTab) => {
+    if (newTab === 'things') {
+        selectedItem.value = thingsData.value[0] || null;
+    } else {
+        selectedItem.value = allItems.value[0] || null;
+    }
 });
 
-const handleSizeChange = (val: number) => {
-    pageSize.value = val;
-    currentPage.value = 1; // Reset to page 1
+function remove() {
+    if (!delete_args.value.arg) return;
+    const id = delete_args.value.arg.id;
+    if (id) {
+        save.things.remove(id, delete_args.value.n);
+    }
+    delete_args.value.n = 1;
+    deleteDialog_show.value = false;
 }
 
-const handleCurrentChange = (val: number) => {
-    currentPage.value = val;
-}
-
-
-// 属性名称中文翻译映射
 const attributeTranslations: { [key: string]: string } = {
     atk: '攻击力',
     def_: '防御力',
@@ -136,120 +127,493 @@ const getRarityColor = (rarity: number = 1) => {
     }
 };
 
+const isSelected = (item: any) => {
+    return selectedItem.value && selectedItem.value.id === item.id;
+};
+
 </script>
 
 <template>
-    <div class="page-container">
-        <h1 align="right">背包</h1>
-        <el-tabs v-model="activeTab" class="demo-tabs">
-            <el-tab-pane label="物品" name="things">
-                <el-table :data="table_data" class="table" empty-text="暂无物品">
-                    <el-table-column prop="name" label="物品名"></el-table-column>
-                    <el-table-column prop="desc" label="描述"></el-table-column>
-                    <el-table-column prop="count" label="数量"></el-table-column>
-                    <el-table-column label="操作">
-                        <template #default="scope">
-                            <sbutton @click="delete_args.arg = scope; deleteDialog_show = true" text> 删除</sbutton>
-                        </template>
-                    </el-table-column>
-                </el-table>
-            </el-tab-pane>
-            <el-tab-pane label="圣遗物" name="items">
-                <div class="table-container">
-                    <el-table :data="paginatedItems" class="table" empty-text="暂无圣遗物" height="100%">
-                        <el-table-column label="名称" width="180">
-                            <template #default="scope">
-                                <span :style="{ color: getRarityColor(scope.row.rarity) }">
-                                    {{ scope.row.name }} <span v-if="scope.row.level > 0">+{{ scope.row.level }}</span>
-                                </span>
-                            </template>
-                        </el-table-column>
-                        <el-table-column label="稀有度" prop="rarity" width="80" sortable>
-                            <template #default="scope">
-                                {{ scope.row.rarity || 1 }}★
-                            </template>
-                        </el-table-column>
-                        <el-table-column label="主属性" width="120">
-                            <template #default="scope">
-                                <div v-if="scope.row.main_attribute" style="color: #E6A23C">
-                                    {{ attributeTranslations[scope.row.main_attribute.key] ||
-                                        scope.row.main_attribute.key
-                                    }}
-                                    +{{ scope.row.main_attribute.value }}
-                                </div>
-                                <div v-else style="color: gray">无</div>
-                            </template>
-                        </el-table-column>
-                        <el-table-column label="副属性">
-                            <template #default="scope">
-                                <span v-for="(value, key) in scope.row.random_attributes" :key="key"
-                                    style="margin-right: 10px; display: inline-block;">
-                                    {{ attributeTranslations[key] || key }}: +{{ value }}
-                                </span>
-                            </template>
-                        </el-table-column>
-                        <el-table-column label="状态" width="80">
-                            <template #default="scope">
-                                <span :style="{ color: scope.row.equipped ? 'green' : 'gray' }">
-                                    {{ scope.row.equipped ? '已装备' : '未装备' }}
-                                </span>
-                            </template>
-                        </el-table-column>
-                    </el-table>
-                </div>
-                <div class="pagination-wrapper">
-                    <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize"
-                        :page-sizes="[50, 100, 200]" layout="total, sizes, prev, pager, next, jumper"
-                        :total="allItems.length" @size-change="handleSizeChange"
-                        @current-change="handleCurrentChange" />
-                </div>
-            </el-tab-pane>
-        </el-tabs>
+    <div class="bag-page">
+        <!-- 背景装饰 -->
+        <div class="bg-overlay"></div>
 
-        <el-dialog v-model="deleteDialog_show" title="删除物品">
-            <el-form>
-                <el-form-item label="数量：">
-                    <el-slider v-model="delete_args.n" :min="1" :max="delete_args.arg.row.count" show-input />
-                </el-form-item>
-                <el-form-item>
-                    <sbutton type="primary" @click="remove(delete_args)">确定</sbutton>
-                </el-form-item>
-            </el-form>
+        <!-- 侧边导航 -->
+        <div class="side-nav">
+            <div class="side-title">资源库</div>
+            <div class="nav-group">
+                <div class="nav-item" :class="{ 'active': activeTab === 'things' }" @click="activeTab = 'things'">
+                    <span>基础材料</span>
+                </div>
+                <div class="nav-item" :class="{ 'active': activeTab === 'items' }" @click="activeTab = 'items'">
+                    <span>圣遗物箱</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 主展示区：网格列表 -->
+        <div class="main-content">
+            <div class="content-header">
+                <h1>{{ activeTab === 'things' ? '材料' : '圣遗物' }}</h1>
+                <div class="header-line"></div>
+            </div>
+
+            <el-scrollbar class="grid-scroll">
+                <div class="item-grid">
+                    <template v-if="activeTab === 'things'">
+                        <div v-for="item in thingsData" :key="item.id" class="grid-item material"
+                            :class="{ 'selected': isSelected(item) }" @click="selectItem(item)">
+                            <div class="item-icon-box">
+                                <img :src="getItemIcon(item)" class="grid-icon" />
+                                <span class="item-count">{{ item.count }}</span>
+                            </div>
+                            <div class="item-name">{{ item.name }}</div>
+                        </div>
+                        <div v-if="thingsData.length === 0" class="empty-hint">
+                            <img :src="icons.empty" />
+                            <p>暂时没有材料</p>
+                        </div>
+                    </template>
+
+                    <template v-else>
+                        <div v-for="item in allItems" :key="item.id" class="grid-item relic"
+                            :class="{ 'selected': isSelected(item) }" @click="selectItem(item)">
+                            <div class="item-icon-box"
+                                :style="{ borderColor: getRarityColor(item.rarity), backgroundColor: getRarityColor(item.rarity) + '22' }">
+                                <img :src="getItemIcon(item)" class="grid-icon" />
+                                <span class="relic-lv">+{{ item.level }}</span>
+                            </div>
+                            <div class="item-name" :style="{ color: getRarityColor(item.rarity) }">{{ item.name }}</div>
+                        </div>
+                        <div v-if="allItems.length === 0" class="empty-hint">
+                            <img :src="icons.empty" />
+                            <p>暂时没有圣遗物</p>
+                        </div>
+                    </template>
+                </div>
+            </el-scrollbar>
+        </div>
+
+        <!-- 右侧详情面板 -->
+        <div class="detail-panel" v-if="selectedItem">
+            <el-scrollbar>
+                <div class="detail-inner">
+                    <div class="detail-header">
+                        <div class="detail-icon-large" :style="{
+                            borderColor: selectedItem.isThing ? '#aaa' : getRarityColor(selectedItem.rarity),
+                            backgroundColor: selectedItem.isThing ? 'rgba(255,255,255,0.05)' : getRarityColor(selectedItem.rarity) + '22'
+                        }">
+                            <img :src="getItemIcon(selectedItem)" class="large-icon" />
+                        </div>
+                        <h2 :style="{ color: selectedItem.isThing ? '#fff' : getRarityColor(selectedItem.rarity) }">
+                            {{ selectedItem.name }}
+                        </h2>
+                        <div v-if="!selectedItem.isThing" class="detail-rarity">
+                            {{ selectedItem.rarity }}★ 圣遗物
+                        </div>
+                        <div v-else class="detail-rarity">材料</div>
+                    </div>
+
+                    <div class="detail-body">
+                        <div class="section-title">描述</div>
+                        <p class="detail-desc">{{ selectedItem.desc }}</p>
+
+                        <template v-if="!selectedItem.isThing">
+                            <div class="section-title">主属性</div>
+                            <div class="main-stat" v-if="selectedItem.main_attribute">
+                                <span class="stat-key">{{ attributeTranslations[selectedItem.main_attribute.key] ||
+                                    selectedItem.main_attribute.key }}</span>
+                                <span class="stat-value">+{{ selectedItem.main_attribute.value }}</span>
+                            </div>
+
+                            <div class="section-title">副属性</div>
+                            <div class="sub-stats">
+                                <div v-for="(v, k) in selectedItem.random_attributes" :key="k" class="sub-stat-item">
+                                    <span class="stat-key">{{ attributeTranslations[k] || k }}</span>
+                                    <span class="stat-value">+{{ v }}</span>
+                                </div>
+                            </div>
+
+                            <div class="equip-status" :class="{ 'is-equipped': selectedItem.equipped }">
+                                {{ selectedItem.equipped ? '已装备' : '未装备' }}
+                            </div>
+                        </template>
+
+                        <template v-else>
+                            <div class="section-title">持有数量</div>
+                            <div class="count-display">{{ selectedItem.count }}</div>
+                        </template>
+                    </div>
+
+                    <div class="detail-footer">
+                        <sbutton v-if="selectedItem.isThing"
+                            @click="delete_args.arg = selectedItem; deleteDialog_show = true" style="width: 100%">丢弃物品
+                        </sbutton>
+                        <p v-else class="footer-tip">圣遗物管理请前往角色界面</p>
+                    </div>
+                </div>
+            </el-scrollbar>
+        </div>
+
+        <!-- 删除对话框 -->
+        <el-dialog v-model="deleteDialog_show" title="丢弃物品" width="400px" append-to-body>
+            <div class="dialog-content">
+                <p>确定要丢弃 <strong>{{ delete_args.arg?.name }}</strong> 吗？</p>
+                <div class="slider-box" v-if="delete_args.arg">
+                    <div class="slider-label">数量：{{ delete_args.n }}</div>
+                    <el-slider v-model="delete_args.n" :min="1" :max="delete_args.arg.count" />
+                </div>
+                <div class="dialog-footer">
+                    <sbutton @click="deleteDialog_show = false">取消</sbutton>
+                    <sbutton type="primary" @click="remove">确定丢弃</sbutton>
+                </div>
+            </div>
         </el-dialog>
     </div>
 </template>
 
 <style scoped>
-.page-container {
-    padding: 20px;
+.bag-page {
+    position: relative;
     height: 100vh;
-    box-sizing: border-box;
+    width: 100vw;
+    display: flex;
+    background-color: #0c0c0e;
+    color: #ececec;
+    overflow: hidden;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
 }
 
-body {
+.bg-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 30% 30%, rgba(45, 55, 72, 0.3) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+/* Sidebar */
+.side-nav {
+    width: 200px;
+    height: 100%;
+    background: rgba(20, 20, 22, 0.8);
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    z-index: 2;
+    padding: 30px 0;
+}
+
+.side-title {
+    padding: 0 25px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #f7d358;
+    margin-bottom: 30px;
+    letter-spacing: 2px;
+}
+
+.nav-item {
+    padding: 15px 25px;
+    cursor: pointer;
+    transition: all 0.3s;
+    border-left: 4px solid transparent;
+    color: #888;
+}
+
+.nav-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+}
+
+.nav-item.active {
+    background: rgba(255, 255, 255, 0.1);
+    border-left-color: #f7d358;
+    color: #fff;
+    font-weight: bold;
+}
+
+/* Main Content */
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 40px;
+    z-index: 1;
+}
+
+.content-header h1 {
+    font-size: 2.5rem;
+    margin: 0 0 10px;
+}
+
+.header-line {
+    width: 60px;
+    height: 4px;
+    background: #f7d358;
+    margin-bottom: 30px;
+}
+
+.grid-scroll {
+    flex: 1;
+}
+
+.item-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 15px;
+    padding-bottom: 40px;
+}
+
+.grid-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.2s, background 0.2s;
+    padding: 10px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.grid-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-5px);
+}
+
+.grid-item.selected {
+    background: rgba(247, 211, 88, 0.15);
+    border-color: #f7d358;
+}
+
+.item-icon-box {
+    width: 80px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    margin-bottom: 10px;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.grid-icon {
+    width: 80%;
+    height: 80%;
+    object-fit: contain;
+}
+
+.item-count {
+    position: absolute;
+    bottom: 5px;
+    right: 8px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.relic-lv {
+    position: absolute;
+    top: 5px;
+    left: 8px;
+    font-size: 0.7rem;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 1px 4px;
+    border-radius: 4px;
+}
+
+.item-name {
+    font-size: 0.85rem;
+    text-align: center;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Empty State */
+.empty-hint {
+    grid-column: 1 / -1;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 100vh;
-
+    padding: 100px 0;
+    opacity: 0.3;
 }
 
-.table {
+.empty-hint img {
+    width: 120px;
+    margin-bottom: 20px;
+}
+
+/* Detail Panel */
+.detail-panel {
+    width: 380px;
     height: 100%;
+    background: rgba(20, 20, 22, 0.8);
+    backdrop-filter: blur(20px);
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 2;
 }
 
-.table-container {
-    height: calc(100vh - 210px);
-    /* 留出分页空间 */
+.detail-inner {
+    padding: 40px 30px;
 }
 
-.pagination-wrapper {
-    margin-top: 10px;
+.detail-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 40px;
+}
+
+.detail-icon-large {
+    width: 120px;
+    height: 120px;
+    border: 3px solid;
+    border-radius: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.large-icon {
+    width: 70%;
+    height: 70%;
+    object-fit: contain;
+}
+
+.detail-header h2 {
+    font-size: 1.8rem;
+    margin: 0 0 10px;
+    text-align: center;
+}
+
+.detail-rarity {
+    font-size: 0.9rem;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.section-title {
+    font-size: 0.8rem;
+    color: #f7d358;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    border-left: 3px solid #f7d358;
+    padding-left: 10px;
+}
+
+.detail-desc {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #ccc;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+}
+
+.main-stat,
+.sub-stat-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 15px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 6px;
+    margin-bottom: 10px;
+}
+
+.main-stat {
+    border: 1px solid rgba(246, 173, 85, 0.3);
+}
+
+.stat-key {
+    color: #aaa;
+}
+
+.stat-value {
+    font-weight: bold;
+    color: #fff;
+}
+
+.sub-stats {
+    margin-bottom: 30px;
+}
+
+.equip-status {
+    text-align: center;
+    padding: 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    background: rgba(255, 255, 255, 0.05);
+    color: #666;
+}
+
+.equip-status.is-equipped {
+    background: rgba(72, 187, 120, 0.1);
+    color: #48bb78;
+    font-weight: bold;
+}
+
+.count-display {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #fff;
+    margin-bottom: 30px;
+}
+
+.detail-footer {
+    margin-top: 50px;
+}
+
+.footer-tip {
+    text-align: center;
+    color: #666;
+    font-size: 0.85rem;
+    font-style: italic;
+}
+
+/* Dialog */
+:deep(.el-dialog) {
+    background: #1a1a1e;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+}
+
+:deep(.el-dialog__title) {
+    color: #fff;
+}
+
+.dialog-content {
+    padding: 10px;
+}
+
+.slider-box {
+    margin: 30px 0;
+}
+
+.slider-label {
+    margin-bottom: 15px;
+    color: #aaa;
+}
+
+.dialog-footer {
     display: flex;
     justify-content: flex-end;
-    background-color: #26272b;
-    padding: 5px;
-    border-radius: 4px;
+    gap: 15px;
+    margin-top: 30px;
 }
 </style>

@@ -1,12 +1,13 @@
 export class Thing {
     name: string;
     desc: string;
-    // 内部名
     inside_name: string;
+    icon: string;
     constructor() {
         this.name = "测试物品";
         this.desc = "这是一个测试物品”";
         this.inside_name = "thing";
+        this.icon = "";
     }
 }
 
@@ -48,6 +49,7 @@ export class XinHuo extends Thing {
         this.name = "星火";
         this.desc = "来自星星的一颗火星";
         this.inside_name = "XinHuo";
+        this.icon = "assets/things/XinHuo.png";
     }
 }
 

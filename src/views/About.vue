@@ -26,93 +26,212 @@ const zx_list = [
 </script>
 
 <template>
-    <div class="page-container">
-        <el-row>
-            <el-col :span="12">
-            <div class="grid-content container">
-                <h1 id="title">十班全明星</h1>
-                <br>
-                <p v-if="data.build_info != null">版本：{{ data.build_info.version }}</p>
-                <p v-if="data.is_electron">Electron版本：{{ electron.version.electron }}</p>
-                <p v-if="data.is_electron">NodeJS版本：{{ electron.version.node }}</p>
-                <p v-if="data.build_info != null">编译时间：{{ data.build_info.time }}</p>
-                <p> 浏览器版本：{{ getExplore() }}</p>
+    <div class="about-page">
+        <div class="bg-overlay"></div>
 
-            </div>
-        </el-col>
+        <el-row class="full-height">
+            <el-col :span="10" class="flex-center">
+                <div class="brand-section">
+                    <h1 id="title">十班全明星</h1>
+                    <div class="brand-line"></div>
+                    <div class="version-info">
+                        <p v-if="data.build_info != null">Version: <strong>{{ data.build_info.version }}</strong></p>
+                        <p v-if="data.is_electron">Electron: <strong>{{ electron.version.electron }}</strong></p>
+                        <p v-if="data.is_electron">NodeJS: <strong>{{ electron.version.node }}</strong></p>
+                        <p v-if="data.build_info != null">Build Time: <strong>{{ data.build_info.time }}</strong></p>
+                        <p>Browser: <strong>{{ getExplore() }}</strong></p>
+                    </div>
+                </div>
+            </el-col>
 
-        <el-col :span="12">
-            <div class="grid-content container">
+            <el-col :span="14">
+                <el-scrollbar class="credits-scroll">
+                    <div class="credits-container">
+                        <section class="credit-group">
+                            <h2>制作组名单</h2>
+                            <div class="credit-card">
+                                <p>莫颜：开发，策划，美术，编剧，测试</p>
+                                <p>辰哥：策划，测试</p>
+                                <p>太奶：策划，编剧</p>
+                                <p>镐京：策划</p>
+                                <div class="easter-egg">没错，全 tm 是我写的</div>
+                            </div>
+                        </section>
 
-                <h2>制作组名单</h2>
-                <el-card style=" width: 100%;">
-                    <el-scrollbar style="height: 25vh;">
-                        <p>莫颜：开发，策划，美术，编剧，测试</p>
-                        <p>辰哥：策划，测试</p>
-                        <p>太奶：策划，编剧</p>
-                        <p>镐京：策划</p>
-                        <br v-for="i in 100">
-                        <p>没错，全tm是我写的</p>
-                    </el-scrollbar>
-                </el-card>
+                        <section class="credit-group">
+                            <h2>特别致谢</h2>
+                            <div class="thanks-list">
+                                <div v-for="item in zx_list" :key="item" class="thanks-item">{{ item }}</div>
+                            </div>
+                            <p class="thanks-footer">
+                                （排名不分先后）<br>
+                                我们在此衷心感谢每一位支持者，正是因为你们的帮助和鼓励，我们的项目才能不断向前推进。
+                            </p>
+                        </section>
 
+                        <section class="credit-group">
+                            <h2>项目历程</h2>
+                            <div class="timeline">
+                                <div class="time-item">
+                                    <span class="date">2024.10.20</span>
+                                    <span class="event">项目正式启动</span>
+                                </div>
+                                <div class="time-item gray">
+                                    <span class="date">2024.11.23</span>
+                                    <span class="event">由于学业压力，项目暂停开发</span>
+                                </div>
+                                <div class="time-item highlight">
+                                    <span class="date">2025.09.10</span>
+                                    <span class="event">技术提升，项目重启开发</span>
+                                </div>
+                            </div>
+                        </section>
 
-                <h2>致谢名单</h2>
-
-                <el-card class="zx">
-                    <el-scrollbar style="height: 25vh;">
-                        <li v-for="item in zx_list"><span>{{ item }}</span></li>
-                        <p>（排名不分先后）<br>我们在此衷心感谢每一位支持者，正是因为你们的帮助和鼓励，我们的项目才能不断向前推进。在这个过程中，您们的信任与支持是我们不断进步的动力。</p>
-
-                        <br></br>
-                        <h3 style="margin-top: 15px;">项目历程</h3>
-                        <p>2024年10月20日 - 项目正式启动</p>
-                        <p>2024年11月23日 - 由于学业压力，项目暂停开发</p>
-                        <p>2025年09月10日 - 技术提升，项目重启开发</p>
-
-                        <p style="text-align: right; margin-top: 15px;">十班全明星制作组</p>
-                    </el-scrollbar>
-                </el-card>
-
-            </div>
-        </el-col>
-    </el-row>
+                        <div class="final-signature">十班全明星制作组</div>
+                    </div>
+                </el-scrollbar>
+            </el-col>
+        </el-row>
     </div>
 </template>
 
 <style scoped>
-.page-container {
-    padding: 20px;
+.about-page {
+    position: relative;
     height: 100vh;
-    box-sizing: border-box;
+    width: 100vw;
+    background-color: #0c0c0e;
+    color: #ececec;
+    overflow: hidden;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
 }
 
-.container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
+.bg-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(circle at 30% 50%, rgba(45, 55, 72, 0.3) 0%, transparent 70%);
+    pointer-events: none;
 }
+
+.full-height { height: 100%; }
+.flex-center { display: flex; align-items: center; justify-content: center; }
+
+.brand-section { text-align: left; padding-left: 80px; }
 
 #title {
-    margin: 20px;
-    font-size: 90px;
-    font-weight: 455;
-    font-family: 'ZiHunJianQi'
+    font-size: 5rem;
+    font-weight: 900;
+    margin: 0;
+    letter-spacing: 5px;
+    font-family: 'ZiHunJianQi', sans-serif;
+    color: #fff;
+    text-shadow: 0 0 30px rgba(255,255,255,0.1);
 }
 
-#cg {
-    width: 64vw;
-    height: 36vh;
+.brand-line {
+    width: 100px;
+    height: 6px;
+    background: #f7d358;
+    margin: 20px 0 40px;
 }
 
-.zx {
-    margin-bottom: 15px;
-    width: 100%;
+.version-info {
+    font-size: 1rem;
+    color: #888;
+    line-height: 2;
 }
 
-li {
-    font-size: 12.8px;
+.version-info strong { color: #ccc; }
+
+.credits-scroll {
+    height: 100vh;
+    padding: 60px 80px 100px 40px;
+}
+
+.credits-container { padding-bottom: 100px; }
+
+.credit-group { margin-bottom: 60px; }
+
+.credit-group h2 {
+    font-size: 1.5rem;
+    color: #f7d358;
+    margin-bottom: 25px;
+    letter-spacing: 2px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.credit-group h2::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(247, 211, 88, 0.3);
+}
+
+.credit-card {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 25px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.credit-card p { margin: 10px 0; font-size: 1.1rem; }
+
+.easter-egg {
+    margin-top: 30px;
+    color: #444;
+    font-size: 0.8rem;
+    font-style: italic;
+}
+
+.thanks-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.thanks-item {
+    font-size: 1rem;
+    color: #ccc;
+    padding: 8px 15px;
+    background: rgba(255,255,255,0.02);
+    border-left: 2px solid rgba(255,255,255,0.1);
+}
+
+.thanks-footer {
+    margin-top: 30px;
+    color: #666;
+    line-height: 1.6;
+    font-size: 0.9rem;
+}
+
+.timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.time-item {
+    display: flex;
+    gap: 30px;
+    align-items: center;
+}
+
+.time-item .date {
+    font-weight: 900;
+    color: #f7d358;
+    width: 100px;
+}
+
+.time-item.gray { opacity: 0.5; }
+.time-item.highlight .date { color: #48bb78; text-shadow: 0 0 10px rgba(72, 187, 120, 0.3); }
+
+.final-signature {
+    margin-top: 80px;
+    text-align: right;
+    font-style: italic;
+    color: #f7d358;
+    font-weight: bold;
 }
 </style>
