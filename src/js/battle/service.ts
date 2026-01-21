@@ -63,17 +63,35 @@ export class BattleService {
         APM.play("battle_music");
     }
 
+    private isProcessing = false;
+
     private runLoop() {
         if (this.interval) clearInterval(this.interval);
         this.interval = setInterval(async () => {
+            if (this.isProcessing) return;
             const battle = this.fightStore.battle_instance;
             if (!battle) return;
 
+            const nowChar = battle.get_now_character();
+            const needsDelay = nowChar && (nowChar.type === 'enemy' || battle.ai_mode);
+
+            this.isProcessing = true;
+            
+            if (needsDelay) {
+                await new Promise(resolve => setTimeout(resolve, 800));
+            }
+
             const isEnded = await battle.next_turn();
+            
+            if (needsDelay && !isEnded) {
+                await new Promise(resolve => setTimeout(resolve, 600));
+            }
+
             if (isEnded) {
                 this.stopLoop();
                 this.handleSettlement();
             }
+            this.isProcessing = false;
         }, 100) as unknown as number;
     }
 

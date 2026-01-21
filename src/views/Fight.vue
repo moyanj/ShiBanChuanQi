@@ -7,7 +7,7 @@ import { get_character_by_dump, icons, MersenneTwister } from '../js/utils';
 import sbutton from '../components/sbutton.vue';
 import fightCard from '../components/fight-card.vue';
 import ActionOrder from '../components/ActionOrder.vue';
-import { Battle, Skill } from '../js/battle';
+import { Battle, Skill, BattleEvent } from '../js/battle';
 import { BattleService, BattleResult } from '../js/battle/service';
 import { Character, CharacterType } from '../js/character';
 import { Item } from '../js/item';
@@ -35,6 +35,49 @@ const fightStore = useFightStore();
 const random = new MersenneTwister();
 
 const battleService = new BattleService(fightStore, save, data);
+
+// 动画与特效状态
+const hitCharacters = ref<Record<string, boolean>>({});
+const damageNumbers = ref<{ id: number, val: number, type: 'damage' | 'heal', x: number, y: number, name: string }[]>([]);
+const isScreenShaking = ref(false);
+const flashingSkillName = ref("");
+let nextDamageId = 0;
+
+const triggerHit = (charName: string) => {
+    hitCharacters.value[charName] = true;
+    setTimeout(() => {
+        hitCharacters.value[charName] = false;
+    }, 400);
+};
+
+const triggerScreenShake = () => {
+    isScreenShaking.value = true;
+    setTimeout(() => {
+        isScreenShaking.value = false;
+    }, 500);
+};
+
+const spawnDamageNumber = (name: string, val: number, type: 'damage' | 'heal', party: 'our' | 'enemy') => {
+    const id = nextDamageId++;
+    // 根据阵营决定大致位置
+    const baseX = party === 'enemy' ? 50 : 50; // 水平居中偏移
+    const baseY = party === 'enemy' ? 30 : 70; // 敌人偏上，我方偏下
+    
+    const x = (Math.random() - 0.5) * 100;
+    const y = (Math.random() - 0.5) * 50;
+    
+    damageNumbers.value.push({ 
+        id, 
+        val: Math.round(val), 
+        type, 
+        x: x, 
+        y: baseY + (y / 10), // y 是百分比
+        name 
+    });
+    setTimeout(() => {
+        damageNumbers.value = damageNumbers.value.filter(d => d.id !== id);
+    }, 1000);
+};
 
 var show_manager = ref(false);
 var battle_ended = ref(false);
@@ -129,6 +172,30 @@ onKeyStroke("Escape", (e) => {
     e.preventDefault();
     show_manager.value = !show_manager.value;
 });
+
+// 监听战斗实例，注册特效监听
+watch(battle, (newBattle) => {
+    if (newBattle) {
+        newBattle.on(BattleEvent.AFTER_DAMAGE, (data: any) => {
+            triggerHit(data.character_name);
+            spawnDamageNumber(data.character_name, data.damage, 'damage', data.target_party);
+            if (data.damage > 0) triggerScreenShake();
+        });
+
+        newBattle.on(BattleEvent.AFTER_HEAL, (data: any) => {
+            spawnDamageNumber(data.character_name, data.amount, 'heal', data.target_party);
+        });
+
+        newBattle.on(BattleEvent.SKILL_EXECUTE, (data: any) => {
+            flashingSkillName.value = data.skill.name;
+            setTimeout(() => {
+                if (flashingSkillName.value === data.skill.name) {
+                    flashingSkillName.value = "";
+                }
+            }, 1500);
+        });
+    }
+}, { immediate: true });
 
 // 选择角色逻辑
 const toggleCharacterSelection = (character: any) => {
@@ -356,140 +423,198 @@ onUnmounted(() => {
 <template>
     <div>
         <!-- 角色选择界面 -->
-        <div v-if="show_character_selection" class="character-selection-overlay">
-            <div class="character-selection-panel">
-                <h1>选择你的战斗队伍 ({{ fightStore.selected_characters.length }}/3)</h1>
-                <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
-                <div class="selected-characters-preview">
-                    <div v-for="char in fightStore.selected_characters" :key="char.inside_name"
-                        class="selected-char-item">
-                        <img :src="`illustrations/${char.inside_name}.jpg`" :alt="char.name"
-                            class="selected-char-avatar" />
-                        <p>{{ char.name }}</p>
-                    </div>
-                    <div v-for="i in (3 - fightStore.selected_characters.length)" :key="`empty-${i}`"
-                        class="selected-char-item empty-slot">
-                        <img :src="icons.empty" class="selected-char-avatar" />
-                        <p>空位</p>
-                    </div>
+        <div v-if="show_character_selection" class="char-selection-page">
+            <div class="bg-overlay"></div>
+
+            <sbutton @click="data.page_type = 'main'" class="back-btn-unified" text>
+                <img :src="icons.left" />
+                <span>返回</span>
+            </sbutton>
+            
+            <div class="selection-header">
+                <div class="header-content">
+                    <h1>编制战斗队伍</h1>
+                    <div class="team-limit">队伍配置: {{ fightStore.selected_characters.length }} / 3</div>
                 </div>
-                <el-scrollbar class="character-list">
-                    <div class="available-characters-grid">
-                        <div v-for="char in available_characters" :key="char.inside_name"
-                            class="character-selection-card" :class="{ 'selected': isCharacterSelected(char) }"
-                            @click="toggleCharacterSelection(char)">
-                            <img :src="`illustrations/${char.inside_name}.jpg`" :alt="char.name"
-                                class="character-card-image" />
-                            <div class="character-card-info">
-                                <img :src="c2e[char.type]" class="character-type-icon" />
-                                <p class="character-name">{{ char.name }}</p>
+                <div class="header-line"></div>
+            </div>
+
+            <div class="selection-main">
+                <!-- 左侧：备选角色列表 -->
+                <div class="available-pane">
+                    <el-scrollbar>
+                        <div class="char-grid">
+                            <div v-for="char in available_characters" :key="char.inside_name"
+                                 class="char-card" 
+                                 :class="{ 'is-selected': isCharacterSelected(char) }"
+                                 @click="toggleCharacterSelection(char)">
+                                <div class="char-img-box">
+                                    <img :src="`illustrations/${char.inside_name}.jpg`" class="char-portrait" />
+                                    <div class="select-badge" v-if="isCharacterSelected(char)">
+                                        <span>已选中</span>
+                                    </div>
+                                </div>
+                                <div class="char-info-bar">
+                                    <img :src="c2e[char.type]" class="type-icon" />
+                                    <span class="name">{{ char.name }}</span>
+                                    <span class="lv">Lv.{{ char.level }}</span>
+                                </div>
                             </div>
                         </div>
+                    </el-scrollbar>
+                </div>
+
+                <!-- 右侧：当前队伍预览 -->
+                <div class="team-preview-pane">
+                    <div class="pane-title">当前出战序列</div>
+                    <div class="team-slots">
+                        <div v-for="i in 3" :key="i" class="team-slot">
+                            <template v-if="fightStore.selected_characters[i-1]">
+                                <div class="slot-inner filled">
+                                    <img :src="`illustrations/${fightStore.selected_characters[i-1].inside_name}.jpg`" />
+                                    <div class="slot-label">{{ fightStore.selected_characters[i-1].name }}</div>
+                                    <div class="slot-remove" @click="toggleCharacterSelection(fightStore.selected_characters[i-1])">×</div>
+                                </div>
+                            </template>
+                            <template v-else>
+                                <div class="slot-inner empty">
+                                    <span class="plus">+</span>
+                                    <span class="txt">待机位</span>
+                                </div>
+                            </template>
+                        </div>
                     </div>
-                </el-scrollbar>
-                <div class="selection-actions">
-                    <sbutton type="default" size="large" @click="data.page_type = 'main'">返回</sbutton>
-                    <sbutton type="primary" size="large" @click="startBattle"
-                        :disabled="fightStore.selected_characters.length !== 3 || !!errorMessage">开始战斗</sbutton>
+                    
+                    <div class="selection-footer">
+                        <div v-if="errorMessage" class="error-msg">{{ errorMessage }}</div>
+                        <div class="btn-group">
+                            <sbutton type="primary" size="large" @click="startBattle"
+                                :disabled="fightStore.selected_characters.length !== 3 || !!errorMessage"
+                                style="width: 100%">
+                                确认编制并开始战斗
+                            </sbutton>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- 战斗界面 -->
-        <div class="content fight-c" v-else-if="battle">
-            <!-- 场景层：角色和敌人模型 -->
-            <div class="scene-layer">
-                <div class="enemies-container">
+        <div class="battle-page" :class="{ 'screen-shake': isScreenShaking }" v-else-if="battle">
+            <!-- 场景层 -->
+            <div class="battle-scene">
+                <div class="enemies-row">
                     <fightCard v-for="char in battle.enemy.get_alive_characters()" :key="char.inside_name"
                         :character="char"
                         :is_active="current_active_character?.type === 'enemy' && current_active_character.character.inside_name === char.inside_name"
                         :is_enemy="true"
+                        :is_hit="hitCharacters[char.inside_name]"
                         :is_selected="selected_target_character?.type === 'enemy' && selected_target_character.character.inside_name === char.inside_name"
-                        :active_effects="char.active_effects" @click="selectTargetCharacter('enemy', char)">
+                        @click="selectTargetCharacter('enemy', char)">
                     </fightCard>
                 </div>
 
-                <div class="our-characters-container">
+                <div class="allies-row">
                     <fightCard v-for="char in battle.our.get_alive_characters()" :key="char.inside_name"
                         :character="char"
                         :is_active="current_active_character?.type === 'our' && current_active_character.character.inside_name === char.inside_name"
-                        :atb_value="battle.our.atb[char.inside_name]" :is_enemy="false"
+                        :atb_value="battle.our.atb[char.inside_name]" 
+                        :is_enemy="false"
+                        :is_hit="hitCharacters[char.inside_name]"
                         :is_selected="selected_our_character?.inside_name === char.inside_name || (selected_target_character?.type === 'our' && selected_target_character.character.inside_name === char.inside_name)"
-                        :active_effects="char.active_effects"
                         @click="fightStore.selected_our_character ? selectTargetCharacter('our', char) : selectOurCharacter(char)">
                     </fightCard>
                 </div>
             </div>
 
-            <!-- UI层：HUD -->
-            <div class="hud-layer">
-                <!-- 右上：菜单按钮 -->
-                <div class="top-right-menu">
-                    <sbutton @click="show_manager = true" class="menu-btn" text>
-                        <el-image :src="icons.menu" style="width: 24px;height: 24px; filter: invert(1);" />
-                    </sbutton>
+            <!-- 特效层 -->
+            <div class="fx-layer">
+                <!-- 伤害/治疗数字 -->
+                <transition-group name="float-up">
+                    <div v-for="d in damageNumbers" :key="d.id" 
+                         class="floating-number" :class="d.type"
+                         :style="{ left: `calc(50% + ${d.x}px)`, top: `${d.y}%` }">
+                        {{ d.type === 'heal' ? '+' : '-' }}{{ d.val }}
+                    </div>
+                </transition-group>
+
+                <!-- 技能大招特写名 -->
+                <transition name="skill-flash">
+                    <div v-if="flashingSkillName" class="skill-name-flash">
+                        <div class="flash-bg"></div>
+                        <div class="flash-text">{{ flashingSkillName }}</div>
+                    </div>
+                </transition>
+            </div>
+
+            <!-- UI层 -->
+            <div class="battle-hud">
+                <!-- 顶部状态栏 -->
+                <div class="top-hud">
+                    <div class="battle-status">
+                        <span class="turn-count">回合 {{ Math.floor(battle.tick / 100) }}</span>
+                    </div>
+                    <div class="top-btns">
+                        <sbutton @click="toggleAI" text class="ai-btn" :class="{ 'ai-active': fightStore.ai }">
+                            {{ fightStore.ai ? 'AUTO' : 'MANUAL' }}
+                        </sbutton>
+                        <sbutton @click="show_manager = true" text class="menu-trigger">
+                            <img :src="icons.menu" />
+                        </sbutton>
+                    </div>
                 </div>
 
-                <!-- 左侧：行动序列 -->
-                <div class="left-action-order">
+                <!-- 左侧行动序列 -->
+                <div class="action-order-sidebar">
                     <ActionOrder :order="actionOrder" :current_active_name="current_active_name" />
                 </div>
 
-                <!-- 顶部：战斗信息/Boss血条位置 (预留) -->
-                <div class="top-center-info">
-                    <!-- <div class="enemy-main-hp" v-if="battle.enemy.get_alive_characters().length > 0">
-                        {{ battle.enemy.get_alive_characters()[0].name }}
-                    </div> -->
+                <!-- 战斗日志 - 放置在左下角 -->
+                <div class="log-overlay">
+                    <el-scrollbar height="100px">
+                        <div v-for="(log, index) in battle_log" :key="index" class="log-entry">
+                            <span class="log-bullet">❯</span> {{ log }}
+                        </div>
+                    </el-scrollbar>
                 </div>
 
-                <!-- 底部右侧：技能操作区 -->
-                <div class="bottom-skill-panel">
-                    <!-- 技能按钮组 -->
-                    <div class="skill-buttons"
-                        v-if="!fightStore.ai && selected_our_character && current_active_character?.type === 'our' && current_active_character.character.inside_name === selected_our_character.inside_name">
+                <!-- 底部操作区 -->
+                <div class="bottom-controls">
+                    <!-- 战技点展示 -->
+                    <div class="bp-container">
+                        <div class="bp-dots">
+                            <div v-for="i in 5" :key="i" class="bp-dot" :class="{ 'is-filled': i <= battle.battle_points }"></div>
+                        </div>
+                        <span class="bp-val">{{ battle.battle_points }} / 5</span>
+                    </div>
 
-                        <!-- 普攻 -->
-                        <div class="skill-btn general-btn" @click="playerAttack('general')" title="普通攻击">
-                            <div class="skill-icon-wrapper">
+                    <!-- 圆形技能指令 -->
+                    <div class="skill-buttons" v-if="!fightStore.ai && selected_our_character && current_active_character?.type === 'our' && current_active_character.character.inside_name === selected_our_character.inside_name">
+                        <div class="skill-node" @click="playerAttack('general')">
+                            <div class="node-circle">
                                 <img :src="icons.sword" />
                             </div>
-                            <span class="skill-label">普攻</span>
-                            <span class="skill-cost">+1</span>
+                            <span class="node-label">普攻</span>
+                            <span class="node-cost bonus">+1</span>
                         </div>
-
-                        <!-- 战技 -->
-                        <div class="skill-btn skill-btn-main" @click="playerAttack('skill')"
-                            :class="{ 'disabled': battle.battle_points < selected_our_character.getSkill().cost }"
-                            :title="selected_our_character.skill_name">
-                            <div class="skill-icon-wrapper">
+                        
+                        <div class="skill-node" 
+                             :class="{ 'is-disabled': battle.battle_points < selected_our_character.getSkill().cost }"
+                             @click="playerAttack('skill')">
+                            <div class="node-circle skill">
                                 <img :src="icons.sword" />
                             </div>
-                            <span class="skill-label">战技</span>
-                            <span class="skill-cost">-{{ selected_our_character.getSkill().cost }}</span>
+                            <span class="node-label">战技</span>
+                            <span class="node-cost">-{{ selected_our_character.getSkill().cost }}</span>
                         </div>
 
-                        <!-- 终结技 -->
-                        <div class="skill-btn ult-btn" @click="playerAttack('super_skill')" title="终结技">
-                            <div class="skill-icon-wrapper">
+                        <div class="skill-node ult" @click="playerAttack('super_skill')">
+                            <div class="node-circle">
                                 <img :src="icons.wish" />
                             </div>
-                            <span class="skill-label">终结技</span>
+                            <span class="node-label">爆发</span>
                         </div>
                     </div>
-
-                    <!-- 战技点 -->
-                    <div class="battle-points-display">
-                        <div v-for="i in 5" :key="i" class="point-dot" :class="{ 'filled': i <= battle.battle_points }">
-                        </div>
-                        <span class="bp-text">{{ battle.battle_points }}/5</span>
-                    </div>
-                </div>
-
-                <!-- 战斗日志 (半透明悬浮) -->
-                <div class="battle-log-float">
-                    <el-scrollbar height="120px">
-                        <p v-for="(log, index) in battle_log" :key="index">{{ log }}</p>
-                    </el-scrollbar>
                 </div>
             </div>
         </div>
@@ -547,128 +672,357 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-/* 容器全屏设定 */
-.content {
+/* 全局页面样式 */
+.char-selection-page, .battle-page {
     position: fixed;
-    left: 0;
-    top: 0;
+    top: 0; left: 0;
     width: 100vw;
     height: 100vh;
-}
-
-.fight-c {
-    background: no-repeat url('../assets/bg/fight.jpeg');
-    background-size: cover;
-    background-position: center;
+    background-color: #0c0c0e;
+    color: #ececec;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
     overflow: hidden;
-    user-select: none;
 }
 
-/* --- 场景层 (角色展示) --- */
-.scene-layer {
+.bg-overlay {
     position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(circle at 50% 50%, rgba(45, 55, 72, 0.4) 0%, transparent 80%);
+    z-index: 0;
+}
+
+.back-btn-unified {
+    position: absolute;
+    top: 15px;
+    left: 20px;
+    z-index: 1000;
+}
+
+.back-btn-unified img { width: 16px; height: 16px; margin-right: 5px; filter: invert(1); }
+
+/* --- 角色选择界面 --- */
+.selection-header {
+    position: relative;
+    z-index: 1;
+    padding: 40px 60px 20px;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 10px;
+}
+
+.selection-header h1 {
+    font-size: 3rem;
+    margin: 0;
+    letter-spacing: 4px;
+    font-weight: 900;
+}
+
+.team-limit {
+    font-size: 1.2rem;
+    color: #f7d358;
+    font-weight: bold;
+}
+
+.header-line {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, #f7d358 0%, transparent 100%);
+}
+
+.selection-main {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    height: calc(100vh - 160px);
+    padding: 0 60px 40px;
+    gap: 40px;
+}
+
+.available-pane {
+    flex: 1;
+    height: 100%;
+}
+
+.char-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 20px;
+    padding-bottom: 40px;
+}
+
+.char-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.char-card:hover {
+    background: rgba(255,255,255,0.08);
+    transform: translateY(-5px);
+    border-color: rgba(255,255,255,0.3);
+}
+
+.char-card.is-selected {
+    border-color: #f7d358;
+    background: rgba(247, 211, 88, 0.1);
+}
+
+.char-img-box {
+    position: relative;
+    height: 240px;
+    overflow: hidden;
+}
+
+.char-portrait {
     width: 100%;
     height: 100%;
-    z-index: 1;
+    object-fit: cover;
+}
+
+.select-badge {
+    position: absolute;
+    top: 10px; right: 10px;
+    background: #f7d358;
+    color: #000;
+    padding: 2px 8px;
+    font-size: 12px;
+    font-weight: 900;
+    border-radius: 2px;
+}
+
+.char-info-bar {
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(0,0,0,0.5);
+}
+
+.type-icon { width: 20px; height: 20px; }
+.char-info-bar .name { flex: 1; font-weight: bold; }
+.char-info-bar .lv { color: #888; font-size: 0.9rem; }
+
+.team-preview-pane {
+    width: 400px;
+    background: rgba(20, 20, 22, 0.7);
+    backdrop-filter: blur(15px);
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+}
+
+.pane-title {
+    font-size: 0.85rem;
+    color: #f7d358;
+    font-weight: bold;
+    letter-spacing: 2px;
+    margin-bottom: 30px;
+    text-transform: uppercase;
+}
+
+.team-slots {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.team-slot {
+    height: 100px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px dashed rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    position: relative;
+    margin-bottom: 5px;
+}
+
+.slot-inner.filled {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    gap: 20px;
+    border: 1px solid #f7d358;
+    background: rgba(247, 211, 88, 0.05);
+}
+
+.slot-inner img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.slot-label { font-size: 1.2rem; font-weight: 900; }
+
+.slot-remove {
+    position: absolute;
+    top: 5px; right: 10px;
+    font-size: 20px;
+    color: #888;
+    cursor: pointer;
+}
+
+.slot-remove:hover { color: #fff; }
+
+.slot-inner.empty {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #444;
+}
+
+.empty .plus { font-size: 2rem; line-height: 1; }
+.empty .txt { font-size: 0.8rem; letter-spacing: 2px; }
+
+.selection-footer {
+    margin-top: 40px;
+}
+
+.error-msg { color: #ff4757; font-size: 0.9rem; margin-bottom: 20px; text-align: center; }
+
+.btn-group { display: flex; flex-direction: column; gap: 15px; }
+
+/* --- 战斗界面样式 --- */
+.battle-page {
+    background: url('../assets/bg/fight.jpeg') no-repeat center center;
+    background-size: cover;
+}
+
+.battle-scene {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    perspective: 1000px;
+    z-index: 1;
 }
 
-.enemies-container {
-    width: 100%;
+.enemies-row {
     display: flex;
-    justify-content: center;
-    gap: 30px;
-    margin-bottom: 5vh;
-    transform: scale(0.9);
-}
-
-.our-characters-container {
-    width: 100%;
-    display: flex;
-    justify-content: center;
     gap: 40px;
-    margin-top: 10vh;
-    transform: scale(1.1);
+    margin-bottom: 8vh;
+    transform: scale(0.9) translateY(-20px);
 }
 
-/* --- HUD 层 (UI界面) --- */
-.hud-layer {
+.allies-row {
+    display: flex;
+    gap: 50px;
+    transform: scale(1.1) translateY(20px);
+}
+
+.battle-hud {
     position: absolute;
-    width: 100%;
-    height: 100%;
+    top: 0; left: 0; right: 0; bottom: 0;
     z-index: 10;
     pointer-events: none;
-    /* 让点击穿透到场景层，但子元素恢复点击 */
 }
 
-/* 所有 HUD 子元素恢复点击交互 */
-.hud-layer>* {
-    pointer-events: auto;
-}
+.battle-hud > * { pointer-events: auto; }
 
-/* 右上菜单 */
-.top-right-menu {
+.top-hud {
     position: absolute;
-    top: 20px;
-    right: 20px;
-}
-
-/* 左侧行动序列 */
-.left-action-order {
-    position: absolute;
-    top: 20px;
-    left: 0;
-    bottom: 20px;
+    top: 0; left: 0; right: 0;
+    padding: 30px 40px;
     display: flex;
-    align-items: flex-start;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, transparent 100%);
 }
 
-/* 底部右侧：技能面板 */
-.bottom-skill-panel {
+.battle-status {
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 0 0 10px rgba(255,255,255,0.3);
+}
+
+.top-btns { display: flex; gap: 20px; align-items: center; }
+
+.ai-btn {
+    border: 1px solid rgba(255,255,255,0.3);
+    padding: 5px 15px;
+    font-weight: 900;
+    letter-spacing: 2px;
+}
+
+.ai-active { color: #f7d358; border-color: #f7d358; text-shadow: 0 0 8px #f7d358; }
+
+.menu-trigger img { width: 24px; height: 24px; filter: invert(1); }
+
+.action-order-sidebar {
     position: absolute;
-    bottom: 30px;
+    top: 120px;
+    left: 0;
+}
+
+.log-overlay {
+    position: absolute;
+    bottom: 40px;
+    left: 40px;
+    width: 300px;
+    background: linear-gradient(to right, rgba(0,0,0,0.7) 0%, transparent 100%);
+    padding: 15px;
+    border-radius: 4px;
+    pointer-events: none;
+}
+
+.log-entry {
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 6px;
+    line-height: 1.4;
+}
+
+.log-bullet { color: #f7d358; margin-right: 8px; }
+
+.bottom-controls {
+    position: absolute;
+    bottom: 40px;
     right: 40px;
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: 15px;
+    gap: 30px;
 }
 
-.battle-points-display {
+.bp-container {
+    background: rgba(0,0,0,0.6);
+    padding: 10px 20px;
+    border-radius: 4px;
     display: flex;
     align-items: center;
-    gap: 5px;
-    background: rgba(0, 0, 0, 0.5);
-    padding: 5px 15px;
-    border-radius: 20px;
-    margin-bottom: 10px;
+    gap: 20px;
+    border: 1px solid rgba(255,255,255,0.1);
 }
 
-.point-dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    background: transparent;
+.bp-dots { display: flex; gap: 8px; }
+
+.bp-dot {
+    width: 10px; height: 10px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 2px;
     transform: rotate(45deg);
-    /* 菱形点 */
 }
 
-.point-dot.filled {
-    background: #FFF;
-    box-shadow: 0 0 5px #FFF;
+.bp-dot.is-filled {
+    background: #f7d358;
+    box-shadow: 0 0 10px #f7d358;
 }
 
-.bp-text {
-    color: #FFF;
-    font-size: 14px;
-    margin-left: 10px;
-    font-weight: bold;
-}
+.bp-val { font-weight: 900; color: #fff; font-size: 1.2rem; }
 
 .skill-buttons {
     display: flex;
@@ -676,7 +1030,7 @@ onUnmounted(() => {
     align-items: flex-end;
 }
 
-.skill-btn {
+.skill-node {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -685,23 +1039,18 @@ onUnmounted(() => {
     position: relative;
 }
 
-.skill-btn:hover {
-    transform: scale(1.1);
-}
+.skill-node:hover { transform: scale(1.1); }
+.skill-node:active { transform: scale(0.95); }
 
-.skill-btn:active {
-    transform: scale(0.95);
-}
-
-.skill-btn.disabled {
-    opacity: 0.5;
-    filter: grayscale(100%);
+.skill-node.is-disabled {
+    opacity: 0.4;
+    filter: grayscale(1);
     cursor: not-allowed;
 }
 
-.skill-icon-wrapper {
-    width: 70px;
-    height: 70px;
+.node-circle {
+    width: 64px;
+    height: 64px;
     border-radius: 50%;
     background: rgba(0, 0, 0, 0.6);
     border: 2px solid rgba(255, 255, 255, 0.3);
@@ -709,239 +1058,154 @@ onUnmounted(() => {
     justify-content: center;
     align-items: center;
     margin-bottom: 5px;
-    backdrop-filter: blur(5px);
+    backdrop-filter: blur(10px);
     transition: all 0.3s;
 }
 
-.skill-btn:hover .skill-icon-wrapper {
+.skill-node:hover .node-circle {
     background: rgba(255, 255, 255, 0.1);
-    border-color: #FFF;
+    border-color: #fff;
     box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
 }
 
-.skill-btn-main .skill-icon-wrapper {
+.node-circle.skill {
+    width: 80px;
+    height: 80px;
+    border-color: rgba(66, 153, 225, 0.6);
+}
+
+.skill-node:hover .node-circle.skill {
+    border-color: #4299e1;
+    box-shadow: 0 0 20px rgba(66, 153, 225, 0.4);
+}
+
+.ult .node-circle {
     width: 90px;
     height: 90px;
-    border-color: rgba(33, 150, 243, 0.6);
+    border-color: rgba(247, 211, 88, 0.6);
+    background: linear-gradient(135deg, rgba(247, 211, 88, 0.1) 0%, rgba(0, 0, 0, 0.6) 100%);
 }
 
-.skill-btn-main:hover .skill-icon-wrapper {
-    border-color: #2196F3;
-    box-shadow: 0 0 20px rgba(33, 150, 243, 0.5);
+.ult:hover .node-circle {
+    border-color: #f7d358;
+    box-shadow: 0 0 25px rgba(247, 211, 88, 0.4);
 }
 
-.ult-btn .skill-icon-wrapper {
-    width: 100px;
-    height: 100px;
-    border-color: rgba(255, 193, 7, 0.6);
-    background: linear-gradient(135deg, rgba(255, 193, 7, 0.1), rgba(0, 0, 0, 0.6));
+.node-circle img { width: 50%; height: 50%; filter: invert(1); }
+
+.node-label {
+    font-size: 11px;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 0 2px 4px #000;
 }
 
-.ult-btn:hover .skill-icon-wrapper {
-    border-color: #FFC107;
-    box-shadow: 0 0 25px rgba(255, 193, 7, 0.6);
-}
-
-.skill-icon-wrapper img {
-    width: 60%;
-    height: 60%;
-    filter: invert(1);
-}
-
-.skill-label {
-    font-size: 12px;
-    color: #FFF;
-    text-shadow: 0 0 3px #000;
-}
-
-.skill-cost {
+.node-cost {
     position: absolute;
-    top: -5px;
-    right: 0;
-    background: #333;
-    color: #FFF;
+    top: -5px; right: -5px;
+    background: #1a1a1e;
+    color: #aaa;
     font-size: 10px;
-    padding: 2px 5px;
+    padding: 1px 6px;
     border-radius: 10px;
-    border: 1px solid #555;
+    border: 1px solid rgba(255,255,255,0.1);
 }
 
-/* 战斗日志 */
-.battle-log-float {
-    position: absolute;
-    top: 100px;
-    right: 20px;
-    width: 250px;
-    background: linear-gradient(to left, rgba(0, 0, 0, 0.8), transparent);
-    padding: 10px;
-    border-radius: 5px;
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 12px;
-    text-shadow: 1px 1px 2px #000;
-}
+.node-cost.bonus { color: #48bb78; }
 
-.battle-log-float p {
-    margin: 4px 0;
-}
-
-/* Manager 样式保持不变，但为了防止冲突，保留 .manager 等 */
+/* Manager (Overlay menu) */
 .manager {
-    margin: 15px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     height: 100%;
-}
-
-.manager sbutton {
-    margin-bottom: 10px;
-}
-
-/* Character Selection Styles (Reused) */
-.character-selection-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.85);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1004;
-}
-
-.character-selection-panel {
-    background-color: #26272b;
-    border-radius: 15px;
-    padding: 30px;
-    width: 80vw;
-    max-width: 900px;
-    height: 80vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-}
-
-.character-selection-panel h1 {
-    font-size: 32px;
-    margin-bottom: 20px;
-    color: #e6ebff;
-}
-
-.error-message {
-    color: #ff4d4f;
-    margin-bottom: 15px;
-}
-
-.selected-characters-preview {
-    display: flex;
     gap: 20px;
-    margin-bottom: 30px;
-    justify-content: center;
 }
 
-.selected-char-item {
-    text-align: center;
-    width: 120px;
+.manager .icon { width: 32px; height: 32px; }
+
+/* --- 战斗特效与动画 --- */
+.screen-shake {
+    animation: screen-shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
 }
 
-.selected-char-avatar {
-    width: 100px;
-    height: 120px;
-    object-fit: cover;
-    border: 3px solid #4CAF50;
-    border-radius: 5px;
+@keyframes screen-shake {
+    10%, 90% { transform: translate3d(-2px, 0, 0); }
+    20%, 80% { transform: translate3d(4px, 0, 0); }
+    30%, 50%, 70% { transform: translate3d(-8px, 0, 0); }
+    40%, 60% { transform: translate3d(8px, 0, 0); }
 }
 
-.selected-char-item.empty-slot .selected-char-avatar {
-    border: 3px dashed #555;
-    opacity: 0.6;
-}
-
-.selected-char-item p {
-    margin-top: 5px;
-    font-size: 14px;
-    color: #e6ebff;
-}
-
-.character-list {
-    flex-grow: 1;
-    width: 100%;
-    margin-bottom: 20px;
-}
-
-.available-characters-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 20px;
-    padding: 10px;
-}
-
-.character-selection-card {
-    background-color: #333;
-    border: 2px solid transparent;
-    border-radius: 8px;
-    overflow: hidden;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-    text-align: center;
-    position: relative;
-    padding-bottom: 5px;
-}
-
-.character-selection-card:hover {
-    transform: translateY(-5px) scale(1.02);
-    box-shadow: 0 5px 15px rgba(0, 255, 0, 0.3);
-}
-
-.character-selection-card.selected {
-    border-color: #4CAF50;
-    box-shadow: 0 0 15px rgba(0, 255, 0, 0.6);
-    transform: scale(1.03);
-}
-
-.character-card-image {
-    width: 100%;
-    height: 180px;
-    object-fit: cover;
-    display: block;
-}
-
-.character-card-info {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 5px 10px;
-    background-color: rgba(0, 0, 0, 0.7);
-    color: white;
+.fx-layer {
     position: absolute;
-    bottom: 0;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 100;
+}
+
+.floating-number {
+    position: absolute;
+    font-size: 3rem;
+    font-weight: 900;
+    text-shadow: 0 0 10px rgba(0,0,0,0.8), 2px 2px 0 #000;
+    pointer-events: none;
+    z-index: 110;
+    transform: translate(-50%, -50%);
+}
+
+.floating-number.damage { color: #ff4757; }
+.floating-number.heal { color: #2ed573; }
+
+.float-up-enter-active {
+    animation: float-up-fade 1s ease-out forwards;
+}
+
+@keyframes float-up-fade {
+    0% { transform: translateY(0) scale(0.5); opacity: 0; }
+    20% { transform: translateY(-40px) scale(1.2); opacity: 1; }
+    100% { transform: translateY(-120px) scale(1); opacity: 0; }
+}
+
+.skill-name-flash {
+    position: absolute;
+    top: 30%;
     left: 0;
     width: 100%;
-    box-sizing: border-box;
-}
-
-.character-type-icon {
-    width: 20px;
-    height: 20px;
-    margin-right: 5px;
-}
-
-.character-name {
-    font-size: 14px;
-    font-weight: bold;
-    margin: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.selection-actions {
+    height: 120px;
     display: flex;
-    gap: 20px;
-    margin-top: 20px;
+    align-items: center;
+    justify-content: center;
+    z-index: 120;
+}
+
+.flash-bg {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent 0%, rgba(247, 211, 88, 0.2) 50%, transparent 100%);
+    transform: skewX(-20deg);
+}
+
+.flash-text {
+    font-size: 4rem;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: 10px;
+    text-shadow: 0 0 20px #f7d358;
+    font-style: italic;
+    font-family: 'ZiHunJianQi', sans-serif;
+}
+
+.skill-flash-enter-active {
+    animation: skill-name-pop 1.5s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+}
+
+@keyframes skill-name-pop {
+    0% { transform: scaleX(0); opacity: 0; }
+    10% { transform: scaleX(1.2); opacity: 1; }
+    20% { transform: scaleX(1); opacity: 1; }
+    80% { transform: scaleX(1); opacity: 1; }
+    100% { transform: translateX(100px); opacity: 0; }
 }
 </style>

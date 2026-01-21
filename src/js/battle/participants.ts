@@ -79,6 +79,14 @@ export class BattleCharacters {
                 }
             }
 
+            if (this.env) {
+                this.env.emit(BattleEvent.AFTER_DAMAGE, { 
+                    character_name, 
+                    damage: actual_damage,
+                    target_party: this === this.env.enemy ? 'enemy' : 'our'
+                });
+            }
+
             return actual_damage;
         }
         return 0;
@@ -126,6 +134,13 @@ export class BattleCharacters {
                 actual_value_dealt = Math.min(skill.value, target_character.max_hp - target_character.hp);
                 target_character.hp += actual_value_dealt;
                 this.update_team_hp();
+                if (this.env) {
+                    this.env.emit(BattleEvent.AFTER_HEAL, {
+                        character_name: target_character_name,
+                        amount: actual_value_dealt,
+                        target_party: this === this.env.enemy ? 'enemy' : 'our'
+                    });
+                }
                 break;
             case SkillType.Buff:
             case SkillType.Debuff:

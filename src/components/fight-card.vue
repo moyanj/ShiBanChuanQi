@@ -1,33 +1,33 @@
 <script setup lang="ts">
 import { defineProps, computed } from 'vue';
-import { Character, ActiveEffect } from '../js/character';
+import { Character } from '../js/character';
 
 const props = defineProps({
     character: {
-        type: Object as () => Character, // 修改为 Character 类型
+        type: Object as () => Character,
         required: true
     },
-    is_active: { // 新增：是否是当前行动角色
+    is_active: {
         type: Boolean,
         default: false
     },
-    atb_value: { // 新增：行动条数值
+    atb_value: {
         type: Number,
         default: 0
     },
-    is_enemy: { // 新增：是否是敌方角色
+    is_enemy: {
         type: Boolean,
         default: false
     },
-    is_selected: { // 新增：是否被选中
+    is_selected: {
+        type: Boolean,
+        default: false
+    },
+    is_hit: { // 新增：被击中状态
         type: Boolean,
         default: false
     }
 })
-
-const backgroundStyle = computed(() => ({
-    backgroundImage: `url(illustrations/${props.character.inside_name}.jpg)`
-}))
 
 const hpPercentage = computed(() => {
     if (props.character.max_hp === 0) return '0%';
@@ -35,29 +35,52 @@ const hpPercentage = computed(() => {
 });
 
 const atbPercentage = computed(() => {
-    return `${props.atb_value}%`;
+    return `${Math.min(props.atb_value, 100)}%`;
 });
 
 const cardClass = computed(() => {
     return {
         'fight-card': true,
-        'active-character': props.is_active,
-        'selected-target': props.is_selected,
-        'dead-character': props.character.hp <= 0
+        'is-active': props.is_active,
+        'is-selected': props.is_selected,
+        'is-dead': props.character.hp <= 0,
+        'is-enemy': props.is_enemy,
+        'is-hit': props.is_hit
     };
 });
 </script>
 
 <template>
-    <div :class="cardClass" :style="backgroundStyle">
-        <div class="character-info">
-            <div class="name-tag">{{ character.name }}</div>
-            <div class="hp-bar-container">
-                <div class="hp-bar" :style="{ width: hpPercentage }"></div>
-                <div class="hp-text">{{ Math.round(character.hp) }} / {{ Math.round(character.max_hp) }}</div>
+    <div :class="cardClass">
+        <div class="portrait-box">
+            <img :src="`illustrations/${character.inside_name}.jpg`" class="portrait-img" />
+            <div class="active-indicator" v-if="is_active"></div>
+            <div class="selected-indicator" v-if="is_selected"></div>
+        </div>
+        
+        <div class="card-hud">
+            <div class="name-box">
+                <span class="name">{{ character.name }}</span>
             </div>
-            <div class="atb-bar-container" v-if="!is_enemy">
-                <div class="atb-bar" :style="{ width: atbPercentage }"></div>
+            
+            <div class="bars-box">
+                <!-- HP Bar -->
+                <div class="bar-container hp">
+                    <div class="bar-fill" :style="{ width: hpPercentage }"></div>
+                    <span class="bar-text">{{ Math.round(character.hp) }}</span>
+                </div>
+                
+                <!-- ATB Bar (Our characters only) -->
+                <div class="bar-container atb" v-if="!is_enemy">
+                    <div class="bar-fill" :style="{ width: atbPercentage }"></div>
+                </div>
+            </div>
+            
+            <!-- Buffs/Debuffs (Simplified) -->
+            <div class="effects-row" v-if="character.active_effects.length > 0">
+                <div v-for="effect in character.active_effects.slice(0, 4)" :key="effect.id" 
+                     class="effect-icon" :class="effect.type">
+                </div>
             </div>
         </div>
     </div>
@@ -65,93 +88,163 @@ const cardClass = computed(() => {
 
 <style scoped>
 .fight-card {
-    height: 240px;
-    width: 180px;
-    border: 3px solid green;
-    background-size: cover;
-    background-position: center;
-    margin-right: 20px;
-    transition-duration: 300ms;
     position: relative;
-    box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
-    /* 绿色光晕 */
-    border-radius: 15px;
+    width: 160px;
+    height: 240px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    user-select: none;
 }
 
-.fight-card.dead-character {
-    filter: grayscale(100%);
-    opacity: 0.6;
-    border-color: #555;
-    box-shadow: none;
+.is-dead {
+    filter: grayscale(1) opacity(0.5);
+    transform: translateY(20px) rotateX(45deg);
+    transition: all 1s ease;
 }
 
-.fight-card:hover {
-    transform: translateY(-5px);
-    transition-duration: 300ms;
+.portrait-box {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 4px;
+    overflow: hidden;
+    background: #1a1a1e;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.5);
 }
 
-.fight-card.active-character {
-    border-color: yellow;
-    box-shadow: 0 0 15px rgba(255, 255, 0, 0.8);
+.portrait-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s;
+}
+
+.is-active .portrait-box {
+    border-color: #f7d358;
+    box-shadow: 0 0 20px rgba(247, 211, 88, 0.3);
+}
+
+.is-active .portrait-img {
     transform: scale(1.05);
 }
 
-.fight-card.selected-target {
-    border-color: red;
-    box-shadow: 0 0 15px rgba(255, 0, 0, 0.8);
-    transform: scale(1.03);
+.is-hit {
+    animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
 }
 
-.character-info {
+@keyframes shake {
+    10%, 90% { transform: translate3d(-1px, 0, 0); }
+    20%, 80% { transform: translate3d(2px, 0, 0); }
+    30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+    40%, 60% { transform: translate3d(4px, 0, 0); }
+}
+
+.is-selected .portrait-box {
+    border-color: #ff4757;
+    box-shadow: 0 0 20px rgba(255, 71, 87, 0.4);
+}
+
+.active-indicator {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    border: 4px solid #f7d358;
+    animation: pulse 2s infinite;
+    pointer-events: none;
+}
+
+.selected-indicator {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(255, 71, 87, 0.1);
+    border: 4px solid #ff4757;
+    pointer-events: none;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.5; }
+    50% { opacity: 1; }
+    100% { opacity: 0.5; }
+}
+
+/* Card HUD */
+.card-hud {
     position: absolute;
     bottom: 0;
     left: 0;
     width: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
-    padding: 5px;
+    padding: 10px;
     box-sizing: border-box;
-    color: white;
-    font-size: 12px;
+    background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%);
+    z-index: 2;
 }
 
-.name-tag {
-    text-align: center;
-    font-weight: bold;
-    margin-bottom: 3px;
+.name-box {
+    margin-bottom: 8px;
 }
 
-.hp-bar-container,
-.atb-bar-container {
-    width: 90%;
-    height: 10px;
-    background-color: #333;
-    border-radius: 5px;
-    margin: 3px auto;
-    overflow: hidden;
+.name {
+    font-size: 14px;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 0 2px 4px #000;
+    letter-spacing: 1px;
+}
+
+.bars-box {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.bar-container {
     position: relative;
-}
-
-.hp-bar {
-    height: 100%;
-    background-color: #4CAF50;
-    transition: width 0.3s ease-in-out;
-}
-
-.hp-text {
-    position: absolute;
-    top: 0;
-    left: 0;
     width: 100%;
-    text-align: center;
-    line-height: 10px;
-    font-size: 10px;
-    color: white;
-    text-shadow: 1px 1px 2px black;
+    height: 6px;
+    background: rgba(0,0,0,0.5);
+    border-radius: 3px;
+    overflow: hidden;
 }
 
-.atb-bar {
+.bar-fill {
     height: 100%;
-    background-color: #2196F3;
-    transition: width 0.3s ease-in-out;
+    transition: width 0.3s ease;
 }
+
+.hp .bar-fill {
+    background: #48bb78;
+    box-shadow: 0 0 8px rgba(72, 187, 120, 0.5);
+}
+
+.atb .bar-fill {
+    background: #4299e1;
+}
+
+.is-enemy .hp .bar-fill {
+    background: #f56c6c;
+}
+
+.bar-text {
+    position: absolute;
+    right: 0;
+    top: -12px;
+    font-size: 10px;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 0 1px 2px #000;
+}
+
+.effects-row {
+    display: flex;
+    gap: 4px;
+    margin-top: 8px;
+}
+
+.effect-icon {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.effect-icon.buff { background: #48bb78; }
+.effect-icon.debuff { background: #f56c6c; }
 </style>
