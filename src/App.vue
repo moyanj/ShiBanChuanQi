@@ -12,7 +12,7 @@ import Wish from './views/Wish.vue';
 import sbutton from './components/sbutton.vue';
 import { icons, isLandscape } from './js/utils';
 import { console_handler } from './js/key';
-import { useDataStore, APM } from './js/store';
+import { useDataStore, APM } from './js/stores';
 
 import { ElMessageBox, ElImage } from 'element-plus';
 

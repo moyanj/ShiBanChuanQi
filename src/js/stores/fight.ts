@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { Character } from '../character';
-import { Battle } from '../fight';
+import { Battle } from '../battle';
 
 export interface FightStoreState {
     enemy: Character[];

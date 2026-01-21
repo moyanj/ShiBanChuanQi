@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { ElScrollbar, ElMessageBox, ElMessage, ElDialog, ElForm, ElFormItem, ElInput, ElLoading } from 'element-plus';
-import { useSaveStore, useDataStore } from '../js/store';
+import { useSaveStore, useDataStore } from '../js/stores';
 import { SaveServer, MersenneTwister } from '../js/utils';
 import { randomName } from '../js/lib/name';
 import sbutton from '../components/sbutton.vue'

@@ -1,4 +1,4 @@
-import { Character, ActiveEffect } from "../character/base";
+import { Character, ActiveEffect } from "../characters/base";
 import { Skill, SkillType, ATB, IBattle, BattleEvent } from "./types";
 
 interface CharactersMap {
@@ -70,7 +70,7 @@ export class BattleCharacters {
                 character.hp = 0;
             }
             this.update_team_hp(); // 每次角色血量变化都更新队伍总血量
-            
+
             // 检查角色是否刚死亡（血量从非0降到0）
             if (old_hp > 0 && character.hp <= 0) {
                 character.onCharacterDeath();
@@ -78,7 +78,7 @@ export class BattleCharacters {
                     this.env.emit(BattleEvent.CHARACTER_DEATH, character);
                 }
             }
-            
+
             return actual_damage;
         }
         return 0;
@@ -110,7 +110,7 @@ export class BattleCharacters {
         if (!target_character || target_character.hp <= 0) {
             // 如果是群体技能，目标死亡是正常情况，无需返回0
             if (skill.targetScope !== 'all_allies' && skill.targetScope !== 'all_enemies') {
-                 return 0; // 单体目标不存在或已阵亡
+                return 0; // 单体目标不存在或已阵亡
             }
             return 0;
         }

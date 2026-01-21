@@ -2,7 +2,7 @@
 import { watch, ref, onMounted, onUnmounted } from 'vue';
 import { ElTable, ElTableColumn, ElDialog, ElForm, ElFormItem, ElSlider, ElTabs, ElTabPane, ElScrollbar } from 'element-plus';
 import sbutton from '../components/sbutton.vue';
-import { useSaveStore } from '../js/store';
+import { useSaveStore } from '../js/stores';
 import { ThingList } from '../js/things';
 import { Item } from '../js/item';
 import { useMagicKeys } from '@vueuse/core';

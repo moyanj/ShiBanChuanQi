@@ -6,7 +6,7 @@
 
 <script setup>
     import { ElButton } from 'element-plus';
-    import { APM } from '../js/store';
+    import { APM } from '../js/stores';
 
     const props = defineProps({
         type: {

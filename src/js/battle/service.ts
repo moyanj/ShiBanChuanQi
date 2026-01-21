@@ -1,5 +1,5 @@
 import { ref, computed } from 'vue';
-import { useFightStore, useSaveStore, useDataStore, APM } from '../store';
+import { useFightStore, useSaveStore, useDataStore, APM } from '../stores';
 import { Battle } from './engine';
 import { Character, characters } from '../character';
 import { get_character_by_dump, MersenneTwister } from '../utils';
@@ -17,14 +17,14 @@ export interface BattleResult {
 export class BattleService {
     private interval: number | null = null;
     private random = new MersenneTwister();
-    
+
     public onSettlement?: (result: BattleResult) => void;
 
     constructor(
         private fightStore = useFightStore(),
         private save = useSaveStore(),
         private data = useDataStore()
-    ) {}
+    ) { }
 
     async startBattle() {
         if (this.fightStore.selected_characters.length !== 3) {
@@ -46,7 +46,7 @@ export class BattleService {
 
         // 创建战斗实例
         this.fightStore.battle_instance = new Battle(
-            this.fightStore.enemy as Character[], 
+            this.fightStore.enemy as Character[],
             this.fightStore.our as Character[]
         );
         this.fightStore.battle_instance.ai_mode = this.fightStore.ai;
@@ -103,7 +103,7 @@ export class BattleService {
             this.playAudio("battle_win", 'audio/battle_win.mp3');
             result.exp = this.fightStore.enemy.reduce((sum, char) => sum + Math.round(char.level_xp(char.level) / 5), 0);
             result.xinhuo = this.random.randint(175, 840);
-            
+
             // 下放奖励
             this.save.things.add(new (ThingList["EXP"] as any)(), result.exp);
             this.save.things.add(new (ThingList["XinHuo"] as any)(), result.xinhuo);

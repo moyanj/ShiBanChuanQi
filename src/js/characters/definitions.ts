@@ -1,5 +1,5 @@
-import { Character, CharacterType } from "../character/base";
-import { Skill, SkillType } from "../fight";
+import { Character, CharacterType } from "./base";
+import { Skill, SkillType } from "../battle";
 
 export class Fairy extends Character {
     constructor() {

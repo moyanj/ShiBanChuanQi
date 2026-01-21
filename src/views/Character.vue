@@ -15,7 +15,7 @@ import {
     ElOption
 } from 'element-plus';
 import { CharacterType, Character } from '../js/character';
-import { useSaveStore } from '../js/store';
+import { useSaveStore } from '../js/stores';
 import { get_character_by_dump, icons } from '../js/utils';
 import { ref, watch, computed } from 'vue';
 import SButton from '../components/sbutton.vue';

@@ -1,8 +1,8 @@
 import { IBattle, Skill, SkillType } from "./battle/types";
 import { BattleCharacters } from "./battle/participants";
 
-export * from './character/base';
-import { Character } from './character/base';
+export * from './characters/base';
+import { Character } from './characters/base';
 
 export type TeamSynergy = {
     id: string;

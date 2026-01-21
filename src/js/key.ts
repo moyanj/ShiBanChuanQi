@@ -1,4 +1,4 @@
-import { useDataStore, useSaveStore, useFightStore } from "./store";
+import { useDataStore, useSaveStore, useFightStore } from "./stores";
 import { ElMessageBox } from 'element-plus'
 import { ThingList } from "./things";
 

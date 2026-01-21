@@ -2,12 +2,12 @@
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 import { onKeyStroke } from '@vueuse/core';
 import { ElImage, ElAvatar, ElScrollbar, ElMessage, ElDialog } from 'element-plus';
-import { useDataStore, useSaveStore, useFightStore, APM } from '../js/store';
+import { useDataStore, useSaveStore, useFightStore, APM } from '../js/stores';
 import { get_character_by_dump, icons, MersenneTwister } from '../js/utils';
 import sbutton from '../components/sbutton.vue';
 import fightCard from '../components/fight-card.vue';
 import ActionOrder from '../components/ActionOrder.vue';
-import { Battle, Skill } from '../js/fight';
+import { Battle, Skill } from '../js/battle';
 import { BattleService, BattleResult } from '../js/battle/service';
 import { Character, CharacterType } from '../js/character';
 import { Item } from '../js/item';

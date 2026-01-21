@@ -4,7 +4,7 @@ import sbutton from "../components/sbutton.vue";
 import svideo from "../components/svideo.vue";
 import 'video.js/dist/video-js.css';
 
-import { useSaveStore, useDataStore, APM } from "../js/store";
+import { useSaveStore, useDataStore, APM } from "../js/stores";
 import { MersenneTwister, icons } from "../js/utils";
 import { characters } from "../js/character";
 import { ref } from "vue";

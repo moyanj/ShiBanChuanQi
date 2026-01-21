@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
-import { useSaveStore, useDataStore } from '../js/store';
+import { useSaveStore, useDataStore } from '../js/stores';
 import { icons } from '../js/utils';
 import { ElImage, ElAvatar, ElMessage } from 'element-plus';
 import sbutton from '../components/sbutton.vue';

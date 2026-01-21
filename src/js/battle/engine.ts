@@ -1,5 +1,5 @@
 import { Character, teamSynergyConfig } from "../character";
-import { useFightStore } from '../store';
+import { useFightStore } from '../stores';
 import { Skill, SkillType, IBattle, BattleEvent, BattleEventHandler } from "./types";
 import { BattleCharacters } from "./participants";
 
@@ -12,7 +12,7 @@ export class Battle implements IBattle {
     ai_mode: boolean;
     battle_points: number;
     fightStore: ReturnType<typeof useFightStore>;
-    
+
     private eventHandlers: Map<BattleEvent, Set<BattleEventHandler>> = new Map();
 
     constructor(enemy_characters: Character[], our_characters: Character[]) {
@@ -116,7 +116,7 @@ export class Battle implements IBattle {
 
     get_action_order(): { type: 'enemy' | 'our', character: Character, distance: number }[] {
         let order: { type: 'enemy' | 'our', character: Character, distance: number }[] = [];
-        
+
         const process_team = (team: any, type: 'enemy' | 'our') => {
             for (const name in team.atb) {
                 const chara = team.characters[name];
@@ -164,17 +164,17 @@ export class Battle implements IBattle {
 
         // 处理群体技能
         if (skill.targetScope === 'all_allies' || skill.targetScope === 'all_enemies') {
-             const target_characters_in_scope = skill.targetScope === 'all_allies' ? this.our.get_alive_characters() : this.enemy.get_alive_characters();
-             for (const chara of target_characters_in_scope) {
+            const target_characters_in_scope = skill.targetScope === 'all_allies' ? this.our.get_alive_characters() : this.enemy.get_alive_characters();
+            for (const chara of target_characters_in_scope) {
                 const final_skill = this.calculate_final_skill(skill, attacker_character, chara);
                 const value = target_battle_characters.apply_effect(chara.inside_name, final_skill, attacker_character);
                 total_value_dealt += value;
                 this.log_skill_effect(skill, attacker_character, chara, value);
-             }
+            }
         } else { // 单体目标
             if (!main_target_character || main_target_character.hp <= 0) {
-                 this.log(`无法对已阵亡或不存在的目标 ${target_character_name} 执行技能 ${skill.name}。`);
-                 return 0;
+                this.log(`无法对已阵亡或不存在的目标 ${target_character_name} 执行技能 ${skill.name}。`);
+                return 0;
             }
             const final_skill = this.calculate_final_skill(skill, attacker_character, main_target_character);
             total_value_dealt = target_battle_characters.apply_effect(target_character_name, final_skill, attacker_character);
@@ -258,7 +258,7 @@ export class Battle implements IBattle {
 
         // 如果是我方角色行动且处于手动模式，不执行AI逻辑，而是等待玩家操作
         if (active_party_type === 'our' && !this.ai_mode) {
-             // ATB重置将由玩家操作后在Fight.vue中调用
+            // ATB重置将由玩家操作后在Fight.vue中调用
             return false; // 等待玩家操作，战斗未结束
         }
 
@@ -310,7 +310,7 @@ export class Battle implements IBattle {
         return false;
     }
 
-    onCharacterAction(): void { 
+    onCharacterAction(): void {
         this.our.onCharacterAction();
         this.enemy.onCharacterAction();
     }
