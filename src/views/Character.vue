@@ -93,10 +93,10 @@ const equipItem = () => {
     // 标记道具为已装备
     selectedItemToEquip.value.equipped = true;
     save.items.update(selectedItemToEquip.value);
-    
+
     // 将道具添加到角色的装备列表中
     nowCharacter.value.equipped_items.push(selectedItemToEquip.value);
-    
+
     // 使用类型断言解决类型不匹配问题
     save.characters.update(nowCharacter.value as Character);
     showEquipItemDialog.value = false;
@@ -145,162 +145,202 @@ const attributeTranslations: { [key: string]: string } = {
 
 // 格式化道具标签，使其在选择时显示属性
 const formatItemLabel = (item: Item) => {
+    const rarityStr = item.rarity ? `${item.rarity}★` : '';
+    let mainStr = "";
+    if (item.main_attribute) {
+        const k = item.main_attribute.key;
+        const v = item.main_attribute.value;
+        mainStr = `[主:${attributeTranslations[k] || k}+${v}] `;
+    }
+
     const attributes = Object.entries(item.random_attributes)
         .map(([key, value]) => {
             const translatedKey = attributeTranslations[key] || key; // 获取中文翻译，如果没有则使用原英文名
             return `${translatedKey}: ${value > 0 ? '+' : ''}${value}`;
         })
         .join(', ');
-    return `${item.name} (${attributes})`;
+    return `${rarityStr} ${item.name} ${mainStr}(${attributes})`;
+};
+
+const getRarityColor = (rarity: number = 1) => {
+    switch (rarity) {
+        case 5: return '#FFD700'; // Gold
+        case 4: return '#9B59B6'; // Purple
+        case 3: return '#409EFF'; // Blue
+        case 2: return '#67C23A'; // Green
+        default: return '#909399'; // Gray
+    }
 };
 </script>
 
 <template>
     <div class="page-container">
-    <el-row>
-        <el-col :span="3">
-            <el-scrollbar class="menu">
-                <el-card v-for="item in characterList" :key="item.inside_name" class="item"
-                    :class="{ 'selected': isSelected(item) }" @click="changeCharacter(item)"
-                    v-if="characterList.length > 0">
-                    <div class="item-content">
-                        <el-image :src="c2e[item.type]" style="margin-right: 10px;" class="type"></el-image>
-                        <h4 class="name" style="margin: 0;">{{ item.name }}</h4>
-                    </div>
-                </el-card>
-                <div v-else class="container">
-                    <img :src="icons.empty" style="width: 100px;height: auto;" alt="没有角色" />
-                    你还没有角色
-                </div>
-            </el-scrollbar>
-        </el-col>
-
-        <el-col :span="21" class="content">
-            <div class="verticalBar"></div>
-            <el-descriptions v-if="nowCharacter" border size="large" :column="4" width="100%">
-                <el-descriptions-item label="名字">{{ nowCharacter.name }}</el-descriptions-item>
-                <el-descriptions-item label="属性">
-                    <el-image :src="c2e[nowCharacter.type]" class="type" />
-                </el-descriptions-item>
-                <el-descriptions-item label="等级">
-                    {{ nowCharacter.level }}&nbsp;&nbsp;&nbsp;&nbsp;
-                    <SButton @click="showUpCharacter = true">升级</SButton>
-                </el-descriptions-item>
-                <el-descriptions-item label="详细信息">
-                    <SButton class="show_info" @click="showInfo = true">显示</SButton>
-                </el-descriptions-item>
-                <el-descriptions-item label="攻击力">{{ Math.round(nowCharacter.atk)
-                }}</el-descriptions-item>
-                <el-descriptions-item label="防御力">{{ Math.round(nowCharacter.def_)
-                }}</el-descriptions-item>
-                <el-descriptions-item label="速度">{{ Math.round(nowCharacter.speed)
-                }}</el-descriptions-item>
-                <el-descriptions-item label="好感度">{{ Math.round(nowCharacter.favorability) }}</el-descriptions-item>
-                <el-descriptions-item label="介绍" :span="4">
-                    {{ nowCharacter.desc }}
-                    <SButton @click="showIll = true">查看立绘</SButton>
-                </el-descriptions-item>
-                <el-descriptions-item label="普攻" :span="4">
-                    {{ nowCharacter.general_name }} {{ nowCharacter.general_desc }}
-                </el-descriptions-item>
-                <el-descriptions-item label="技能" :span="4">
-                    {{ nowCharacter.skill_name }} {{ nowCharacter.skill_desc }}
-                </el-descriptions-item>
-                <el-descriptions-item label="爆发技" :span="4">
-                    {{ nowCharacter.super_skill_name }} {{ nowCharacter.super_skill_desc }}
-                </el-descriptions-item>
-                <el-descriptions-item label="已装备圣遗物" :span="4">
-                    <div v-if="nowCharacter.equipped_items.length > 0">
-                        <div v-for="item in nowCharacter.equipped_items" :key="item.id">
-                            {{ item.name }}
-                            <span v-for="(value, key) in item.random_attributes" :key="key">
-                                {{ attributeTranslations[key] || key }}: {{ value > 0 ? '+' : '' }}{{ value }}<br>
-                            </span>
-                            <SButton @click="unequipItem(item)" text>卸下</SButton>
+        <el-row>
+            <el-col :span="3">
+                <el-scrollbar class="menu">
+                    <el-card v-for="item in characterList" :key="item.inside_name" class="item"
+                        :class="{ 'selected': isSelected(item) }" @click="changeCharacter(item)"
+                        v-if="characterList.length > 0">
+                        <div class="item-content">
+                            <el-image :src="c2e[item.type]" style="margin-right: 10px;" class="type"></el-image>
+                            <h4 class="name" style="margin: 0;">{{ item.name }}</h4>
                         </div>
+                    </el-card>
+                    <div v-else class="container">
+                        <img :src="icons.empty" style="width: 100px;height: auto;" alt="没有角色" />
+                        你还没有角色
                     </div>
-                    <div v-else>
-                        暂无装备圣遗物
-                    </div>
-                    <SButton @click="showEquipItemDialog = true">装备圣遗物</SButton>
-                </el-descriptions-item>
-            </el-descriptions>
-            <div v-else class="container">
-                <img :src="icons.empty" style="width: 200px;height: auto;" alt="没有角色" />
-                <h1>你还没有角色</h1>
-            </div>
-        </el-col>
-    </el-row>
+                </el-scrollbar>
+            </el-col>
 
-    <!-- 角色信息弹窗 -->
-    <el-dialog v-model="showInfo" title="角色信息" width="50%">
-        <el-scrollbar>
-            <el-descriptions border :column="1" class="info" v-if="nowCharacter">
-                <el-descriptions-item label="经验">{{ Math.round(nowCharacter.xp) }}</el-descriptions-item>
-                <el-descriptions-item label="生命">{{ Math.round(nowCharacter.max_hp) }}
-                </el-descriptions-item>
-                <el-descriptions-item label="攻击力">{{ Math.round(nowCharacter.atk)
-                }}</el-descriptions-item>
-                <el-descriptions-item label="防御力">{{ Math.round(nowCharacter.def_)
-                }}</el-descriptions-item>
-                <el-descriptions-item label="速度">{{ Math.round(nowCharacter.speed)
-                }}</el-descriptions-item>
-                <el-descriptions-item label="好感度">{{ Math.round(nowCharacter.favorability) }}</el-descriptions-item>
-            </el-descriptions>
-        </el-scrollbar>
-    </el-dialog>
+            <el-col :span="21" class="content">
+                <div class="verticalBar"></div>
+                <el-descriptions v-if="nowCharacter" border size="large" :column="4" width="100%">
+                    <el-descriptions-item label="名字">{{ nowCharacter.name }}</el-descriptions-item>
+                    <el-descriptions-item label="属性">
+                        <el-image :src="c2e[nowCharacter.type]" class="type" />
+                    </el-descriptions-item>
+                    <el-descriptions-item label="等级">
+                        {{ nowCharacter.level }}&nbsp;&nbsp;&nbsp;&nbsp;
+                        <SButton @click="showUpCharacter = true">升级</SButton>
+                    </el-descriptions-item>
+                    <el-descriptions-item label="详细信息">
+                        <SButton class="show_info" @click="showInfo = true">显示</SButton>
+                    </el-descriptions-item>
+                    <el-descriptions-item label="攻击力">{{ Math.round(nowCharacter.atk)
+                        }}</el-descriptions-item>
+                    <el-descriptions-item label="防御力">{{ Math.round(nowCharacter.def_)
+                        }}</el-descriptions-item>
+                    <el-descriptions-item label="速度">{{ Math.round(nowCharacter.speed)
+                        }}</el-descriptions-item>
+                    <el-descriptions-item label="好感度">{{ Math.round(nowCharacter.favorability) }}</el-descriptions-item>
+                    <el-descriptions-item label="介绍" :span="4">
+                        {{ nowCharacter.desc }}
+                        <SButton @click="showIll = true">查看立绘</SButton>
+                    </el-descriptions-item>
+                    <el-descriptions-item label="普攻" :span="4">
+                        {{ nowCharacter.general_name }} {{ nowCharacter.general_desc }}
+                    </el-descriptions-item>
+                    <el-descriptions-item label="技能" :span="4">
+                        {{ nowCharacter.skill_name }} {{ nowCharacter.skill_desc }}
+                    </el-descriptions-item>
+                    <el-descriptions-item label="爆发技" :span="4">
+                        {{ nowCharacter.super_skill_name }} {{ nowCharacter.super_skill_desc }}
+                    </el-descriptions-item>
+                    <el-descriptions-item label="已装备圣遗物" :span="4">
+                        <div v-if="nowCharacter.equipped_items.length > 0">
+                            <div v-for="item in nowCharacter.equipped_items" :key="item.id"
+                                style="margin-bottom: 10px; border-bottom: 1px solid #555; padding-bottom: 5px;">
+                                <span :style="{ color: getRarityColor(item.rarity) }"
+                                    style="font-weight: bold; font-size: 1.1em;">
+                                    {{ item.name }} <span style="font-size: 0.8em">({{ item.rarity || 1 }}★)</span>
+                                </span>
+                                <div v-if="item.main_attribute"
+                                    style="color: #E6A23C; font-weight: bold; margin: 3px 0;">
+                                    主属性: {{ attributeTranslations[item.main_attribute.key] || item.main_attribute.key }}
+                                    +{{ item.main_attribute.value }}
+                                </div>
+                                <div
+                                    style="font-size: 0.9em; color: #ddd; display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
+                                    <span v-for="(value, key) in item.random_attributes" :key="key">
+                                        {{ attributeTranslations[key] || key }}: +{{ value }}
+                                    </span>
+                                </div>
+                                <SButton @click="unequipItem(item)" text style="margin-top: 5px;">卸下</SButton>
+                            </div>
+                        </div>
+                        <div v-else>
+                            暂无装备圣遗物
+                        </div>
+                        <SButton @click="showEquipItemDialog = true">装备圣遗物</SButton>
+                    </el-descriptions-item>
+                </el-descriptions>
+                <div v-else class="container">
+                    <img :src="icons.empty" style="width: 200px;height: auto;" alt="没有角色" />
+                    <h1>你还没有角色</h1>
+                </div>
+            </el-col>
+        </el-row>
 
-    <!-- 角色升级弹窗 -->
-    <el-dialog v-model="showUpCharacter" title="角色升级">
-        <el-form>
-            <el-form-item label="据下一级所需的经验: ">
-                <span>{{ levelUpExperience }} </span>
-            </el-form-item>
-            <el-form-item label="数量：" v-if="hasEnoughExperience">
-                <el-slider v-model="levelUpAmount" :min="1" :max="save.things.get('EXP')" show-input />
-            </el-form-item>
-            <el-form-item label="数量：" v-else>
-                <span>你没有EXP</span>
-            </el-form-item>
-            <el-form-item>
-                <SButton @click="levelUp" :disabled="!hasEnoughExperience || levelUpAmount === 0">升级</SButton>
-            </el-form-item>
-        </el-form>
-    </el-dialog>
+        <!-- 角色信息弹窗 -->
+        <el-dialog v-model="showInfo" title="角色信息" width="50%">
+            <el-scrollbar>
+                <el-descriptions border :column="1" class="info" v-if="nowCharacter">
+                    <el-descriptions-item label="经验">{{ Math.round(nowCharacter.xp) }}</el-descriptions-item>
+                    <el-descriptions-item label="生命">{{ Math.round(nowCharacter.max_hp) }}
+                    </el-descriptions-item>
+                    <el-descriptions-item label="攻击力">{{ Math.round(nowCharacter.atk)
+                        }}</el-descriptions-item>
+                    <el-descriptions-item label="防御力">{{ Math.round(nowCharacter.def_)
+                        }}</el-descriptions-item>
+                    <el-descriptions-item label="速度">{{ Math.round(nowCharacter.speed)
+                        }}</el-descriptions-item>
+                    <el-descriptions-item label="好感度">{{ Math.round(nowCharacter.favorability) }}</el-descriptions-item>
+                </el-descriptions>
+            </el-scrollbar>
+        </el-dialog>
 
-    <!-- 角色立绘弹窗 -->
-    <el-dialog v-model="showIll" title="角色立绘" top="5vh">
-        <el-image :src="currentIllustration" fit="cover" class="ill">
-            <template #error>
-                <h4 align="center">该角色暂无立绘</h4>
-            </template>
-        </el-image>
-    </el-dialog>
-
-    <!-- 装备道具弹窗 -->
-    <el-dialog v-model="showEquipItemDialog" title="装备圣遗物">
-        <el-form v-if="availableItems.length > 0">
-            <el-form-item label="选择圣遗物：">
-                <el-select v-model="selectedItemToEquip" placeholder="请选择要装备的圣遗物" value-key="id">
-                    <el-option v-for="item in availableItems" :key="item.id" :label="formatItemLabel(item)"
-                        :value="item" />
-                </el-select>
-            </el-form-item>
-            <div v-if="selectedItemToEquip">
-                <el-form-item label="圣遗物属性：">
-                    <span v-for="(value, key) in selectedItemToEquip.random_attributes" :key="key">
-                        {{ attributeTranslations[key] || key }}: {{ value > 0 ? '+' : '' }}{{ value }}<br>
-                    </span>
+        <!-- 角色升级弹窗 -->
+        <el-dialog v-model="showUpCharacter" title="角色升级">
+            <el-form>
+                <el-form-item label="据下一级所需的经验: ">
+                    <span>{{ levelUpExperience }} </span>
                 </el-form-item>
+                <el-form-item label="数量：" v-if="hasEnoughExperience">
+                    <el-slider v-model="levelUpAmount" :min="1" :max="save.things.get('EXP')" show-input />
+                </el-form-item>
+                <el-form-item label="数量：" v-else>
+                    <span>你没有EXP</span>
+                </el-form-item>
+                <el-form-item>
+                    <SButton @click="levelUp" :disabled="!hasEnoughExperience || levelUpAmount === 0">升级</SButton>
+                </el-form-item>
+            </el-form>
+        </el-dialog>
+
+        <!-- 角色立绘弹窗 -->
+        <el-dialog v-model="showIll" title="角色立绘" top="5vh">
+            <el-image :src="currentIllustration" fit="cover" class="ill">
+                <template #error>
+                    <h4 align="center">该角色暂无立绘</h4>
+                </template>
+            </el-image>
+        </el-dialog>
+
+        <!-- 装备道具弹窗 -->
+        <el-dialog v-model="showEquipItemDialog" title="装备圣遗物">
+            <el-form v-if="availableItems.length > 0">
+                <el-form-item label="选择圣遗物：">
+                    <el-select v-model="selectedItemToEquip" placeholder="请选择要装备的圣遗物" value-key="id">
+                        <el-option v-for="item in availableItems" :key="item.id" :label="formatItemLabel(item)"
+                            :value="item" />
+                    </el-select>
+                </el-form-item>
+                <div v-if="selectedItemToEquip">
+                    <el-form-item label="详细属性：">
+                        <div style="width: 100%; line-height: 1.5;">
+                            <div :style="{ color: getRarityColor(selectedItemToEquip.rarity) }"
+                                style="font-weight: bold;">
+                                稀有度: {{ selectedItemToEquip.rarity || 1 }}★
+                            </div>
+                            <div v-if="selectedItemToEquip.main_attribute" style="color: #E6A23C; font-weight: bold;">
+                                主: {{ attributeTranslations[selectedItemToEquip.main_attribute.key] }} +{{
+                                selectedItemToEquip.main_attribute.value }}
+                            </div>
+                            <div v-for="(value, key) in selectedItemToEquip.random_attributes" :key="key">
+                                {{ attributeTranslations[key] || key }}: +{{ value }}
+                            </div>
+                        </div>
+                    </el-form-item>
+                </div>
+                <el-form-item>
+                    <SButton type="primary" @click="equipItem" :disabled="!selectedItemToEquip">确定装备</SButton>
+                </el-form-item>
+            </el-form>
+            <div v-else>
+                <p>背包中没有可用的道具。</p>
             </div>
-            <el-form-item>
-                <SButton type="primary" @click="equipItem" :disabled="!selectedItemToEquip">确定装备</SButton>
-            </el-form-item>
-        </el-form>
-        <div v-else>
-            <p>背包中没有可用的道具。</p>
-        </div>
-    </el-dialog>
+        </el-dialog>
     </div>
 </template>
 

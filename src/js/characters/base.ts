@@ -173,6 +173,9 @@ export abstract class Character {
         }
         for (const item of this.equipped_items) {
             value += item.random_attributes?.['hp'] ?? 0;
+            if (item.main_attribute?.key === 'hp') {
+                value += item.main_attribute.value;
+            }
         }
         return Math.max(0, value);
     }
@@ -186,6 +189,9 @@ export abstract class Character {
         }
         for (const item of this.equipped_items) {
             value += item.random_attributes['atk'] ?? 0;
+            if (item.main_attribute?.key === 'atk') {
+                value += item.main_attribute.value;
+            }
         }
         const selfBonus = this.attr_bonus[this.type] || 0;
         value *= (1 + selfBonus);
@@ -201,6 +207,9 @@ export abstract class Character {
         }
         for (const item of this.equipped_items) {
             value += item.random_attributes['def_'] ?? 0;
+            if (item.main_attribute?.key === 'def_') {
+                value += item.main_attribute.value;
+            }
         }
         return Math.max(0, value);
     }
@@ -214,6 +223,9 @@ export abstract class Character {
         }
         for (const item of this.equipped_items) {
             value += item.random_attributes['speed'] ?? 0;
+            if (item.main_attribute?.key === 'speed') {
+                value += item.main_attribute.value;
+            }
         }
         return Math.max(0, value);
     }

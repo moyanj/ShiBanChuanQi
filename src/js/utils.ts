@@ -182,7 +182,8 @@ export class MersenneTwister {
     }
 
     public random_choice(choices: any[]): any {
-        return choices[this.randint(0, choices.length)];
+        if (choices.length === 0) return undefined;
+        return choices[this.randint(0, choices.length - 1)];
     }
 
     // 扭曲操作

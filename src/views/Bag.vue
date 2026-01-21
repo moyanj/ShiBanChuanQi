@@ -95,55 +95,87 @@ const attributeTranslations: { [key: string]: string } = {
     hp: '生命值',
 };
 
+const getRarityColor = (rarity: number = 1) => {
+    switch (rarity) {
+        case 5: return '#FFD700'; // Gold
+        case 4: return '#9B59B6'; // Purple
+        case 3: return '#409EFF'; // Blue
+        case 2: return '#67C23A'; // Green
+        default: return '#909399'; // Gray
+    }
+};
+
 </script>
 
 <template>
     <div class="page-container">
-    <h1 align="right">背包</h1>
-    <el-tabs v-model="activeTab" class="demo-tabs">
-        <el-tab-pane label="物品" name="things">
-            <el-table :data="table_data" class="table" empty-text="暂无物品">
-                <el-table-column prop="name" label="物品名"></el-table-column>
-                <el-table-column prop="desc" label="描述"></el-table-column>
-                <el-table-column prop="count" label="数量"></el-table-column>
-                <el-table-column label="操作">
-                    <template #default="scope">
-                        <sbutton @click="delete_args.arg = scope; deleteDialog_show = true" text> 删除</sbutton>
-                    </template>
-                </el-table-column>
-            </el-table>
-        </el-tab-pane>
-        <el-tab-pane label="圣遗物" name="items">
-            <el-table :data="items_table_data" class="table" empty-text="暂无圣遗物">
-                <el-table-column prop="name" label="套装名"></el-table-column>
-                <el-table-column label="属性">
-                    <template #default="scope">
-                        <span v-for="(value, key) in scope.row.random_attributes" :key="key">
-                            {{ attributeTranslations[key] || key }}: {{ value > 0 ? '+' : '' }}{{ value }}<br>
-                        </span>
-                    </template>
-                </el-table-column>
-                <el-table-column label="状态" width="80">
-                    <template #default="scope">
-                        <span :style="{ color: scope.row.equipped ? 'green' : 'gray' }">
-                            {{ scope.row.equipped ? '已装备' : '未装备' }}
-                        </span>
-                    </template>
-                </el-table-column>
-            </el-table>
-        </el-tab-pane>
-    </el-tabs>
+        <h1 align="right">背包</h1>
+        <el-tabs v-model="activeTab" class="demo-tabs">
+            <el-tab-pane label="物品" name="things">
+                <el-table :data="table_data" class="table" empty-text="暂无物品">
+                    <el-table-column prop="name" label="物品名"></el-table-column>
+                    <el-table-column prop="desc" label="描述"></el-table-column>
+                    <el-table-column prop="count" label="数量"></el-table-column>
+                    <el-table-column label="操作">
+                        <template #default="scope">
+                            <sbutton @click="delete_args.arg = scope; deleteDialog_show = true" text> 删除</sbutton>
+                        </template>
+                    </el-table-column>
+                </el-table>
+            </el-tab-pane>
+            <el-tab-pane label="圣遗物" name="items">
+                <el-table :data="items_table_data" class="table" empty-text="暂无圣遗物">
+                    <el-table-column label="名称" width="180">
+                        <template #default="scope">
+                            <span :style="{ color: getRarityColor(scope.row.rarity) }">
+                                {{ scope.row.name }}
+                            </span>
+                        </template>
+                    </el-table-column>
+                    <el-table-column label="稀有度" prop="rarity" width="80" sortable>
+                        <template #default="scope">
+                            {{ scope.row.rarity || 1 }}★
+                        </template>
+                    </el-table-column>
+                    <el-table-column label="主属性" width="120">
+                        <template #default="scope">
+                            <div v-if="scope.row.main_attribute" style="color: #E6A23C">
+                                {{ attributeTranslations[scope.row.main_attribute.key] || scope.row.main_attribute.key
+                                }}
+                                +{{ scope.row.main_attribute.value }}
+                            </div>
+                            <div v-else style="color: gray">无</div>
+                        </template>
+                    </el-table-column>
+                    <el-table-column label="副属性">
+                        <template #default="scope">
+                            <span v-for="(value, key) in scope.row.random_attributes" :key="key"
+                                style="margin-right: 10px; display: inline-block;">
+                                {{ attributeTranslations[key] || key }}: +{{ value }}
+                            </span>
+                        </template>
+                    </el-table-column>
+                    <el-table-column label="状态" width="80">
+                        <template #default="scope">
+                            <span :style="{ color: scope.row.equipped ? 'green' : 'gray' }">
+                                {{ scope.row.equipped ? '已装备' : '未装备' }}
+                            </span>
+                        </template>
+                    </el-table-column>
+                </el-table>
+            </el-tab-pane>
+        </el-tabs>
 
-    <el-dialog v-model="deleteDialog_show" title="删除物品">
-        <el-form>
-            <el-form-item label="数量：">
-                <el-slider v-model="delete_args.n" :min="1" :max="delete_args.arg.row.count" show-input />
-            </el-form-item>
-            <el-form-item>
-                <sbutton type="primary" @click="remove(delete_args)">确定</sbutton>
-            </el-form-item>
-        </el-form>
-    </el-dialog>
+        <el-dialog v-model="deleteDialog_show" title="删除物品">
+            <el-form>
+                <el-form-item label="数量：">
+                    <el-slider v-model="delete_args.n" :min="1" :max="delete_args.arg.row.count" show-input />
+                </el-form-item>
+                <el-form-item>
+                    <sbutton type="primary" @click="remove(delete_args)">确定</sbutton>
+                </el-form-item>
+            </el-form>
+        </el-dialog>
     </div>
 </template>
 

@@ -3,13 +3,22 @@ import { MersenneTwister } from "./utils";
 
 const rng = new MersenneTwister(); // 初始化随机数生成器
 
+export type AttributeType = "hp" | "atk" | "def_" | "speed";
+
+export interface ItemAttribute {
+    key: AttributeType;
+    value: number;
+}
+
 export interface Item {
     // Item 独立于 Thing
     id: string; // 道具唯一ID
     name: string; // 道具名称
     inside_name: string; // 内部名
+    rarity: number; // 稀有度 1-5
+    main_attribute: ItemAttribute; // 主属性
     random_attributes: {
-        // 随机属性，最多三个
+        // 副属性，最多四个
         hp?: number;
         atk?: number;
         def_?: number;
@@ -48,49 +57,97 @@ export function generateRandomItem(): Item {
     ];
 
     const randomName = rng.random_choice(itemNames); // 随机选择一个名字
+    
+    // 1. 确定稀有度 (权重: 1*: 20%, 2*: 30%, 3*: 30%, 4*: 15%, 5*: 5%)
+    const roll = rng.random();
+    let rarity = 1;
+    if (roll > 0.95) rarity = 5;
+    else if (roll > 0.80) rarity = 4;
+    else if (roll > 0.50) rarity = 3;
+    else if (roll > 0.20) rarity = 2;
+    
+    // 2. 确定主属性
+    const attributes: AttributeType[] = ["hp", "atk", "def_", "speed"];
+    const mainAttrKey = rng.random_choice(attributes) as AttributeType;
+    if (!mainAttrKey) {
+        // Fallback in case of RNG issues
+        return generateRandomItem();
+    }
+    
+    // 主属性数值基于稀有度
+    let mainAttrValue = 0;
+    const multipliers = {
+        hp: 50,    // 50 per rarity level approx
+        atk: 10,   // 10 per rarity level approx
+        def_: 10,
+        speed: 2
+    };
+    
+    // Base value + random variation
+    const baseMult = multipliers[mainAttrKey];
+    mainAttrValue = Math.floor(baseMult * rarity * rng.randfloat(0.8, 1.2));
+    if (mainAttrKey === 'speed') mainAttrValue = Math.max(1, mainAttrValue); // ensure speed > 0
 
-    const attributes = ["hp", "atk", "def_", "speed"];
+    const main_attribute: ItemAttribute = {
+        key: mainAttrKey,
+        value: mainAttrValue
+    };
+
+    // 3. 确定副属性
+    // 数量: 1*: 0-1, 2*: 1-2, 3*: 2-3, 4*: 3, 5*: 3-4
+    let minSubs = Math.max(0, rarity - 2);
+    let maxSubs = Math.min(4, rarity);
+    if (rarity === 5) { minSubs = 3; maxSubs = 4; }
+    
+    const numRandomAttributes = rng.randint(minSubs, maxSubs);
+
     const selectedAttributes: {
         hp?: number;
         atk?: number;
         def_?: number;
         speed?: number;
     } = {};
-    const numRandomAttributes = rng.randint(1, 3); // 1到3个随机属性
-    console.log(numRandomAttributes);
+
+    // 副属性池 (排除主属性?) - 原神里主属性不会出现在副属性中，这里我们仿照
+    const subPool = attributes.filter(a => a !== mainAttrKey);
+    
     // 随机选择属性并赋值
-    for (let i = 0; i < numRandomAttributes; i++) {
-        const attributeName = rng.random_choice(attributes);
-        // 避免重复选择同一个属性
-        if (
-            selectedAttributes[attributeName] === undefined
-        ) {
-            let value = 0;
-            switch (attributeName) {
-                case "hp":
-                    value = rng.randint(1, 150); // -10 到 +10
-                    break;
-                case "atk":
-                    value = rng.randint(10, 35); // -5 到 +5
-                    break;
-                case "def_":
-                    value = rng.randint(10, 35);
-                    break;
-                case "speed":
-                    value = rng.randint(5, 15); // -2 到 +2
-                    break;
-            }
-            if (value !== 0) {
-                selectedAttributes[attributeName as keyof typeof selectedAttributes] =
-                    value;
-            }
+    // 为了防止死循环（虽然池子够大），这里简单处理
+    // Fisher-Yates shuffle simplified
+    for (let i = subPool.length - 1; i > 0; i--) {
+        const j = Math.floor(rng.random() * (i + 1));
+        [subPool[i], subPool[j]] = [subPool[j], subPool[i]];
+    }
+    
+    for (let i = 0; i < Math.min(numRandomAttributes, subPool.length); i++) {
+        const attributeName = subPool[i];
+        let value = 0;
+        // 副属性数值大约是主属性的 20-40%
+        switch (attributeName) {
+            case "hp":
+                value = rng.randint(10, 30) * rarity; 
+                break;
+            case "atk":
+                value = rng.randint(2, 8) * rarity; 
+                break;
+            case "def_":
+                value = rng.randint(2, 8) * rarity;
+                break;
+            case "speed":
+                value = rng.randint(1, 3) * rarity; 
+                break;
+        }
+        if (value > 0) {
+            selectedAttributes[attributeName] = value;
         }
     }
-    console.log(selectedAttributes)
+
     return {
         id: uuidv4(),
         name: randomName,
         inside_name: randomName.replace(/\s/g, ""), // 生成内部名
+        rarity: rarity,
+        main_attribute: main_attribute,
         random_attributes: selectedAttributes,
         equipped: false, // 默认未装备
     };
@@ -171,6 +228,23 @@ export class ItemManager {
     load(data: Item[]) {
         this.clear();
         data.forEach((item) => {
+            // Migration for old items without main_attribute or rarity
+            if (!item.main_attribute || !item.main_attribute.key || isNaN(item.main_attribute.value)) {
+                 // Convert one random attribute to main, or generate one
+                 const attrs = Object.keys(item.random_attributes || {}) as AttributeType[];
+                 if (attrs.length > 0) {
+                     const key = attrs[0];
+                     const val = item.random_attributes[key]!;
+                     item.main_attribute = { key: key, value: val || 100 };
+                     delete item.random_attributes[key];
+                 } else {
+                     // No attributes? give generic
+                     item.main_attribute = { key: 'hp', value: 100 };
+                 }
+            }
+            if (!item.rarity) {
+                item.rarity = 1;
+            }
             this.add(item);
         });
     }

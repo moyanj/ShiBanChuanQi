@@ -12,6 +12,23 @@ import { BattleService, BattleResult } from '../js/battle/service';
 import { Character, CharacterType } from '../js/character';
 import { Item } from '../js/item';
 
+const attributeTranslations: { [key: string]: string } = {
+    atk: '攻击',
+    def_: '防御',
+    speed: '速度',
+    hp: '生命',
+};
+
+const getRarityColor = (rarity: number = 1) => {
+    switch (rarity) {
+        case 5: return '#FFD700'; // Gold
+        case 4: return '#9B59B6'; // Purple
+        case 3: return '#409EFF'; // Blue
+        case 2: return '#67C23A'; // Green
+        default: return '#909399'; // Gray
+    }
+};
+
 const data = useDataStore();
 const save = useSaveStore();
 const fightStore = useFightStore();
@@ -391,13 +408,12 @@ onUnmounted(() => {
                         :active_effects="char.active_effects" @click="selectTargetCharacter('enemy', char)">
                     </fightCard>
                 </div>
-                
+
                 <div class="our-characters-container">
                     <fightCard v-for="char in battle.our.get_alive_characters()" :key="char.inside_name"
                         :character="char"
                         :is_active="current_active_character?.type === 'our' && current_active_character.character.inside_name === char.inside_name"
-                        :atb_value="battle.our.atb[char.inside_name]" 
-                        :is_enemy="false"
+                        :atb_value="battle.our.atb[char.inside_name]" :is_enemy="false"
                         :is_selected="selected_our_character?.inside_name === char.inside_name || (selected_target_character?.type === 'our' && selected_target_character.character.inside_name === char.inside_name)"
                         :active_effects="char.active_effects"
                         @click="fightStore.selected_our_character ? selectTargetCharacter('our', char) : selectOurCharacter(char)">
@@ -421,9 +437,9 @@ onUnmounted(() => {
 
                 <!-- 顶部：战斗信息/Boss血条位置 (预留) -->
                 <div class="top-center-info">
-                    <!-- <div class="enemy-main-hp" v-if="battle.enemy.get_alive_characters().length > 0">
+                    <div class="enemy-main-hp" v-if="battle.enemy.get_alive_characters().length > 0">
                         {{ battle.enemy.get_alive_characters()[0].name }}
-                    </div> -->
+                    </div>
                 </div>
 
                 <!-- 底部右侧：技能操作区 -->
@@ -431,7 +447,7 @@ onUnmounted(() => {
                     <!-- 技能按钮组 -->
                     <div class="skill-buttons"
                         v-if="!fightStore.ai && selected_our_character && current_active_character?.type === 'our' && current_active_character.character.inside_name === selected_our_character.inside_name">
-                        
+
                         <!-- 普攻 -->
                         <div class="skill-btn general-btn" @click="playerAttack('general')" title="普通攻击">
                             <div class="skill-icon-wrapper">
@@ -442,9 +458,9 @@ onUnmounted(() => {
                         </div>
 
                         <!-- 战技 -->
-                        <div class="skill-btn skill-btn-main" @click="playerAttack('skill')" 
-                             :class="{ 'disabled': battle.battle_points < selected_our_character.getSkill().cost }"
-                             :title="selected_our_character.skill_name">
+                        <div class="skill-btn skill-btn-main" @click="playerAttack('skill')"
+                            :class="{ 'disabled': battle.battle_points < selected_our_character.getSkill().cost }"
+                            :title="selected_our_character.skill_name">
                             <div class="skill-icon-wrapper">
                                 <img :src="icons.sword" />
                             </div>
@@ -463,7 +479,8 @@ onUnmounted(() => {
 
                     <!-- 战技点 -->
                     <div class="battle-points-display">
-                        <div v-for="i in 5" :key="i" class="point-dot" :class="{ 'filled': i <= battle.battle_points }"></div>
+                        <div v-for="i in 5" :key="i" class="point-dot" :class="{ 'filled': i <= battle.battle_points }">
+                        </div>
                         <span class="bp-text">{{ battle.battle_points }}/5</span>
                     </div>
                 </div>
@@ -509,8 +526,16 @@ onUnmounted(() => {
                     <p v-if="battle_result === 'win'">星火: {{ battle_xinhuo_reward }}</p>
                     <div v-if="battle_result === 'win' && dropped_items.length > 0">
                         <p>道具：</p>
-                        <ul>
-                            <li v-for="item in dropped_items" :key="item.id">{{ item.name }}</li>
+                        <ul style="list-style: none; padding: 0;">
+                            <li v-for="item in dropped_items" :key="item.id" style="margin-bottom: 5px;">
+                                <span :style="{ color: getRarityColor(item.rarity) }">{{ item.name }} ({{
+                                    item.rarity || 1 }}★)</span>
+                                <span v-if="item.main_attribute"
+                                    style="font-size: 0.8em; color: #E6A23C; margin-left: 8px;">
+                                    {{ attributeTranslations[item.main_attribute.key] || item.main_attribute.key }}
+                                    +{{ item.main_attribute.value }}
+                                </span>
+                            </li>
                         </ul>
                     </div>
                 </div>
@@ -576,11 +601,12 @@ onUnmounted(() => {
     width: 100%;
     height: 100%;
     z-index: 10;
-    pointer-events: none; /* 让点击穿透到场景层，但子元素恢复点击 */
+    pointer-events: none;
+    /* 让点击穿透到场景层，但子元素恢复点击 */
 }
 
 /* 所有 HUD 子元素恢复点击交互 */
-.hud-layer > * {
+.hud-layer>* {
     pointer-events: auto;
 }
 
@@ -596,7 +622,7 @@ onUnmounted(() => {
     position: absolute;
     top: 20px;
     left: 0;
-    bottom: 20px; 
+    bottom: 20px;
     display: flex;
     align-items: flex-start;
 }
@@ -628,7 +654,8 @@ onUnmounted(() => {
     border-radius: 50%;
     border: 1px solid rgba(255, 255, 255, 0.5);
     background: transparent;
-    transform: rotate(45deg); /* 菱形点 */
+    transform: rotate(45deg);
+    /* 菱形点 */
 }
 
 .point-dot.filled {
@@ -707,7 +734,7 @@ onUnmounted(() => {
     width: 100px;
     height: 100px;
     border-color: rgba(255, 193, 7, 0.6);
-    background: linear-gradient(135deg, rgba(255, 193, 7, 0.1), rgba(0,0,0,0.6));
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.1), rgba(0, 0, 0, 0.6));
 }
 
 .ult-btn:hover .skill-icon-wrapper {
