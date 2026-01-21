@@ -172,7 +172,8 @@ const getRarityColor = (rarity: number = 1) => {
                         <el-table-column label="主属性" width="120">
                             <template #default="scope">
                                 <div v-if="scope.row.main_attribute" style="color: #E6A23C">
-                                    {{ attributeTranslations[scope.row.main_attribute.key] || scope.row.main_attribute.key
+                                    {{ attributeTranslations[scope.row.main_attribute.key] ||
+                                        scope.row.main_attribute.key
                                     }}
                                     +{{ scope.row.main_attribute.value }}
                                 </div>
@@ -197,15 +198,10 @@ const getRarityColor = (rarity: number = 1) => {
                     </el-table>
                 </div>
                 <div class="pagination-wrapper">
-                    <el-pagination
-                        v-model:current-page="currentPage"
-                        v-model:page-size="pageSize"
-                        :page-sizes="[20, 50, 100, 200]"
-                        layout="total, sizes, prev, pager, next, jumper"
-                        :total="allItems.length"
-                        @size-change="handleSizeChange"
-                        @current-change="handleCurrentChange"
-                    />
+                    <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize"
+                        :page-sizes="[50, 100, 200]" layout="total, sizes, prev, pager, next, jumper"
+                        :total="allItems.length" @size-change="handleSizeChange"
+                        @current-change="handleCurrentChange" />
                 </div>
             </el-tab-pane>
         </el-tabs>
@@ -244,7 +240,8 @@ body {
 }
 
 .table-container {
-    height: calc(100vh - 210px); /* 留出分页空间 */
+    height: calc(100vh - 210px);
+    /* 留出分页空间 */
 }
 
 .pagination-wrapper {

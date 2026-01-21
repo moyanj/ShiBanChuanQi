@@ -437,9 +437,9 @@ onUnmounted(() => {
 
                 <!-- 顶部：战斗信息/Boss血条位置 (预留) -->
                 <div class="top-center-info">
-                    <div class="enemy-main-hp" v-if="battle.enemy.get_alive_characters().length > 0">
+                    <!-- <div class="enemy-main-hp" v-if="battle.enemy.get_alive_characters().length > 0">
                         {{ battle.enemy.get_alive_characters()[0].name }}
-                    </div>
+                    </div> -->
                 </div>
 
                 <!-- 底部右侧：技能操作区 -->
