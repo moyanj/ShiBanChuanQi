@@ -19,7 +19,7 @@ import { useSaveStore } from '../js/stores';
 import { get_character_by_dump, icons } from '../js/utils';
 import { ref, watch, computed } from 'vue';
 import SButton from '../components/sbutton.vue';
-import { Item } from '../js/item';
+import { Item, upgradeRelic, getRelicXP, getUpgradeCost, MAX_LEVEL } from '../js/item';
 
 const save = useSaveStore();
 
@@ -31,6 +31,12 @@ const levelUpAmount = ref(0); // 经验值数量
 const currentIllustration = ref(''); // 立绘路径
 const showEquipItemDialog = ref(false); // 控制装备道具对话框显示
 const selectedItemToEquip = ref<Item | null>(null); // 选中的要装备的道具
+
+// 强化相关
+const showEnhanceDialog = ref(false);
+const enhancingItem = ref<Item | null>(null);
+const selectedFodders = ref<Item[]>([]);
+const enhancePreviewXP = ref(0); // 预览增加的经验
 
 // 将类型定义明确
 const c2e: { [key in CharacterType]: string } = {
@@ -56,6 +62,80 @@ const nowCharacter = ref<Character | null>(characterList.value.length > 0 ? get_
 const availableItems = computed(() => {
     return save.items.getAll().filter(item => !item.equipped);
 });
+
+// 可作为强化素材的道具列表 (不包括自己、已装备的、锁定的(未实现))
+const availableFodders = computed(() => {
+    if (!enhancingItem.value) return [];
+    return save.items.getAll().filter(item => 
+        item.id !== enhancingItem.value?.id && 
+        !item.equipped
+    ).sort((a, b) => (a.rarity || 0) - (b.rarity || 0)); // Sort by rarity ascending
+});
+
+const isFodderSelected = (item: Item) => {
+    return selectedFodders.value.some(f => f.id === item.id);
+};
+
+const toggleFodder = (item: Item) => {
+    const idx = selectedFodders.value.findIndex(f => f.id === item.id);
+    if (idx >= 0) {
+        selectedFodders.value.splice(idx, 1);
+    } else {
+        selectedFodders.value.push(item);
+    }
+};
+
+const totalFodderXP = computed(() => {
+    return selectedFodders.value.reduce((sum, item) => sum + getRelicXP(item), 0);
+});
+
+const enhanceResultPreview = computed(() => {
+    if (!enhancingItem.value) return null;
+    
+    const current = enhancingItem.value;
+    const addedXP = totalFodderXP.value;
+    
+    // Simulate level up
+    let simulatedLevel = current.level;
+    let simulatedExp = current.exp + addedXP;
+    let cost = getUpgradeCost(current.rarity, simulatedLevel);
+    
+    while (simulatedExp >= cost && simulatedLevel < MAX_LEVEL) {
+        simulatedExp -= cost;
+        simulatedLevel++;
+        cost = getUpgradeCost(current.rarity, simulatedLevel);
+    }
+    
+    return {
+        level: simulatedLevel,
+        exp: simulatedExp,
+        nextLevelCost: cost
+    };
+});
+
+const openEnhanceDialog = (item: Item) => {
+    enhancingItem.value = item;
+    selectedFodders.value = [];
+    showEnhanceDialog.value = true;
+};
+
+const confirmEnhance = () => {
+    if (!enhancingItem.value || selectedFodders.value.length === 0) return;
+    
+    const success = upgradeRelic(enhancingItem.value, selectedFodders.value);
+    if (success) {
+        // Remove fodders
+        selectedFodders.value.forEach(f => save.items.remove(f.id));
+        
+        // Force update character stats
+        if (nowCharacter.value) {
+            save.characters.update(nowCharacter.value as Character);
+        }
+        
+        // Reset selection
+        selectedFodders.value = [];
+    }
+};
 
 // 监听角色列表变化
 watch(characterList, () => {
@@ -146,6 +226,7 @@ const attributeTranslations: { [key: string]: string } = {
 // 格式化道具标签，使其在选择时显示属性
 const formatItemLabel = (item: Item) => {
     const rarityStr = item.rarity ? `${item.rarity}★` : '';
+    const levelStr = `+${item.level}`;
     let mainStr = "";
     if (item.main_attribute) {
         const k = item.main_attribute.key;
@@ -159,7 +240,7 @@ const formatItemLabel = (item: Item) => {
             return `${translatedKey}: ${value > 0 ? '+' : ''}${value}`;
         })
         .join(', ');
-    return `${rarityStr} ${item.name} ${mainStr}(${attributes})`;
+    return `${rarityStr} ${item.name} ${levelStr} ${mainStr}(${attributes})`;
 };
 
 const getRarityColor = (rarity: number = 1) => {
@@ -247,6 +328,7 @@ const getRarityColor = (rarity: number = 1) => {
                                     </span>
                                 </div>
                                 <SButton @click="unequipItem(item)" text style="margin-top: 5px;">卸下</SButton>
+                                <SButton @click="openEnhanceDialog(item)" text style="margin-top: 5px; margin-left: 10px;">强化</SButton>
                             </div>
                         </div>
                         <div v-else>
@@ -341,10 +423,66 @@ const getRarityColor = (rarity: number = 1) => {
                 <p>背包中没有可用的道具。</p>
             </div>
         </el-dialog>
+
+        <!-- 强化弹窗 -->
+        <el-dialog v-model="showEnhanceDialog" title="圣遗物强化" width="70%">
+            <div v-if="enhancingItem" style="display: flex; gap: 20px;">
+                <!-- 左侧：目标圣遗物信息 -->
+                <div style="flex: 1; border-right: 1px solid #555; padding-right: 20px;">
+                    <h3>当前属性</h3>
+                    <p :style="{ color: getRarityColor(enhancingItem.rarity) }">
+                        {{ enhancingItem.name }} ({{ enhancingItem.rarity }}★) +{{ enhancingItem.level }}
+                    </p>
+                    <p>经验: {{ enhancingItem.exp }} / {{ getUpgradeCost(enhancingItem.rarity, enhancingItem.level) }}</p>
+                    
+                    <div v-if="enhancingItem.main_attribute" style="color: #E6A23C; font-weight: bold; margin: 10px 0;">
+                        主属性: {{ attributeTranslations[enhancingItem.main_attribute.key] }} +{{ enhancingItem.main_attribute.value }}
+                    </div>
+                    
+                    <div v-for="(value, key) in enhancingItem.random_attributes" :key="key">
+                         {{ attributeTranslations[key] || key }}: +{{ value }}
+                    </div>
+
+                    <div v-if="enhanceResultPreview && enhanceResultPreview.level > enhancingItem.level" style="margin-top: 20px; color: #67C23A;">
+                        <h3>预览结果</h3>
+                        <p>等级: {{ enhancingItem.level }} -> {{ enhanceResultPreview.level }}</p>
+                        <p>主属性将会提升</p>
+                        <p v-if="enhanceResultPreview.level % 4 === 0 || Math.floor(enhanceResultPreview.level/4) > Math.floor(enhancingItem.level/4)">
+                            将会解锁或升级副词条
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 右侧：素材选择 -->
+                <div style="flex: 1;">
+                    <h3>选择素材 (提供经验: {{ totalFodderXP }})</h3>
+                    <el-scrollbar height="300px">
+                        <div v-if="availableFodders.length === 0">没有可用的强化素材</div>
+                        <div v-for="fodder in availableFodders" :key="fodder.id" 
+                             @click="toggleFodder(fodder)"
+                             :class="{ 'selected-fodder': isFodderSelected(fodder) }"
+                             style="cursor: pointer; padding: 5px; margin-bottom: 5px; border: 1px solid transparent; display: flex; justify-content: space-between;">
+                            <span :style="{ color: getRarityColor(fodder.rarity) }">
+                                {{ fodder.name }} (+{{ fodder.level }})
+                            </span>
+                            <span>{{ getRelicXP(fodder) }} XP</span>
+                        </div>
+                    </el-scrollbar>
+                    <div style="margin-top: 20px; text-align: right;">
+                         <SButton type="primary" @click="confirmEnhance" :disabled="selectedFodders.length === 0">确认强化</SButton>
+                    </div>
+                </div>
+            </div>
+        </el-dialog>
     </div>
 </template>
 
 <style scoped>
+.selected-fodder {
+    background-color: rgba(64, 158, 255, 0.2);
+    border-color: #409EFF !important;
+}
+
 .page-container {
     padding: 20px;
     height: 100vh;

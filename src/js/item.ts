@@ -16,6 +16,8 @@ export interface Item {
     name: string; // 道具名称
     inside_name: string; // 内部名
     rarity: number; // 稀有度 1-5
+    level: number; // 当前等级 (默认为0)
+    exp: number; // 当前经验值
     main_attribute: ItemAttribute; // 主属性
     random_attributes: {
         // 副属性，最多四个
@@ -27,11 +29,113 @@ export interface Item {
     equipped?: boolean; // 是否已被装备的标记
 }
 
+// 经验表: 每一级所需的经验 (简化版: 每级递增)
+// 1星: 每级100; 5星: 每级500
+export const LEVEL_UP_EXP_BASE = {
+    1: 100,
+    2: 150,
+    3: 250,
+    4: 400,
+    5: 600
+};
+
+export const MAX_LEVEL = 20;
+
+// 获取升级所需经验
+export function getUpgradeCost(rarity: number, currentLevel: number): number {
+    const base = LEVEL_UP_EXP_BASE[rarity as keyof typeof LEVEL_UP_EXP_BASE] || 100;
+    // 简单的线性增长或指数增长
+    return base + (currentLevel * base * 0.1); 
+}
+
+// 获取道具作为狗粮提供的经验
+export function getRelicXP(item: Item): number {
+    const rarity = item.rarity || 1; // Fallback to 1 if missing
+    const level = item.level || 0;   // Fallback to 0 if missing
+    const base = (LEVEL_UP_EXP_BASE[rarity as keyof typeof LEVEL_UP_EXP_BASE] || 100) * 3; 
+    // 加上它已经吃掉的经验的一定比例 (比如80%)
+    return Math.floor(base + (level * base * 0.5));
+}
+
+// 执行升级逻辑
+export function upgradeRelic(target: Item, fodders: Item[]): boolean {
+    if (target.level >= MAX_LEVEL) return false;
+
+    let totalXP = 0;
+    for (const fodder of fodders) {
+        totalXP += getRelicXP(fodder);
+    }
+    
+    target.exp += totalXP;
+    
+    // Level up loop
+    let cost = getUpgradeCost(target.rarity, target.level);
+    while (target.exp >= cost && target.level < MAX_LEVEL) {
+        target.exp -= cost;
+        target.level++;
+        
+        // 1. Upgrade Main Stat
+        // Simple scaling: +20% of base per level? Or pre-defined curve.
+        // Let's assume linear growth for now: +10% of current value (compounding) or flat.
+        // Flat is safer.
+        const growthRate = 0.1; // 10% growth per level
+        target.main_attribute.value = Math.floor(target.main_attribute.value * (1 + growthRate));
+        
+        // 2. Sub-stat unlock/upgrade at +4, +8, +12, +16, +20
+        if (target.level % 4 === 0) {
+            const maxSubs = 4; // Hard cap at 4 subs
+            const currentSubKeys = Object.keys(target.random_attributes) as AttributeType[];
+            
+            if (currentSubKeys.length < maxSubs) {
+                // Unlock new sub-stat
+                const attributes: AttributeType[] = ["hp", "atk", "def_", "speed"];
+                const available = attributes.filter(a => a !== target.main_attribute.key && !currentSubKeys.includes(a));
+                
+                if (available.length > 0) {
+                    const newKey = rng.random_choice(available) as AttributeType;
+                    // Initial value
+                    let val = 0;
+                    switch(newKey) {
+                        case 'hp': val = rng.randint(10, 30) * target.rarity; break;
+                        case 'atk': val = rng.randint(2, 8) * target.rarity; break;
+                        case 'def_': val = rng.randint(2, 8) * target.rarity; break;
+                        case 'speed': val = rng.randint(1, 3) * target.rarity; break;
+                    }
+                    target.random_attributes[newKey] = val;
+                } else {
+                    // Fallback: upgrade existing if no slots (rare case if all slots taken but < 4? logic says length < 4 so there must be slots if unique count is 4)
+                }
+            } else {
+                // Upgrade existing sub-stat
+                const keyToUpgrade = rng.random_choice(currentSubKeys) as AttributeType;
+                if (keyToUpgrade) {
+                     // Upgrade amount similar to initial roll
+                    let val = 0;
+                    switch(keyToUpgrade) {
+                        case 'hp': val = rng.randint(10, 30) * target.rarity; break;
+                        case 'atk': val = rng.randint(2, 8) * target.rarity; break;
+                        case 'def_': val = rng.randint(2, 8) * target.rarity; break;
+                        case 'speed': val = rng.randint(1, 3) * target.rarity; break;
+                    }
+                    if (target.random_attributes[keyToUpgrade] !== undefined) {
+                         target.random_attributes[keyToUpgrade]! += val;
+                    }
+                }
+            }
+        }
+        
+        cost = getUpgradeCost(target.rarity, target.level);
+    }
+    
+    return true;
+}
+
 /**
  * 生成一个随机道具
+ * @param forcedRarity 可选：强制指定稀有度 (1-5)
  * @returns {Item} 生成的道具
  */
-export function generateRandomItem(): Item {
+export function generateRandomItem(forcedRarity?: number): Item {
     const itemNames = [
         "DSM王朝的记忆",
         "繁星最后的余光",
@@ -59,12 +163,17 @@ export function generateRandomItem(): Item {
     const randomName = rng.random_choice(itemNames); // 随机选择一个名字
     
     // 1. 确定稀有度 (权重: 1*: 20%, 2*: 30%, 3*: 30%, 4*: 15%, 5*: 5%)
-    const roll = rng.random();
+    // 如果有强制稀有度，则直接使用
     let rarity = 1;
-    if (roll > 0.95) rarity = 5;
-    else if (roll > 0.80) rarity = 4;
-    else if (roll > 0.50) rarity = 3;
-    else if (roll > 0.20) rarity = 2;
+    if (forcedRarity && forcedRarity >= 1 && forcedRarity <= 5) {
+        rarity = forcedRarity;
+    } else {
+        const roll = rng.random();
+        if (roll > 0.95) rarity = 5;
+        else if (roll > 0.80) rarity = 4;
+        else if (roll > 0.50) rarity = 3;
+        else if (roll > 0.20) rarity = 2;
+    }
     
     // 2. 确定主属性
     const attributes: AttributeType[] = ["hp", "atk", "def_", "speed"];
@@ -147,6 +256,8 @@ export function generateRandomItem(): Item {
         name: randomName,
         inside_name: randomName.replace(/\s/g, ""), // 生成内部名
         rarity: rarity,
+        level: 0,
+        exp: 0,
         main_attribute: main_attribute,
         random_attributes: selectedAttributes,
         equipped: false, // 默认未装备
@@ -245,6 +356,10 @@ export class ItemManager {
             if (!item.rarity) {
                 item.rarity = 1;
             }
+            if (item.level === undefined) item.level = 0;
+            if (item.exp === undefined) item.exp = 0;
+            if (isNaN(item.level)) item.level = 0; // Fix existing items that might have gotten 'undefined' stuck
+
             this.add(item);
         });
     }
