@@ -107,7 +107,8 @@ const navigate = (page: string) => {
                 <div class="char-banner" v-if="currentCharacter">
                     <div class="char-header">
                         <span class="char-name">{{ currentCharacter.name }}</span>
-                        <img :src="typeMap[currentCharacter.type]" class="char-type-icon" v-if="currentCharacter.type && typeMap[currentCharacter.type]" />
+                        <img :src="typeMap[currentCharacter.type]" class="char-type-icon"
+                            v-if="currentCharacter.type && typeMap[currentCharacter.type]" />
                     </div>
                     <div class="char-desc-line"></div>
                     <div class="char-desc">{{ currentCharacter.desc || '暂无介绍' }}</div>
@@ -214,9 +215,9 @@ const navigate = (page: string) => {
     left: 0;
     width: 100%;
     height: 100%;
-    /* 使用 assets/bg/home.jpeg */
+    /* 使用 assets/bg/home.jpeg 
     background: url('../assets/bg/home.jpeg') no-repeat center center;
-    background-size: cover;
+    background-size: cover;*/
     z-index: 0;
     /* 压暗并轻微模糊，突出前景插画 */
     filter: brightness(0.6) blur(2px);
@@ -318,14 +319,15 @@ const navigate = (page: string) => {
     font-weight: bold;
     color: #fff;
     letter-spacing: 1px;
-    font-family: 'MiSans', sans-serif; /* 强制使用全局字体 */
+    font-family: 'MiSans', sans-serif;
+    /* 强制使用全局字体 */
 }
 
 .char-type-icon {
     width: 28px;
     height: 28px;
     margin-left: 8px;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
 }
 
 .char-desc-line {

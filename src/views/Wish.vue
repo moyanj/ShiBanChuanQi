@@ -37,7 +37,7 @@ function f(x: number): number {
 
     const P = Math.min(H + B, 1);
 
-    return P; // 现在返回P(x)而不是原来的H(x)
+    return P;
 }
 
 function run(n: number = 1) {
