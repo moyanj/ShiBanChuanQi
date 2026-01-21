@@ -1,11 +1,12 @@
 <script lang="ts" setup>
-import { watch, ref, onMounted, onUnmounted } from 'vue';
-import { ElTable, ElTableColumn, ElDialog, ElForm, ElFormItem, ElSlider, ElTabs, ElTabPane, ElScrollbar } from 'element-plus';
+import { watch, ref, onMounted, onUnmounted, computed } from 'vue';
+import { ElTable, ElTableColumn, ElDialog, ElForm, ElFormItem, ElSlider, ElTabs, ElTabPane, ElScrollbar, ElPagination } from 'element-plus';
 import sbutton from '../components/sbutton.vue';
 import { useSaveStore } from '../js/stores';
 import { ThingList } from '../js/things';
 import { Item } from '../js/item';
 import { useMagicKeys } from '@vueuse/core';
+import { icons } from '../js/utils';
 
 const save = useSaveStore();
 console.log(save);
@@ -15,6 +16,10 @@ var delete_args = ref({
     arg: null
 });
 var activeTab = ref('things'); // 默认激活物品标签页
+
+// Pagination state
+const currentPage = ref(1);
+const pageSize = ref(20);
 
 const keys = useMagicKeys();
 
@@ -55,14 +60,22 @@ function update_data() {
     return data;
 }
 
+// Optimization: Cache the full list of items
+// Ideally, save.items should notify us of specific changes, but here we just optimize the read.
+// We use a shallowRef or just a regular ref for the full list if it's huge, 
+// but since we paginate, we only render a slice.
+const allItems = ref<Item[]>([]);
+
 function update_items_data() {
-    let data: Item[] = [];
+    // Only fetch getAll() when necessary or on mount
     const items = save.items.getAll();
-    items.forEach(item => {
-        data.push(item);
-    });
-    return data;
+    allItems.value = items;
 }
+
+// Call once on mount
+onMounted(() => {
+    update_items_data();
+});
 
 function remove(data) {
     console.log(data.n);
@@ -77,15 +90,33 @@ function remove(data) {
 
 // 转换为el-table的格式
 const table_data = ref(update_data());
-const items_table_data = ref(update_items_data());
 
+// Watch for changes in store but debounce or throttle if needed for huge lists.
+// Here we just update the local cache.
 watch(save.things, () => {
     table_data.value = update_data();
 });
 
 watch(save.items, () => {
-    items_table_data.value = update_items_data();
+    update_items_data();
 });
+
+// Computed property for paginated items
+const paginatedItems = computed(() => {
+    const start = (currentPage.value - 1) * pageSize.value;
+    const end = start + pageSize.value;
+    return allItems.value.slice(start, end);
+});
+
+const handleSizeChange = (val: number) => {
+    pageSize.value = val;
+    currentPage.value = 1; // Reset to page 1
+}
+
+const handleCurrentChange = (val: number) => {
+    currentPage.value = val;
+}
+
 
 // 属性名称中文翻译映射
 const attributeTranslations: { [key: string]: string } = {
@@ -124,45 +155,58 @@ const getRarityColor = (rarity: number = 1) => {
                 </el-table>
             </el-tab-pane>
             <el-tab-pane label="圣遗物" name="items">
-                <el-table :data="items_table_data" class="table" empty-text="暂无圣遗物">
-                    <el-table-column label="名称" width="180">
-                        <template #default="scope">
-                            <span :style="{ color: getRarityColor(scope.row.rarity) }">
-                                {{ scope.row.name }}
-                            </span>
-                        </template>
-                    </el-table-column>
-                    <el-table-column label="稀有度" prop="rarity" width="80" sortable>
-                        <template #default="scope">
-                            {{ scope.row.rarity || 1 }}★
-                        </template>
-                    </el-table-column>
-                    <el-table-column label="主属性" width="120">
-                        <template #default="scope">
-                            <div v-if="scope.row.main_attribute" style="color: #E6A23C">
-                                {{ attributeTranslations[scope.row.main_attribute.key] || scope.row.main_attribute.key
-                                }}
-                                +{{ scope.row.main_attribute.value }}
-                            </div>
-                            <div v-else style="color: gray">无</div>
-                        </template>
-                    </el-table-column>
-                    <el-table-column label="副属性">
-                        <template #default="scope">
-                            <span v-for="(value, key) in scope.row.random_attributes" :key="key"
-                                style="margin-right: 10px; display: inline-block;">
-                                {{ attributeTranslations[key] || key }}: +{{ value }}
-                            </span>
-                        </template>
-                    </el-table-column>
-                    <el-table-column label="状态" width="80">
-                        <template #default="scope">
-                            <span :style="{ color: scope.row.equipped ? 'green' : 'gray' }">
-                                {{ scope.row.equipped ? '已装备' : '未装备' }}
-                            </span>
-                        </template>
-                    </el-table-column>
-                </el-table>
+                <div class="table-container">
+                    <el-table :data="paginatedItems" class="table" empty-text="暂无圣遗物" height="100%">
+                        <el-table-column label="名称" width="180">
+                            <template #default="scope">
+                                <span :style="{ color: getRarityColor(scope.row.rarity) }">
+                                    {{ scope.row.name }} <span v-if="scope.row.level > 0">+{{ scope.row.level }}</span>
+                                </span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="稀有度" prop="rarity" width="80" sortable>
+                            <template #default="scope">
+                                {{ scope.row.rarity || 1 }}★
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="主属性" width="120">
+                            <template #default="scope">
+                                <div v-if="scope.row.main_attribute" style="color: #E6A23C">
+                                    {{ attributeTranslations[scope.row.main_attribute.key] || scope.row.main_attribute.key
+                                    }}
+                                    +{{ scope.row.main_attribute.value }}
+                                </div>
+                                <div v-else style="color: gray">无</div>
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="副属性">
+                            <template #default="scope">
+                                <span v-for="(value, key) in scope.row.random_attributes" :key="key"
+                                    style="margin-right: 10px; display: inline-block;">
+                                    {{ attributeTranslations[key] || key }}: +{{ value }}
+                                </span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="状态" width="80">
+                            <template #default="scope">
+                                <span :style="{ color: scope.row.equipped ? 'green' : 'gray' }">
+                                    {{ scope.row.equipped ? '已装备' : '未装备' }}
+                                </span>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                </div>
+                <div class="pagination-wrapper">
+                    <el-pagination
+                        v-model:current-page="currentPage"
+                        v-model:page-size="pageSize"
+                        :page-sizes="[20, 50, 100, 200]"
+                        layout="total, sizes, prev, pager, next, jumper"
+                        :total="allItems.length"
+                        @size-change="handleSizeChange"
+                        @current-change="handleCurrentChange"
+                    />
+                </div>
             </el-tab-pane>
         </el-tabs>
 
@@ -196,6 +240,19 @@ body {
 }
 
 .table {
-    height: calc(100vh - 160px);
+    height: 100%;
+}
+
+.table-container {
+    height: calc(100vh - 210px); /* 留出分页空间 */
+}
+
+.pagination-wrapper {
+    margin-top: 10px;
+    display: flex;
+    justify-content: flex-end;
+    background-color: #26272b;
+    padding: 5px;
+    border-radius: 4px;
 }
 </style>
