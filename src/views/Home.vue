@@ -5,6 +5,7 @@ import { icons } from '../js/utils';
 import { ElImage, ElAvatar, ElMessage } from 'element-plus';
 import sbutton from '../components/sbutton.vue';
 import placeholderImg from '../assets/placeholder/p300x400.png';
+import XinHuo from '../assets/things/XinHuo.png';
 
 const save = useSaveStore();
 const data = useDataStore();
@@ -134,7 +135,7 @@ const navigate = (page: string) => {
 
                 <div class="resources">
                     <div class="res-item">
-                        <img src="/things/XinHuo.png" class="res-icon" />
+                        <img :src="XinHuo" class="res-icon" />
                         <span class="res-value">{{ xinhuo }}</span>
                         <div class="res-add">+</div>
                     </div>

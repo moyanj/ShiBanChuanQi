@@ -1,48 +1,52 @@
 <script lang="ts" setup>
-import { ElRow, ElMessage, ElDialog, ElScrollbar, ElTable, ElTableColumn, ElImage } from "element-plus";
+import { ElRow, ElMessage, ElScrollbar, ElImage } from "element-plus";
 import sbutton from "../components/sbutton.vue";
 import svideo from "../components/svideo.vue";
 import 'video.js/dist/video-js.css';
 
-import { useSaveStore, useDataStore, APM } from "../js/stores";
+import { useSaveStore, useDataStore } from "../js/stores";
 import { MersenneTwister, icons } from "../js/utils";
-import { characters } from "../js/character";
-import { ref } from "vue";
-
+import icon_xinhuo from "../assets/things/XinHuo.png";
+import { characters, CharacterType } from "../js/character";
+import { ref, computed } from "vue";
 
 const saveStore = useSaveStore();
 const dataStore = useDataStore();
+
 const player_conf = {
-    //autoplay: true,
     muted: false,
     controls: false,
-    //fullscreen: true
-}
+};
 
-var player = ref();
-var show_ani = ref(false);
-var show_result = ref(false);
-var show_skip = ref(false);
-var result = ref([])
-var count_XinHuo = ref(saveStore.things.get("XinHuo"));
+const player = ref();
+const show_ani = ref(false);
+const show_result = ref(false);
+const show_skip = ref(false);
+const result = ref<any[]>([]);
+const count_XinHuo = ref(saveStore.things.get("XinHuo"));
 
 const random = new MersenneTwister();
-const wish_list = []
-wish_list.push(...Object.keys(characters))
+const wish_list = Object.keys(characters);
+
+const c2e: { [key in CharacterType]: string } = {
+    [CharacterType.Fire]: icons.element.fire,
+    [CharacterType.Grass]: icons.element.grass,
+    [CharacterType.LiangZi]: icons.element.liangzi,
+    [CharacterType.Nihility]: icons.element.nihility,
+    [CharacterType.Physics]: icons.element.physics,
+    [CharacterType.Thunder]: icons.element.thunder,
+    [CharacterType.Water]: icons.element.water,
+};
 
 function f(x: number): number {
     const H = Math.min(0.0001 + (Math.exp(x / 35) / 175), 1);
-
     const B = 0.0003 * Math.max(Math.sin(Math.PI * x / 5 - x / 2), 0);
-
     const P = Math.min(H + B, 1);
-
     return P;
 }
 
 function run(n: number = 1) {
-
-    const cost = 280 * n; // 十连抽消耗的星火
+    const cost = 280 * n;
     if (saveStore.things.get("XinHuo") < cost) {
         ElMessage({
             message: "星火不足，无法抽奖",
@@ -55,57 +59,47 @@ function run(n: number = 1) {
     player.value.player.play();
     show_skip.value = true;
     player.value.player.on("ended", () => {
-        player.value.player.off("ended")
+        player.value.player.off("ended");
         show_ani.value = false;
         show_skip.value = false;
         wish(n);
-    })
-
-
+    });
 }
 
 function wish(n: number = 1) {
-
-    const cost = 280 * n; // 十连抽消耗的星火
-
+    const cost = 280 * n;
     saveStore.things.remove("XinHuo", cost);
-    saveStore.wish_number += n; // 更新抽奖次数
+    // saveStore.wish_number += n; // Avoid double increment if handled inside loop
 
     result.value = [];
-
     count_XinHuo.value = saveStore.things.get("XinHuo");
 
-
-    for (let i = 1; i < n + 1; i++) {
+    for (let i = 1; i <= n; i++) {
         saveStore.n_wish++;
-        saveStore.wish_number++; // 更新抽奖次数
-        const n = random.random();
-        if (n <= f(saveStore.n_wish)) {
-            saveStore.n_wish = 0; // 重置连续抽奖次数
-            const wish_item = random.random_choice(wish_list);
+        saveStore.wish_number++; // increment total pulls
+        const randVal = random.random();
 
-            if (saveStore.characters.is_in(wish_item)) {
-                result.value.push({
-                    n: i,
-                    content: `${new characters[wish_item]().name}（已存在）`
-                });
+        if (randVal <= f(saveStore.n_wish)) {
+            saveStore.n_wish = 0;
+            const wish_item_key = random.random_choice(wish_list);
 
-            } else {
-                if (wish_item in characters) {
-                    let c = new characters[wish_item]();
-                    saveStore.characters.add(c);
-                    result.value.push({
-                        n: i,
-                        content: c.name
-                    });
-                }
+            const isNew = !saveStore.characters.is_in(wish_item_key);
+            const charObj = new characters[wish_item_key]();
 
+            if (isNew) {
+                saveStore.characters.add(charObj);
             }
 
+            result.value.push({
+                character: charObj,
+                isNew: isNew,
+                rarity: 5 // Visual rarity
+            });
         } else {
             result.value.push({
-                n: i,
-                content: "无"
+                character: null,
+                isNew: false,
+                rarity: 3
             });
         }
     }
@@ -114,89 +108,684 @@ function wish(n: number = 1) {
 
 function skip() {
     let end = player.value.player.duration();
-    player.value.player.currentTime(end)
+    player.value.player.currentTime(end);
 }
+
+function closeResult() {
+    show_result.value = false;
+}
+
+const getIllustration = (char: any) => {
+    return `illustrations/${char.inside_name}.jpg`;
+};
+
+const getAvatar = (char: any) => {
+    // Basic fallback if needed, but we'll mostly use illustrations
+    return icons.character;
+};
 
 </script>
 
 <template>
-    <div class="container">
-        <sbutton id="skip" v-show="show_skip" @click="skip"><el-image :src="icons.skip" class="icon" /></sbutton>
-        <el-row>
-            <sbutton type="primary" @click="run(1)">点击抽卡</sbutton>
-            <sbutton type="primary" @click="run(10)">点击抽卡(十连)</sbutton>
-            <sbutton type="primary" @click="run(100)">点击抽卡(百连)</sbutton>
-            <sbutton type="primary" @click="run(2500)" v-if='dataStore.is_dev'>点击抽卡(二千五百连)</sbutton>
-        </el-row>
+    <div class="wish-container">
+        <!-- Background Layer -->
+        <div class="wish-bg"></div>
 
-        <p>据上一次出货的抽数：{{ saveStore.n_wish }}</p>
-        <p>总抽数：{{ saveStore.wish_number }}</p>
-        <p>星火数量：{{ count_XinHuo }} 约{{ Math.floor(count_XinHuo / 280) }}抽</p>
-        <p></p>
+        <!-- Header: Currency and Stats -->
+        <div class="wish-header">
+            <div class="currency-display">
+                <div class="currency-item">
+                    <img :src="icon_xinhuo" class="currency-icon" />
+                    <div class="currency-info">
+                        <span class="currency-value">{{ count_XinHuo }}</span>
+                        <span class="currency-label">星火</span>
+                    </div>
+                </div>
+            </div>
+            <div class="wish-stats">
+                <div class="stat-item">
+                    <span class="label">总祈愿次数</span>
+                    <span class="value">{{ saveStore.wish_number }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="label">保底进度</span>
+                    <span class="value">{{ saveStore.n_wish }}</span>
+                </div>
+            </div>
+        </div>
 
-        <div id="captcha"></div>
+        <!-- Main Banner Content -->
+        <div class="wish-main">
+            <div class="banner-box">
+                <h1 class="banner-title">星火祈愿</h1>
+                <p class="banner-subtitle">在此寻获命运中的伙伴</p>
+                <div class="banner-decorative">
+                    <div class="line"></div>
+                    <div class="diamond">✦</div>
+                    <div class="line"></div>
+                </div>
+            </div>
+        </div>
 
-        <!-- 抽卡动画 -->
-        <svideo :options="player_conf" class="ani" :hidden="!show_ani" ref="player">
-            <source src="/video/wish.mp4" type="video/mp4">
-        </svideo>
+        <!-- Footer: Action Buttons -->
+        <div class="wish-footer">
+            <div class="btn-group">
+                <button class="draw-button single" @click="run(1)">
+                    <span class="text">祈愿一次</span>
+                    <span class="cost">
+                        <img :src="icon_xinhuo" />
+                        280
+                    </span>
+                </button>
+                <button class="draw-button multi" @click="run(10)">
+                    <span class="text">祈愿十次</span>
+                    <span class="cost">
+                        <img :src="icon_xinhuo" />
+                        2800
+                    </span>
+                </button>
+            </div>
 
-        <el-dialog v-model="show_result" title="抽卡结果">
-            <el-scrollbar height="40vh">
-                <el-table :data="result" border>
-                    <el-table-column prop="n" label="抽数" />
-                    <el-table-column prop="content" label="内容" />
-                </el-table>
-            </el-scrollbar>
-        </el-dialog>
+            <div class="dev-actions" v-if="dataStore.is_dev">
+                <sbutton type="primary" size="small" @click="run(100)">百连祈愿 (DEV)</sbutton>
+                <sbutton type="primary" size="small" @click="run(2500)">超级祈愿 (DEV)</sbutton>
+            </div>
+        </div>
 
+        <!-- Animation Video Layer -->
+        <div class="ani-layer" v-show="show_ani">
+            <svideo :options="player_conf" class="ani-video" ref="player">
+                <source src="/video/wish.mp4" type="video/mp4">
+            </svideo>
+            <button class="skip-btn" v-show="show_skip" @click="skip">
+                <el-image :src="icons.skip" class="skip-icon" />
+                <span>跳过动画</span>
+            </button>
+        </div>
+
+        <!-- Result Overlay -->
+        <Transition name="fade-scale">
+            <div v-if="show_result" class="result-overlay" @click.self="closeResult">
+                <div class="result-container">
+                    <div class="result-header">
+                        <h2>祈愿结果</h2>
+                        <div class="decor-line"></div>
+                    </div>
+
+                    <el-scrollbar max-height="75vh" class="result-scroll">
+                        <div class="result-grid" :class="{ 'single-item': result.length === 1 }">
+                            <div v-for="(item, index) in result" :key="index" class="result-card"
+                                :class="[item.character ? 'rarity-5' : 'rarity-3']"
+                                :style="{ '--delay': index * 0.05 + 's' }">
+
+                                <template v-if="item.character">
+                                    <div class="card-inner">
+                                        <div class="char-ill-wrap">
+                                            <el-image :src="getIllustration(item.character)" fit="cover"
+                                                class="char-ill">
+                                                <template #error>
+                                                    <div class="ill-placeholder">
+                                                        <el-image :src="c2e[item.character.type]" class="bg-element" />
+                                                        <span>{{ item.character.name }}</span>
+                                                    </div>
+                                                </template>
+                                            </el-image>
+                                        </div>
+                                        <div class="char-meta">
+                                            <el-image :src="c2e[item.character.type]" class="element-icon" />
+                                            <span class="name">{{ item.character.name }}</span>
+                                        </div>
+                                        <div v-if="item.isNew" class="new-tag">NEW</div>
+                                        <div class="rarity-stars">★★★★★</div>
+                                    </div>
+                                </template>
+                                <template v-else>
+                                    <div class="card-inner trash">
+                                        <div class="trash-icon">✦</div>
+                                        <span class="trash-name">无名词条</span>
+                                        <div class="rarity-stars">★★★</div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </el-scrollbar>
+
+                    <div class="result-footer">
+                        <button class="close-button" @click="closeResult">点击空白处关闭</button>
+                    </div>
+                </div>
+            </div>
+        </Transition>
     </div>
 </template>
 
 <style scoped>
-.container {
-    width: 100%;
+.wish-container {
+    position: relative;
+    width: 100vw;
     height: 100vh;
-    padding: 20px;
+    overflow: hidden;
+    color: white;
+    font-family: 'MiSans-Medium', sans-serif;
+}
+
+.wish-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('../assets/bg/wish.jpg');
+    background-size: cover;
+    background-position: center;
+    filter: brightness(0.6) blur(2px);
+    z-index: -1;
+}
+
+/* Header */
+.wish-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 30px 50px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
     box-sizing: border-box;
+    pointer-events: none;
+}
+
+.currency-display {
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(10px);
+    border-radius: 50px;
+    padding: 5px 25px 5px 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    pointer-events: auto;
+}
+
+.currency-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.currency-icon {
+    width: 40px;
+    height: 40px;
+    filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.5));
+}
+
+.currency-info {
     display: flex;
     flex-direction: column;
+}
+
+.currency-value {
+    font-size: 20px;
+    font-weight: bold;
+    color: #ffd700;
+}
+
+.currency-label {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+}
+
+.wish-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    text-align: right;
+}
+
+.stat-item {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 5px 15px;
+    border-radius: 4px;
+    border-right: 4px solid #409EFF;
+}
+
+.stat-item .label {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+    margin-right: 15px;
+}
+
+.stat-item .value {
+    font-weight: bold;
+    color: #fff;
+}
+
+/* Main Content */
+.wish-main {
+    height: 100%;
+    display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.container::before {
+.banner-box {
+    text-align: center;
+    text-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+}
+
+.banner-title {
+    font-size: 80px;
+    margin: 0;
+    letter-spacing: 10px;
+    background: linear-gradient(to bottom, #fff, #a5c7ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.banner-subtitle {
+    font-size: 24px;
+    color: rgba(255, 255, 255, 0.8);
+    margin: 10px 0 30px;
+}
+
+.banner-decorative {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+}
+
+.banner-decorative .line {
+    width: 100px;
+    height: 2px;
+    background: linear-gradient(to right, transparent, #fff, transparent);
+}
+
+.banner-decorative .diamond {
+    color: #fff;
+    font-size: 24px;
+}
+
+/* Footer */
+.wish-footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 50px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+}
+
+.btn-group {
+    display: flex;
+    gap: 40px;
+}
+
+.draw-button {
+    width: 280px;
+    height: 70px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+}
+
+.draw-button::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-image: url('../assets/bg/wish.jpg');
-    background-size: cover;
-    background-position: center;
-    filter: blur(5px);
-    z-index: -10;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateX(-100%) skewX(-15deg);
+    transition: transform 0.5s;
 }
 
-.ani {
+.draw-button:hover::before {
+    transform: translateX(100%) skewX(-15deg);
+}
+
+.draw-button:active {
+    transform: scale(0.95);
+}
+
+.draw-button.single {
+    background: #f5f5f5;
+    color: #4a4a4a;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.draw-button.single .text {
+    color: #333;
+}
+
+.draw-button.single .cost {
+    color: #666;
+}
+
+.draw-button.multi {
+    background: #ffd700;
+    color: #4a3400;
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+}
+
+.draw-button.multi .text {
+    color: #4a3400;
+}
+
+.draw-button.multi .cost {
+    color: #6b4c00;
+}
+
+.draw-button .text {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.draw-button .cost {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 14px;
+    margin-top: 2px;
+    opacity: 0.8;
+}
+
+.draw-button .cost img {
+    width: 18px;
+    height: 18px;
+}
+
+.dev-actions {
+    display: flex;
+    gap: 15px;
+}
+
+/* Video Animation Layer */
+.ani-layer {
     position: fixed;
+    top: 0;
+    left: 0;
     width: 100vw;
     height: 100vh;
-    z-index: 1001;
-    left: 0;
-    top: 0;
+    z-index: 1000;
+    background: black;
 }
 
-.icon {
+.ani-video {
+    width: 100%;
+    height: 100%;
+}
+
+.skip-btn {
+    position: absolute;
+    top: 30px;
+    right: 50px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #fff;
+    padding: 8px 20px;
+    border-radius: 50px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background 0.3s;
+    z-index: 1001;
+}
+
+.skip-btn:hover {
+    background: rgba(0, 0, 0, 0.8);
+}
+
+.skip-icon {
     width: 20px;
     height: 20px;
 }
 
-#skip {
+/* Result Overlay */
+.result-overlay {
     position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.9);
+    backdrop-filter: blur(10px);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.result-container {
+    width: 90%;
+    max-width: 1400px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.result-header h2 {
+    font-size: 32px;
+    margin-bottom: 20px;
+    color: #ffd700;
+    letter-spacing: 5px;
+}
+
+.decor-line {
+    height: 2px;
+    background: linear-gradient(to right, transparent, #ffd700, transparent);
+    margin-bottom: 40px;
+}
+
+.result-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 25px;
+    padding: 20px;
+}
+
+.result-grid.single-item {
+    grid-template-columns: 1fr;
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+/* Result Card */
+.result-card {
+    position: relative;
+    height: 400px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    opacity: 0;
+    transform: translateY(30px);
+    animation: cardAppear 0.5s ease forwards;
+    animation-delay: var(--delay);
+}
+
+@keyframes cardAppear {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card-inner {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.char-ill-wrap {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+}
+
+.char-ill {
+    width: 100%;
+    height: 100%;
+    transition: transform 0.5s;
+}
+
+.result-card:hover .char-ill {
+    transform: scale(1.1);
+}
+
+.ill-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #1a1a1a;
+    color: #fff;
+    font-size: 24px;
+}
+
+.bg-element {
+    width: 120px;
+    height: 120px;
+    opacity: 0.1;
+    position: absolute;
+}
+
+.char-meta {
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.element-icon {
+    width: 24px;
+    height: 24px;
+}
+
+.char-meta .name {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.new-tag {
+    position: absolute;
     top: 10px;
-    right: 10px;
-    z-index: 1002;
+    left: 10px;
+    background: #ff4757;
+    padding: 2px 10px;
+    font-size: 12px;
+    border-radius: 4px;
+    box-shadow: 0 0 10px rgba(255, 71, 87, 0.5);
+}
+
+.rarity-stars {
+    padding: 5px;
+    color: #ffd700;
+    font-size: 12px;
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.trash {
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #2f3542, #1e272e);
+}
+
+.trash-icon {
+    font-size: 60px;
+    color: rgba(255, 255, 255, 0.1);
+    margin-bottom: 20px;
+}
+
+.trash-name {
+    font-size: 20px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* Rarity specific card styling */
+.rarity-5 {
+    border: 2px solid rgba(255, 215, 0, 0.5);
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+}
+
+.rarity-5 .char-meta {
+    background: linear-gradient(to top, rgba(255, 215, 0, 0.3), rgba(0, 0, 0, 0.8));
+}
+
+.result-footer {
+    margin-bottom: 20px;
+}
+
+.close-button {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.7);
+    padding: 12px 40px;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 14px;
+    letter-spacing: 1px;
+}
+
+.close-button:hover {
+    color: #fff;
+    border-color: #fff;
+}
+
+/* Transitions */
+.fade-scale-enter-active,
+.fade-scale-leave-active {
+    transition: all 0.5s ease;
+}
+
+.fade-scale-enter-from,
+.fade-scale-leave-to {
+    opacity: 0;
+    transform: scale(1.1);
+}
+
+@media screen and (max-width: 1200px) {
+    .result-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media screen and (max-width: 900px) {
+    .result-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .banner-title {
+        font-size: 60px;
+    }
+}
+
+@media screen and (max-width: 600px) {
+    .result-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .btn-group {
+        flex-direction: column;
+        gap: 15px;
+    }
 }
 </style>
