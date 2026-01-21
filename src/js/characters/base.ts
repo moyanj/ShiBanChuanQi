@@ -23,7 +23,7 @@ export interface ActiveEffect {
     stacks?: number;
     maxStacks?: number;
     source_skill_name: string;
-    
+
     onTick?: (target: Character, battle: IBattle) => void;
     onApply?: (target: Character, battle: IBattle) => void;
     onRemove?: (target: Character, battle: IBattle) => void;
@@ -90,7 +90,7 @@ export abstract class Character {
 
     private register_battle_events() {
         if (!this._env) return;
-        
+
         const events_to_listen = [
             { event: BattleEvent.TURN_START, method: this.onTurnStart },
             { event: BattleEvent.TURN_END, method: this.onTurnEnd },
