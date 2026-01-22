@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useSaveStore, useDataStore } from '../js/stores';
 import { icons } from '../js/utils';
 import { ElImage, ElAvatar, ElMessage } from 'element-plus';
@@ -84,8 +84,30 @@ const typeMap: Record<string, string> = {
     "虚无": icons.element.nihility
 };
 
+// Hitokoto 逻辑
+const hitokoto = ref({ text: '正在加载一言...', from: '' });
+const fetchHitokoto = async () => {
+    try {
+        const response = await fetch('https://h.moyanjdc.top?max_length=30');
+        const data = await response.json();
+        hitokoto.value = data;
+    } catch (error) {
+        console.error('Failed to fetch hitokoto:', error);
+    }
+};
+
+let hitokotoTimer: any = null;
+
 onMounted(() => {
     initKanban();
+    fetchHitokoto();
+    hitokotoTimer = setInterval(fetchHitokoto, 10000);
+});
+
+onUnmounted(() => {
+    if (hitokotoTimer) {
+        clearInterval(hitokotoTimer);
+    }
 });
 
 const navigate = (page: string) => {
@@ -139,6 +161,18 @@ const navigate = (page: string) => {
                         <span class="res-value">{{ xinhuo }}</span>
                         <div class="res-add">+</div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Hitokoto Display -->
+            <div class="hitokoto-box" v-if="hitokoto.text" @click="fetchHitokoto" title="点击刷新">
+                <div class="hitokoto-content">
+                    <span class="quote-mark">“</span>
+                    <span class="hitokoto-text">{{ hitokoto.text }}</span>
+                    <span class="quote-mark">”</span>
+                </div>
+                <div class="hitokoto-from" v-if="hitokoto.from">
+                    — {{ hitokoto.from }}
                 </div>
             </div>
 
@@ -573,6 +607,84 @@ const navigate = (page: string) => {
 
     100% {
         left: 100%;
+    }
+}
+
+/* Hitokoto Display */
+.hitokoto-box {
+    position: absolute;
+    top: 110px;
+    right: 50px;
+    z-index: 150;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    max-width: 400px;
+    padding: 8px 16px;
+    background: linear-gradient(90deg, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.6) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-right: 2px solid #f7d358;
+    border-radius: 2px;
+    backdrop-filter: blur(8px);
+    transition: all 0.3s ease;
+    animation: fadeInHitokoto 0.8s ease-out;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.hitokoto-box::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+}
+
+.hitokoto-box:hover {
+    background: linear-gradient(90deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.8) 100%);
+    border-color: rgba(247, 211, 88, 0.3);
+    transform: translateY(2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.hitokoto-content {
+    font-size: 13px;
+    color: #e0e0e0;
+    line-height: 1.6;
+    text-align: right;
+    margin-bottom: 2px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    font-weight: 500;
+}
+
+.quote-mark {
+    color: #f7d358;
+    font-size: 1.1em;
+    margin: 0 3px;
+    opacity: 0.8;
+}
+
+.hitokoto-from {
+    font-size: 11px;
+    color: #f7d358;
+    opacity: 0.7;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding-top: 2px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+@keyframes fadeInHitokoto {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 </style>
