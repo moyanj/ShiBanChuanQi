@@ -143,7 +143,6 @@ export class Battle implements IBattle {
 
     execute_skill(target_party: 'enemy' | 'our', target_character_name: string, skill: Skill, attacker_character: Character): number {
         this.emit(BattleEvent.BEFORE_ACTION, attacker_character);
-        this.emit(BattleEvent.SKILL_EXECUTE, { attacker: attacker_character, skill, target_party, target_character_name });
         this.onCharacterAction();
         // 战技点消耗逻辑 (必须在最前面)
         if (attacker_character.is_our && skill.cost > 0) {
@@ -155,6 +154,8 @@ export class Battle implements IBattle {
                 return 0; // 战技点不足，技能无法执行
             }
         }
+        this.emit(BattleEvent.SKILL_EXECUTE, { attacker: attacker_character, skill, target_party, target_character_name });
+
 
         const target_battle_characters = target_party === 'enemy' ? this.enemy : this.our;
         let main_target_character = target_battle_characters.characters[target_character_name];

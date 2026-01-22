@@ -62,17 +62,17 @@ const spawnDamageNumber = (name: string, val: number, type: 'damage' | 'heal', p
     // 根据阵营决定大致位置
     const baseX = party === 'enemy' ? 50 : 50; // 水平居中偏移
     const baseY = party === 'enemy' ? 30 : 70; // 敌人偏上，我方偏下
-    
+
     const x = (Math.random() - 0.5) * 100;
     const y = (Math.random() - 0.5) * 50;
-    
-    damageNumbers.value.push({ 
-        id, 
-        val: Math.round(val), 
-        type, 
-        x: x, 
+
+    damageNumbers.value.push({
+        id,
+        val: Math.round(val),
+        type,
+        x: x,
         y: baseY + (y / 10), // y 是百分比
-        name 
+        name
     });
     setTimeout(() => {
         damageNumbers.value = damageNumbers.value.filter(d => d.id !== id);
@@ -127,29 +127,37 @@ const autoSelectActiveCharacter = () => {
     if (fightStore.ai) return;
 
     const activeChar = current_active_character.value;
-    if (activeChar && !fightStore.selected_our_character && activeChar.type === 'our') {
-        // 如果当前行动角色是我方角色，自动选择它
-        fightStore.selected_our_character = activeChar.character;
-        fightStore.selected_target_character = null;
+    if (activeChar && activeChar.type === 'our') {
+        // 只有当没有选择角色，或者选择的角色不是当前行动角色时，才进行自动选择
+        if (!fightStore.selected_our_character || fightStore.selected_our_character.inside_name !== activeChar.character.inside_name) {
+            fightStore.selected_our_character = activeChar.character;
+            fightStore.selected_target_character = null;
 
-        // 自动选择第一个敌方角色作为目标
-        const firstEnemy = battle.value?.enemy.get_alive_characters()[0];
-        if (firstEnemy) {
-            fightStore.selected_target_character = { type: 'enemy', character: firstEnemy };
-            battle.value?.log(`你选择了 ${activeChar.character.name} 行动，并自动选择 ${firstEnemy.name} 作为目标。`);
-        } else {
-            battle.value?.log(`你选择了 ${activeChar.character.name} 行动。`);
+            // 自动选择第一个敌方角色作为目标
+            const firstEnemy = battle.value?.enemy.get_alive_characters()[0];
+            if (firstEnemy) {
+                fightStore.selected_target_character = { type: 'enemy', character: firstEnemy };
+                battle.value?.log(`轮到 ${activeChar.character.name} 行动，已自动为你选择目标。`);
+            } else {
+                battle.value?.log(`轮到 ${activeChar.character.name} 行动。`);
+            }
         }
     }
 };
 
 // 监听当前行动角色的变化
-watch(current_active_character, (newVal, oldVal) => {
-    // 只有在手动模式下才自动选择
-    if (!fightStore.ai && newVal && newVal.type === 'our') {
+watch(current_active_character, (newVal) => {
+    if (newVal && newVal.type === 'our') {
         autoSelectActiveCharacter();
     }
-}, { deep: true });
+}, { deep: true, immediate: true });
+
+// 监听 AI 模式切换，切换回手动时尝试自动选择
+watch(() => fightStore.ai, (newAI) => {
+    if (!newAI) {
+        autoSelectActiveCharacter();
+    }
+});
 
 // 玩家选择的我方角色 (用于手动模式下，玩家点击我方角色后，准备选择技能)
 const selected_our_character = computed(() => fightStore.selected_our_character);
@@ -194,6 +202,9 @@ watch(battle, (newBattle) => {
                 }
             }, 1500);
         });
+        newBattle.on(BattleEvent.TURN_END, (data: any) => {
+            console.log("TURN_END", data);
+        })
     }
 }, { immediate: true });
 
@@ -389,19 +400,6 @@ const playerAttack = async (attack_type: 'general' | 'skill' | 'super_skill') =>
     fightStore.selected_our_character = null;
     fightStore.selected_target_character = null;
     current_selected_skill_type.value = null; // 重置技能类型
-
-    // 手动操作后，立即检查一次战斗是否结束
-    if (battle.value.enemy.hp <= 0 || battle.value.our.hp <= 0) {
-        // 让 battleService 处理结算
-        battleService.stopLoop();
-        // 我们需要手动调用结算，或者让 next_turn 在下一次循环检测到。
-        // 为了即时反馈，我们在这里手动触发一次 next_turn 检测。
-        const isEnded = await battle.value.next_turn();
-        if (isEnded) {
-            // 注意：这里可能需要从 battleService 获取结果，或者让 battleService 提供一个触发结算的方法
-            // 由于 startBattle 已经注册了 onSettlement，这里如果 next_turn 触发了逻辑，它会自动调用 handleSettlement
-        }
-    }
 };
 
 onMounted(() => {
@@ -430,7 +428,7 @@ onUnmounted(() => {
                 <img :src="icons.left" />
                 <span>返回</span>
             </sbutton>
-            
+
             <div class="selection-header">
                 <div class="header-content">
                     <h1>编制战斗队伍</h1>
@@ -444,10 +442,9 @@ onUnmounted(() => {
                 <div class="available-pane">
                     <el-scrollbar>
                         <div class="char-grid">
-                            <div v-for="char in available_characters" :key="char.inside_name"
-                                 class="char-card" 
-                                 :class="{ 'is-selected': isCharacterSelected(char) }"
-                                 @click="toggleCharacterSelection(char)">
+                            <div v-for="char in available_characters" :key="char.inside_name" class="char-card"
+                                :class="{ 'is-selected': isCharacterSelected(char) }"
+                                @click="toggleCharacterSelection(char)">
                                 <div class="char-img-box">
                                     <img :src="`illustrations/${char.inside_name}.jpg`" class="char-portrait" />
                                     <div class="select-badge" v-if="isCharacterSelected(char)">
@@ -469,11 +466,13 @@ onUnmounted(() => {
                     <div class="pane-title">当前出战序列</div>
                     <div class="team-slots">
                         <div v-for="i in 3" :key="i" class="team-slot">
-                            <template v-if="fightStore.selected_characters[i-1]">
+                            <template v-if="fightStore.selected_characters[i - 1]">
                                 <div class="slot-inner filled">
-                                    <img :src="`illustrations/${fightStore.selected_characters[i-1].inside_name}.jpg`" />
-                                    <div class="slot-label">{{ fightStore.selected_characters[i-1].name }}</div>
-                                    <div class="slot-remove" @click="toggleCharacterSelection(fightStore.selected_characters[i-1])">×</div>
+                                    <img
+                                        :src="`illustrations/${fightStore.selected_characters[i - 1].inside_name}.jpg`" />
+                                    <div class="slot-label">{{ fightStore.selected_characters[i - 1].name }}</div>
+                                    <div class="slot-remove"
+                                        @click="toggleCharacterSelection(fightStore.selected_characters[i - 1])">×</div>
                                 </div>
                             </template>
                             <template v-else>
@@ -484,7 +483,7 @@ onUnmounted(() => {
                             </template>
                         </div>
                     </div>
-                    
+
                     <div class="selection-footer">
                         <div v-if="errorMessage" class="error-msg">{{ errorMessage }}</div>
                         <div class="btn-group">
@@ -507,8 +506,7 @@ onUnmounted(() => {
                     <fightCard v-for="char in battle.enemy.get_alive_characters()" :key="char.inside_name"
                         :character="char"
                         :is_active="current_active_character?.type === 'enemy' && current_active_character.character.inside_name === char.inside_name"
-                        :is_enemy="true"
-                        :is_hit="hitCharacters[char.inside_name]"
+                        :is_enemy="true" :is_hit="hitCharacters[char.inside_name]"
                         :is_selected="selected_target_character?.type === 'enemy' && selected_target_character.character.inside_name === char.inside_name"
                         @click="selectTargetCharacter('enemy', char)">
                     </fightCard>
@@ -518,8 +516,7 @@ onUnmounted(() => {
                     <fightCard v-for="char in battle.our.get_alive_characters()" :key="char.inside_name"
                         :character="char"
                         :is_active="current_active_character?.type === 'our' && current_active_character.character.inside_name === char.inside_name"
-                        :atb_value="battle.our.atb[char.inside_name]" 
-                        :is_enemy="false"
+                        :atb_value="battle.our.atb[char.inside_name]" :is_enemy="false"
                         :is_hit="hitCharacters[char.inside_name]"
                         :is_selected="selected_our_character?.inside_name === char.inside_name || (selected_target_character?.type === 'our' && selected_target_character.character.inside_name === char.inside_name)"
                         @click="fightStore.selected_our_character ? selectTargetCharacter('our', char) : selectOurCharacter(char)">
@@ -531,9 +528,8 @@ onUnmounted(() => {
             <div class="fx-layer">
                 <!-- 伤害/治疗数字 -->
                 <transition-group name="float-up">
-                    <div v-for="d in damageNumbers" :key="d.id" 
-                         class="floating-number" :class="d.type"
-                         :style="{ left: `calc(50% + ${d.x}px)`, top: `${d.y}%` }">
+                    <div v-for="d in damageNumbers" :key="d.id" class="floating-number" :class="d.type"
+                        :style="{ left: `calc(50% + ${d.x}px)`, top: `${d.y}%` }">
                         {{ d.type === 'heal' ? '+' : '-' }}{{ d.val }}
                     </div>
                 </transition-group>
@@ -559,7 +555,7 @@ onUnmounted(() => {
                             {{ fightStore.ai ? 'AUTO' : 'MANUAL' }}
                         </sbutton>
                         <sbutton @click="show_manager = true" text class="menu-trigger">
-                            <img :src="icons.menu" />
+                            <img :src="icons.menu" style="color: white;" />
                         </sbutton>
                     </div>
                 </div>
@@ -583,13 +579,16 @@ onUnmounted(() => {
                     <!-- 战技点展示 -->
                     <div class="bp-container">
                         <div class="bp-dots">
-                            <div v-for="i in 5" :key="i" class="bp-dot" :class="{ 'is-filled': i <= battle.battle_points }"></div>
+                            <div v-for="i in 5" :key="i" class="bp-dot"
+                                :class="{ 'is-filled': i <= battle.battle_points }">
+                            </div>
                         </div>
                         <span class="bp-val">{{ battle.battle_points }} / 5</span>
                     </div>
 
                     <!-- 圆形技能指令 -->
-                    <div class="skill-buttons" v-if="!fightStore.ai && selected_our_character && current_active_character?.type === 'our' && current_active_character.character.inside_name === selected_our_character.inside_name">
+                    <div class="skill-buttons"
+                        v-if="!fightStore.ai && current_active_character?.type === 'our' && current_active_character.character.inside_name === selected_our_character.inside_name">
                         <div class="skill-node" @click="playerAttack('general')">
                             <div class="node-circle">
                                 <img :src="icons.sword" />
@@ -597,10 +596,10 @@ onUnmounted(() => {
                             <span class="node-label">普攻</span>
                             <span class="node-cost bonus">+1</span>
                         </div>
-                        
-                        <div class="skill-node" 
-                             :class="{ 'is-disabled': battle.battle_points < selected_our_character.getSkill().cost }"
-                             @click="playerAttack('skill')">
+
+                        <div class="skill-node"
+                            :class="{ 'is-disabled': battle.battle_points < selected_our_character.getSkill().cost }"
+                            @click="playerAttack('skill')">
                             <div class="node-circle skill">
                                 <img :src="icons.sword" />
                             </div>
@@ -610,7 +609,7 @@ onUnmounted(() => {
 
                         <div class="skill-node ult" @click="playerAttack('super_skill')">
                             <div class="node-circle">
-                                <img :src="icons.wish" />
+                                <img :src="icons.wish" class="super-skill-icon" />
                             </div>
                             <span class="node-label">爆发</span>
                         </div>
@@ -673,9 +672,11 @@ onUnmounted(() => {
 
 <style scoped>
 /* 全局页面样式 */
-.char-selection-page, .battle-page {
+.char-selection-page,
+.battle-page {
     position: fixed;
-    top: 0; left: 0;
+    top: 0;
+    left: 0;
     width: 100vw;
     height: 100vh;
     background-color: #0c0c0e;
@@ -686,7 +687,10 @@ onUnmounted(() => {
 
 .bg-overlay {
     position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background: radial-gradient(circle at 50% 50%, rgba(45, 55, 72, 0.4) 0%, transparent 80%);
     z-index: 0;
 }
@@ -698,7 +702,11 @@ onUnmounted(() => {
     z-index: 1000;
 }
 
-.back-btn-unified img { width: 16px; height: 16px; margin-right: 5px; filter: invert(1); }
+.back-btn-unified img {
+    width: 16px;
+    height: 16px;
+    margin-right: 5px;
+}
 
 /* --- 角色选择界面 --- */
 .selection-header {
@@ -755,8 +763,8 @@ onUnmounted(() => {
 }
 
 .char-card {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 4px;
     overflow: hidden;
     cursor: pointer;
@@ -764,9 +772,9 @@ onUnmounted(() => {
 }
 
 .char-card:hover {
-    background: rgba(255,255,255,0.08);
+    background: rgba(255, 255, 255, 0.08);
     transform: translateY(-5px);
-    border-color: rgba(255,255,255,0.3);
+    border-color: rgba(255, 255, 255, 0.3);
 }
 
 .char-card.is-selected {
@@ -788,7 +796,8 @@ onUnmounted(() => {
 
 .select-badge {
     position: absolute;
-    top: 10px; right: 10px;
+    top: 10px;
+    right: 10px;
     background: #f7d358;
     color: #000;
     padding: 2px 8px;
@@ -802,19 +811,30 @@ onUnmounted(() => {
     display: flex;
     align-items: center;
     gap: 10px;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0, 0, 0, 0.5);
 }
 
-.type-icon { width: 20px; height: 20px; }
-.char-info-bar .name { flex: 1; font-weight: bold; }
-.char-info-bar .lv { color: #888; font-size: 0.9rem; }
+.type-icon {
+    width: 20px;
+    height: 20px;
+}
+
+.char-info-bar .name {
+    flex: 1;
+    font-weight: bold;
+}
+
+.char-info-bar .lv {
+    color: #888;
+    font-size: 0.9rem;
+}
 
 .team-preview-pane {
     width: 400px;
     background: rgba(20, 20, 22, 0.7);
     backdrop-filter: blur(15px);
     border-radius: 8px;
-    border: 1px solid rgba(255,255,255,0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     padding: 30px;
     display: flex;
     flex-direction: column;
@@ -862,17 +882,23 @@ onUnmounted(() => {
     border-radius: 4px;
 }
 
-.slot-label { font-size: 1.2rem; font-weight: 900; }
+.slot-label {
+    font-size: 1.2rem;
+    font-weight: 900;
+}
 
 .slot-remove {
     position: absolute;
-    top: 5px; right: 10px;
+    top: 5px;
+    right: 10px;
     font-size: 20px;
     color: #888;
     cursor: pointer;
 }
 
-.slot-remove:hover { color: #fff; }
+.slot-remove:hover {
+    color: #fff;
+}
 
 .slot-inner.empty {
     height: 100%;
@@ -883,16 +909,32 @@ onUnmounted(() => {
     color: #444;
 }
 
-.empty .plus { font-size: 2rem; line-height: 1; }
-.empty .txt { font-size: 0.8rem; letter-spacing: 2px; }
+.empty .plus {
+    font-size: 2rem;
+    line-height: 1;
+}
+
+.empty .txt {
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+}
 
 .selection-footer {
     margin-top: 40px;
 }
 
-.error-msg { color: #ff4757; font-size: 0.9rem; margin-bottom: 20px; text-align: center; }
+.error-msg {
+    color: #ff4757;
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+    text-align: center;
+}
 
-.btn-group { display: flex; flex-direction: column; gap: 15px; }
+.btn-group {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
 
 /* --- 战斗界面样式 --- */
 .battle-page {
@@ -902,7 +944,10 @@ onUnmounted(() => {
 
 .battle-scene {
     position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -925,42 +970,65 @@ onUnmounted(() => {
 
 .battle-hud {
     position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     z-index: 10;
     pointer-events: none;
 }
 
-.battle-hud > * { pointer-events: auto; }
+.battle-hud>* {
+    pointer-events: auto;
+}
 
 .top-hud {
     position: absolute;
-    top: 0; left: 0; right: 0;
+    top: 0;
+    left: 0;
+    right: 0;
     padding: 30px 40px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, transparent 100%);
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.8) 0%, transparent 100%);
 }
 
 .battle-status {
     font-size: 1.5rem;
     font-weight: 900;
     color: #fff;
-    text-shadow: 0 0 10px rgba(255,255,255,0.3);
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
 }
 
-.top-btns { display: flex; gap: 20px; align-items: center; }
+.top-btns {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
 
 .ai-btn {
-    border: 1px solid rgba(255,255,255,0.3);
+    border: 1px solid rgba(255, 255, 255, 0.3);
     padding: 5px 15px;
     font-weight: 900;
     letter-spacing: 2px;
 }
 
-.ai-active { color: #f7d358; border-color: #f7d358; text-shadow: 0 0 8px #f7d358; }
+.ai-active {
+    color: #f7d358;
+    border-color: #f7d358;
+    text-shadow: 0 0 8px #f7d358;
+}
 
-.menu-trigger img { width: 24px; height: 24px; filter: invert(1); }
+.menu-trigger {
+    padding: 5px 10px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.menu-trigger img {
+    width: 24px;
+    height: 24px;
+}
 
 .action-order-sidebar {
     position: absolute;
@@ -973,7 +1041,7 @@ onUnmounted(() => {
     bottom: 40px;
     left: 40px;
     width: 300px;
-    background: linear-gradient(to right, rgba(0,0,0,0.7) 0%, transparent 100%);
+    background: linear-gradient(to right, rgba(0, 0, 0, 0.7) 0%, transparent 100%);
     padding: 15px;
     border-radius: 4px;
     pointer-events: none;
@@ -981,12 +1049,15 @@ onUnmounted(() => {
 
 .log-entry {
     font-size: 0.85rem;
-    color: rgba(255,255,255,0.7);
+    color: rgba(255, 255, 255, 0.7);
     margin-bottom: 6px;
     line-height: 1.4;
 }
 
-.log-bullet { color: #f7d358; margin-right: 8px; }
+.log-bullet {
+    color: #f7d358;
+    margin-right: 8px;
+}
 
 .bottom-controls {
     position: absolute;
@@ -999,20 +1070,24 @@ onUnmounted(() => {
 }
 
 .bp-container {
-    background: rgba(0,0,0,0.6);
+    background: rgba(0, 0, 0, 0.6);
     padding: 10px 20px;
     border-radius: 4px;
     display: flex;
     align-items: center;
     gap: 20px;
-    border: 1px solid rgba(255,255,255,0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.bp-dots { display: flex; gap: 8px; }
+.bp-dots {
+    display: flex;
+    gap: 8px;
+}
 
 .bp-dot {
-    width: 10px; height: 10px;
-    background: rgba(255,255,255,0.1);
+    width: 10px;
+    height: 10px;
+    background: rgba(255, 255, 255, 0.1);
     border-radius: 2px;
     transform: rotate(45deg);
 }
@@ -1022,7 +1097,11 @@ onUnmounted(() => {
     box-shadow: 0 0 10px #f7d358;
 }
 
-.bp-val { font-weight: 900; color: #fff; font-size: 1.2rem; }
+.bp-val {
+    font-weight: 900;
+    color: #fff;
+    font-size: 1.2rem;
+}
 
 .skill-buttons {
     display: flex;
@@ -1039,8 +1118,13 @@ onUnmounted(() => {
     position: relative;
 }
 
-.skill-node:hover { transform: scale(1.1); }
-.skill-node:active { transform: scale(0.95); }
+.skill-node:hover {
+    transform: scale(1.1);
+}
+
+.skill-node:active {
+    transform: scale(0.95);
+}
 
 .skill-node.is-disabled {
     opacity: 0.4;
@@ -1079,6 +1163,7 @@ onUnmounted(() => {
     box-shadow: 0 0 20px rgba(66, 153, 225, 0.4);
 }
 
+
 .ult .node-circle {
     width: 90px;
     height: 90px;
@@ -1091,7 +1176,11 @@ onUnmounted(() => {
     box-shadow: 0 0 25px rgba(247, 211, 88, 0.4);
 }
 
-.node-circle img { width: 50%; height: 50%; filter: invert(1); }
+.node-circle img {
+    width: 50%;
+    height: 50%;
+
+}
 
 .node-label {
     font-size: 11px;
@@ -1102,16 +1191,19 @@ onUnmounted(() => {
 
 .node-cost {
     position: absolute;
-    top: -5px; right: -5px;
+    top: -5px;
+    right: -5px;
     background: #1a1a1e;
     color: #aaa;
     font-size: 10px;
     padding: 1px 6px;
     border-radius: 10px;
-    border: 1px solid rgba(255,255,255,0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.node-cost.bonus { color: #48bb78; }
+.node-cost.bonus {
+    color: #48bb78;
+}
 
 /* Manager (Overlay menu) */
 .manager {
@@ -1123,23 +1215,46 @@ onUnmounted(() => {
     gap: 20px;
 }
 
-.manager .icon { width: 32px; height: 32px; }
+.manager .icon {
+    width: 32px;
+    height: 32px;
+}
 
 /* --- 战斗特效与动画 --- */
 .screen-shake {
-    animation: screen-shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+    animation: screen-shake 0.4s cubic-bezier(.36, .07, .19, .97) both;
 }
 
 @keyframes screen-shake {
-    10%, 90% { transform: translate3d(-2px, 0, 0); }
-    20%, 80% { transform: translate3d(4px, 0, 0); }
-    30%, 50%, 70% { transform: translate3d(-8px, 0, 0); }
-    40%, 60% { transform: translate3d(8px, 0, 0); }
+
+    10%,
+    90% {
+        transform: translate3d(-2px, 0, 0);
+    }
+
+    20%,
+    80% {
+        transform: translate3d(4px, 0, 0);
+    }
+
+    30%,
+    50%,
+    70% {
+        transform: translate3d(-8px, 0, 0);
+    }
+
+    40%,
+    60% {
+        transform: translate3d(8px, 0, 0);
+    }
 }
 
 .fx-layer {
     position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     pointer-events: none;
     z-index: 100;
 }
@@ -1148,23 +1263,39 @@ onUnmounted(() => {
     position: absolute;
     font-size: 3rem;
     font-weight: 900;
-    text-shadow: 0 0 10px rgba(0,0,0,0.8), 2px 2px 0 #000;
+    text-shadow: 0 0 10px rgba(0, 0, 0, 0.8), 2px 2px 0 #000;
     pointer-events: none;
     z-index: 110;
     transform: translate(-50%, -50%);
 }
 
-.floating-number.damage { color: #ff4757; }
-.floating-number.heal { color: #2ed573; }
+.floating-number.damage {
+    color: #ff4757;
+}
+
+.floating-number.heal {
+    color: #2ed573;
+}
 
 .float-up-enter-active {
     animation: float-up-fade 1s ease-out forwards;
 }
 
 @keyframes float-up-fade {
-    0% { transform: translateY(0) scale(0.5); opacity: 0; }
-    20% { transform: translateY(-40px) scale(1.2); opacity: 1; }
-    100% { transform: translateY(-120px) scale(1); opacity: 0; }
+    0% {
+        transform: translateY(0) scale(0.5);
+        opacity: 0;
+    }
+
+    20% {
+        transform: translateY(-40px) scale(1.2);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateY(-120px) scale(1);
+        opacity: 0;
+    }
 }
 
 .skill-name-flash {
@@ -1202,10 +1333,29 @@ onUnmounted(() => {
 }
 
 @keyframes skill-name-pop {
-    0% { transform: scaleX(0); opacity: 0; }
-    10% { transform: scaleX(1.2); opacity: 1; }
-    20% { transform: scaleX(1); opacity: 1; }
-    80% { transform: scaleX(1); opacity: 1; }
-    100% { transform: translateX(100px); opacity: 0; }
+    0% {
+        transform: scaleX(0);
+        opacity: 0;
+    }
+
+    10% {
+        transform: scaleX(1.2);
+        opacity: 1;
+    }
+
+    20% {
+        transform: scaleX(1);
+        opacity: 1;
+    }
+
+    80% {
+        transform: scaleX(1);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateX(100px);
+        opacity: 0;
+    }
 }
 </style>

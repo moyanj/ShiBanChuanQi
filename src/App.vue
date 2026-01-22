@@ -6,7 +6,7 @@
                 <img :src="icons.left" />
                 <span>返回</span>
             </sbutton>
-            
+
             <div @click="console_handler()" class="console-trigger"></div>
         </div>
 
@@ -94,7 +94,8 @@ watch(keys["Escape"], () => {
 
 <style>
 /* 全局重置与基础样式 */
-body, html {
+body,
+html {
     margin: 0;
     padding: 0;
     background-color: #0c0c0e;
@@ -113,7 +114,10 @@ body, html {
 /* 固定 UI 层 */
 .ui-fixed-layer {
     position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     pointer-events: none;
     z-index: 2000;
 }
@@ -126,7 +130,11 @@ body, html {
     z-index: 1000;
 }
 
-.back-btn img { width: 16px; height: 16px; margin-right: 5px; filter: invert(1); }
+.back-btn img {
+    width: 16px;
+    height: 16px;
+    margin-right: 5px;
+}
 
 .console-trigger {
     position: absolute;
