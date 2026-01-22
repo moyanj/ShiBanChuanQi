@@ -133,7 +133,7 @@ function reset_avatar() {
         </div>
 
         <div class="main-content">
-            <el-scrollbar>
+            <el-scrollbar class="setting-scroll">
                 <div class="setting-list">
                     <settingItem label="云存档">
                         <div class="maintenance-msg">
@@ -141,9 +141,9 @@ function reset_avatar() {
                             <div class="m-text">服务器正在维护中，部分功能暂时不可用</div>
                         </div>
                         <div class="btn-group">
-                            <sbutton type="primary" @click="show_upload_data = true" disabled>上传数据</sbutton>
-                            <sbutton type="primary" @click="show_load_data = true" disabled>加载数据</sbutton>
-                            <sbutton type="primary" @click="show_reg_data = true" disabled>注册账户</sbutton>
+                            <sbutton type="primary" @click="show_upload_data = true">上传数据</sbutton>
+                            <sbutton type="primary" @click="show_load_data = true">加载数据</sbutton>
+                            <sbutton type="primary" @click="show_reg_data = true">注册账户</sbutton>
                         </div>
                         <p class="powered-by">Powered by Websockets & Geetest</p>
                     </settingItem>
@@ -168,11 +168,48 @@ function reset_avatar() {
             </el-scrollbar>
         </div>
 
-        <!-- 弹窗部分保持逻辑，更新样式由全局 Element Plus 样式覆盖 -->
-        <el-dialog title="上传数据" v-model="show_upload_data" width="400px">
-            <!-- ... -->
+        <!-- 弹窗部分 -->
+        <el-dialog title="上传数据" v-model="show_upload_data" width="400px" align-center append-to-body>
+            <el-form label-width="70px">
+                <el-form-item label="用户名">
+                    <el-input v-model="username" placeholder="请输入用户名" />
+                </el-form-item>
+                <el-form-item label="密码">
+                    <el-input v-model="password" type="password" placeholder="请输入密码" show-password />
+                </el-form-item>
+                <div style="text-align: right; margin-top: 20px;">
+                    <sbutton type="primary" @click="upload">提交上传</sbutton>
+                </div>
+            </el-form>
         </el-dialog>
-        <!-- ... 其余 Dialog 保持逻辑 ... -->
+
+        <el-dialog title="加载数据" v-model="show_load_data" width="400px" align-center append-to-body>
+            <el-form label-width="70px">
+                <el-form-item label="用户名">
+                    <el-input v-model="username" placeholder="请输入用户名" />
+                </el-form-item>
+                <el-form-item label="密码">
+                    <el-input v-model="password" type="password" placeholder="请输入密码" show-password />
+                </el-form-item>
+                <div style="text-align: right; margin-top: 20px;">
+                    <sbutton type="primary" @click="load">确认加载</sbutton>
+                </div>
+            </el-form>
+        </el-dialog>
+
+        <el-dialog title="注册账户" v-model="show_reg_data" width="400px" align-center append-to-body>
+            <el-form label-width="70px">
+                <el-form-item label="用户名">
+                    <el-input v-model="username" placeholder="请输入用户名" />
+                </el-form-item>
+                <el-form-item label="密码">
+                    <el-input v-model="password" type="password" placeholder="请输入密码" show-password />
+                </el-form-item>
+                <div style="text-align: right; margin-top: 20px;">
+                    <sbutton type="primary" @click="reg">立即注册</sbutton>
+                </div>
+            </el-form>
+        </el-dialog>
     </div>
 </template>
 
@@ -219,9 +256,16 @@ function reset_avatar() {
 
 .main-content {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
     position: relative;
     z-index: 1;
     max-width: 1000px;
+}
+
+.setting-scroll {
+    flex: 1;
 }
 
 .setting-list {

@@ -7,19 +7,37 @@ const data: DataStoreState = useDataStore();
 const electron = window.electron;
 
 const zx_list = [
-    "Microsoft",
-    "Qwen AI团队",
-    "VueJS团队",
-    "Github",
-    "Suno AI",
-    "Google AI Labs",
-    "Stable Diffusion团队",
-    "OpenCode团队",
-    "Electron团队",
-    "北京北大方正电子有限公司",
-    "小米科技有限责任公司",
-    "上海米哈游科技有限公司",
-    "重庆市凤鸣山中学全体教职工人员以及学生"
+    // 核心开发工具与平台
+    "Microsoft",                    // VSCode - 开发环境
+    "Github",                       // 代码托管与协作平台
+
+    // 主要技术框架与运行环境
+    "VueJS团队",                    // 核心前端框架
+    "Electron团队",                 // 桌面应用打包
+    "Element Plus 团队",            // UI组件库
+
+    // 部署与网络服务
+    "Cloudflare Pages 团队",        // 前端部署平台
+
+    // AI技术支持
+    "Google AI Labs",               // 大模型技术基础
+    "Qwen AI团队",                  // 代码辅助与解决方案
+    "Stable Diffusion团队",         // AI图像生成
+    "Suno AI",                      // AI音频生成
+
+    // 设计资源与内容
+    "北京北大方正电子有限公司",     // 字体版权
+    "小米科技有限责任公司",         // 字体资源
+
+    // 灵感与创意来源
+    "上海米哈游科技有限公司",       // 游戏玩法与美术灵感
+
+    // 开源生态支持
+    "OpenCode团队",                 // 开源项目支持
+    "Linux Torvalds及开源社区",      // 操作系统与开发环境
+
+    // 特别致谢（人文与支持）
+    "重庆市凤鸣山中学全体教职工人员以及学生" // 创作环境与支持
 ]
 
 
@@ -108,15 +126,28 @@ const zx_list = [
 
 .bg-overlay {
     position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background: radial-gradient(circle at 30% 50%, rgba(45, 55, 72, 0.3) 0%, transparent 70%);
     pointer-events: none;
 }
 
-.full-height { height: 100%; }
-.flex-center { display: flex; align-items: center; justify-content: center; }
+.full-height {
+    height: 100%;
+}
 
-.brand-section { text-align: left; padding-left: 80px; }
+.flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.brand-section {
+    text-align: left;
+    padding-left: 80px;
+}
 
 #title {
     font-size: 5rem;
@@ -125,7 +156,7 @@ const zx_list = [
     letter-spacing: 5px;
     font-family: 'ZiHunJianQi', sans-serif;
     color: #fff;
-    text-shadow: 0 0 30px rgba(255,255,255,0.1);
+    text-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
 }
 
 .brand-line {
@@ -141,16 +172,22 @@ const zx_list = [
     line-height: 2;
 }
 
-.version-info strong { color: #ccc; }
+.version-info strong {
+    color: #ccc;
+}
 
 .credits-scroll {
     height: 100vh;
     padding: 60px 80px 100px 40px;
 }
 
-.credits-container { padding-bottom: 100px; }
+.credits-container {
+    padding-bottom: 100px;
+}
 
-.credit-group { margin-bottom: 60px; }
+.credit-group {
+    margin-bottom: 60px;
+}
 
 .credit-group h2 {
     font-size: 1.5rem;
@@ -176,7 +213,10 @@ const zx_list = [
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.credit-card p { margin: 10px 0; font-size: 1.1rem; }
+.credit-card p {
+    margin: 10px 0;
+    font-size: 1.1rem;
+}
 
 .easter-egg {
     margin-top: 30px;
@@ -195,8 +235,8 @@ const zx_list = [
     font-size: 1rem;
     color: #ccc;
     padding: 8px 15px;
-    background: rgba(255,255,255,0.02);
-    border-left: 2px solid rgba(255,255,255,0.1);
+    background: rgba(255, 255, 255, 0.02);
+    border-left: 2px solid rgba(255, 255, 255, 0.1);
 }
 
 .thanks-footer {
@@ -224,8 +264,14 @@ const zx_list = [
     width: 100px;
 }
 
-.time-item.gray { opacity: 0.5; }
-.time-item.highlight .date { color: #48bb78; text-shadow: 0 0 10px rgba(72, 187, 120, 0.3); }
+.time-item.gray {
+    opacity: 0.5;
+}
+
+.time-item.highlight .date {
+    color: #48bb78;
+    text-shadow: 0 0 10px rgba(72, 187, 120, 0.3);
+}
 
 .final-signature {
     margin-top: 80px;
