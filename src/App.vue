@@ -28,11 +28,24 @@ import Wish from './views/Wish.vue';
 
 import { icons, isLandscape } from './js/utils';
 import { console_handler } from './js/key';
-import { useDataStore, APM } from './js/stores';
+import { useDataStore, useSaveStore, useChatStore, APM } from './js/stores';
 import { ElMessageBox } from 'element-plus';
 import { useMagicKeys } from '@vueuse/core';
 
 const dataStore = useDataStore();
+const saveStore = useSaveStore();
+const chatStore = useChatStore();
+
+saveStore.load(); // Load save data on startup
+
+// 全自动保存：监听 saveStore 和 chatStore 的变化
+saveStore.$subscribe(() => {
+    saveStore.requestAutoSave();
+}, { deep: true });
+
+chatStore.$subscribe(() => {
+    saveStore.requestAutoSave();
+}, { deep: true });
 
 const currentPageComponent = computed(() => {
     switch (dataStore.page_type) {

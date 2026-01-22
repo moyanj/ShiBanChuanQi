@@ -6,7 +6,6 @@ export interface ChatStoreState {
 }
 
 export const useChatStore = defineStore("chat", {
-    persist: true,
     state: (): ChatStoreState => ({
         d: new HistoryManager()
     }),

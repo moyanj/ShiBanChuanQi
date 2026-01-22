@@ -12,10 +12,18 @@ export class Thing {
 
 export class ThingsManager {
     things: Object;
-    constructor() {
+    constructor(isInit: boolean = true) {
         this.things = {};
 
-        this.add(new XinHuo(), 280000);
+        if (isInit) {
+            this.add(new XinHuo(), 280000);
+        }
+    }
+    dump(): object {
+        return this.things;
+    }
+    load(data: object): void {
+        this.things = data || {};
     }
     add(thing: Thing, n: number = 1): void {
         let name: string = thing.inside_name;

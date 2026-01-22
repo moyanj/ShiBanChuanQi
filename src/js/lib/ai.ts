@@ -80,6 +80,18 @@ export class HistoryManager {
         }
         return null; // 房间不存在，返回 null
     }
+
+    dump(): any {
+        return {
+            rooms: this.rooms,
+            room_type: this.room_type
+        };
+    }
+
+    load(data: any): void {
+        this.rooms = data?.rooms || {};
+        this.room_type = data?.room_type || {};
+    }
 }
 
 

@@ -8,6 +8,8 @@ contextBridge.exposeInMainWorld('electron', {
   receive: (channel, func) => {
       ipcRenderer.on(channel, (event, ...args) => func(event, ...args));
   },
+  saveGame: (data) => ipcRenderer.invoke('save-game', data),
+  loadGame: () => ipcRenderer.invoke('load-game'),
   version: process.versions,
   argv: process.argv,
 });

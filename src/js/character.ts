@@ -3,6 +3,7 @@ import { BattleCharacters } from "./battle/participants";
 
 export * from './characters/base';
 import { Character } from './characters/base';
+import { characters } from './characters';
 
 export type TeamSynergy = {
     id: string;
@@ -72,6 +73,28 @@ export class CharacterManager {
             return null;
         }
         this.characters[c.inside_name] = c;
+    }
+
+    dump(): any[] {
+        return Object.values(this.characters).map(c => {
+            return {
+                inside_name: c.inside_name,
+                data: c.dump()
+            };
+        });
+    }
+
+    load(data: any[]): void {
+        this.characters = {};
+        if (!data) return;
+        data.forEach(item => {
+            const CharacterClass = characters[item.inside_name];
+            if (CharacterClass) {
+                const c = new CharacterClass();
+                c.load(item.data);
+                this.characters[c.inside_name] = c;
+            }
+        });
     }
 }
 

@@ -411,6 +411,7 @@ export function isLandscape() {
     }
 }
 
+/*
 export class SaveServer {
     baseUrl: string;
     constructor() {
@@ -471,6 +472,7 @@ export class SaveServer {
         });
     }
 }
+*/
 
 export function get_character_by_dump(dump: any): Character | null {
     const CharacterConstructor = characters[dump.inside_name];

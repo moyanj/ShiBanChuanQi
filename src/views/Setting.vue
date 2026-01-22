@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import { ElScrollbar, ElMessageBox, ElMessage, ElDialog, ElForm, ElFormItem, ElInput, ElLoading } from 'element-plus';
 import { useSaveStore, useDataStore } from '../js/stores';
-import { SaveServer, MersenneTwister } from '../js/utils';
+import { /*SaveServer,*/ MersenneTwister } from '../js/utils';
 import { randomName } from '../js/lib/name';
 import sbutton from '../components/sbutton.vue'
 import settingItem from '../components/setting-item.vue'
@@ -26,6 +26,7 @@ function reset() {
 
 }
 
+/*
 function reg() {
     window.initGeetest4({
         product: "bind",
@@ -53,7 +54,7 @@ function reg() {
     })
 }
 
-function load() {
+function load_cloud() {
     window.initGeetest4({
         product: "bind",
         captchaId: "6acf3658d1b41039662abc436d70e412"
@@ -110,6 +111,7 @@ function upload() {
         })
     })
 }
+*/
 
 function reset_username() {
     saveStore.user_name = randomName.getNickName();
@@ -135,7 +137,14 @@ function reset_avatar() {
         <div class="main-content">
             <el-scrollbar class="setting-scroll">
                 <div class="setting-list">
-                    <settingItem label="云存档">
+                    <settingItem label="存档管理">
+                        <div class="btn-group">
+                            <sbutton type="primary" @click="saveStore.save().then(() => ElMessage.success('存档成功'))">保存游戏</sbutton>
+                            <sbutton @click="saveStore.load().then(() => ElMessage.success('加载成功'))">手动读档</sbutton>
+                        </div>
+                    </settingItem>
+
+                    <!-- <settingItem label="云存档">
                         <div class="maintenance-msg">
                             <div class="m-icon">⚠️</div>
                             <div class="m-text">服务器正在维护中，部分功能暂时不可用</div>
@@ -146,7 +155,7 @@ function reset_avatar() {
                             <sbutton type="primary" @click="show_reg_data = true">注册账户</sbutton>
                         </div>
                         <p class="powered-by">Powered by Websockets & Geetest</p>
-                    </settingItem>
+                    </settingItem> -->
 
                     <settingItem label="用户信息">
                         <div class="user-info-actions">
@@ -169,7 +178,7 @@ function reset_avatar() {
         </div>
 
         <!-- 弹窗部分 -->
-        <el-dialog title="上传数据" v-model="show_upload_data" width="400px" align-center append-to-body>
+        <!-- <el-dialog title="上传数据" v-model="show_upload_data" width="400px" align-center append-to-body>
             <el-form label-width="70px">
                 <el-form-item label="用户名">
                     <el-input v-model="username" placeholder="请输入用户名" />
@@ -192,7 +201,7 @@ function reset_avatar() {
                     <el-input v-model="password" type="password" placeholder="请输入密码" show-password />
                 </el-form-item>
                 <div style="text-align: right; margin-top: 20px;">
-                    <sbutton type="primary" @click="load">确认加载</sbutton>
+                    <sbutton type="primary" @click="load_cloud">确认加载</sbutton>
                 </div>
             </el-form>
         </el-dialog>
@@ -209,7 +218,7 @@ function reset_avatar() {
                     <sbutton type="primary" @click="reg">立即注册</sbutton>
                 </div>
             </el-form>
-        </el-dialog>
+        </el-dialog> -->
     </div>
 </template>
 

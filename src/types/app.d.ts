@@ -16,8 +16,8 @@ declare global {
             send: any;
             receive: any;
             argv: any;
-
-            // 其他 electron 属性可以在这里添加
+            saveGame: (data: any) => Promise<{ success: boolean; error?: string }>;
+            loadGame: () => Promise<{ success: boolean; data?: any; error?: string }>;
         };
     }
 }
