@@ -8,11 +8,14 @@ import { Item } from '../js/item';
 import { useMagicKeys } from '@vueuse/core';
 import { icons } from '../js/utils';
 import icon_xinhuo from '../assets/things/XinHuo.png';
+import icon_exp from '../assets/things/EXP.png';
 
 const save = useSaveStore();
 
 const materialIcons: Record<string, string> = {
     'XinHuo': icon_xinhuo,
+    'EXP': icon_exp,
+
 };
 
 const getItemIcon = (item: any) => {
@@ -246,7 +249,7 @@ const isSelected = (item: any) => {
                     </div>
 
                     <div class="detail-footer">
-                        <sbutton v-if="selectedItem.isThing"
+                        <sbutton v-if="selectedItem.isThing" :disabled="selectedItem.count <= 0"
                             @click="delete_args.arg = selectedItem; deleteDialog_show = true" style="width: 100%">丢弃物品
                         </sbutton>
                         <p v-else class="footer-tip">圣遗物管理请前往角色界面</p>

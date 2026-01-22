@@ -7,7 +7,6 @@ export class Thing {
         this.name = "测试物品";
         this.desc = "这是一个测试物品”";
         this.inside_name = "thing";
-        this.icon = "";
     }
 }
 
@@ -40,6 +39,9 @@ export class ThingsManager {
     }
     remove(id: string, n: number = 1): void {
         this.things[id] -= n;
+        if (this.things[id] < 0) {
+            this.things[id] = 0;
+        }
     }
 }
 
@@ -49,7 +51,6 @@ export class XinHuo extends Thing {
         this.name = "星火";
         this.desc = "来自星星的一颗火星";
         this.inside_name = "XinHuo";
-        this.icon = "assets/things/XinHuo.png";
     }
 }
 
