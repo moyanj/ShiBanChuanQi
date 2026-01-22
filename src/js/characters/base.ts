@@ -64,6 +64,8 @@ export abstract class Character {
     skill_desc: string;
     super_skill_desc: string;
 
+    static readonly MAX_LEVEL = 100;
+
     level: number;
     type: CharacterType;
     xp: number;
@@ -233,6 +235,10 @@ export abstract class Character {
     level_up(exp: number) {
         this.xp += exp;
         while (this.xp >= this.level_xp(this.level)) {
+            if (this.level >= Character.MAX_LEVEL) {
+                this.xp = 0;
+                break;
+            }
             this.xp -= this.level_xp(this.level);
             this.level += 1;
         }
@@ -246,6 +252,36 @@ export abstract class Character {
 
     level_xp(level: number): number {
         return 1 + Math.abs(102 * Math.pow(level, 1.28) + 114 * Math.log(level / 0.15)) + 350;
+    }
+
+    get_exp_to_max_level(): number {
+        if (this.level >= Character.MAX_LEVEL) return 0;
+        let total = Math.max(0, this.level_xp(this.level) - this.xp);
+        for (let l = this.level + 1; l < Character.MAX_LEVEL; l++) {
+            total += this.level_xp(l);
+        }
+        return Math.ceil(total);
+    }
+
+    simulate_level_up(added_exp: number): { level: number, xp: number } {
+        let current_level = this.level;
+        let current_xp = this.xp + added_exp;
+
+        while (current_xp >= this.level_xp(current_level)) {
+            if (current_level >= Character.MAX_LEVEL) {
+                current_xp = 0;
+                break;
+            }
+            current_xp -= this.level_xp(current_level);
+            current_level += 1;
+        }
+        
+        if (current_level >= Character.MAX_LEVEL) {
+             current_level = Character.MAX_LEVEL;
+             current_xp = 0;
+        }
+        
+        return { level: current_level, xp: current_xp };
     }
 
     level_hp(): void {

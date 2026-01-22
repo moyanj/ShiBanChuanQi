@@ -28,14 +28,14 @@ function cmd_handler(value) {
             `;
             alert(helpMsg);
             break;
-            
+
         case "add_item":
             let item_count = 1;
             let item_rarity = undefined;
             if (cmds[1]) item_count = parseInt(cmds[1]);
             if (cmds[2]) item_rarity = parseInt(cmds[2]);
-            
-            for(let i=0; i<item_count; i++) {
+
+            for (let i = 0; i < item_count; i++) {
                 saveStore.items.add(generateRandomItem(item_rarity));
             }
             alert(`已添加 ${item_count} 个圣遗物${item_rarity ? ` (${item_rarity}★)` : ''}`);
@@ -67,7 +67,7 @@ function cmd_handler(value) {
             saveStore.things.add(new (ThingList["XinHuo"] as any)(), moneyAmt);
             alert(`已添加 ${moneyAmt} 星火`);
             break;
-            
+
         case "set_level":
             const newLevel = parseInt(cmds[1]);
             if (!newLevel || newLevel < 1) {

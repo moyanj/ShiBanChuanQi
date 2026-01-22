@@ -14,7 +14,8 @@ import {
     ElSelect,
     ElOption,
     ElTabs,
-    ElTabPane
+    ElTabPane,
+    ElMessage
 } from 'element-plus';
 import { CharacterType, Character } from '../js/character';
 import { useSaveStore } from '../js/stores';
@@ -170,13 +171,47 @@ const changeCharacter = (characterData: any) => {
     }
 };
 
+// 方法：处理点击升级按钮
+const handleLevelUpClick = () => {
+    if (!nowCharacter.value) return;
+    if (nowCharacter.value.level >= Character.MAX_LEVEL) {
+        ElMessage.warning('角色等级已达上限');
+        return;
+    }
+    showUpCharacter.value = true;
+};
+
 // 方法：升级角色
 const levelUp = () => {
     if (!nowCharacter.value) return;
-    save.things.remove("EXP", levelUpAmount.value);
-    nowCharacter.value.level_up(levelUpAmount.value);
+    if (nowCharacter.value.level >= Character.MAX_LEVEL) {
+        ElMessage.warning('角色等级已达上限');
+        showUpCharacter.value = false;
+        return;
+    }
+
+    // 计算实际需要的经验值，避免浪费
+    const expToMax = nowCharacter.value.get_exp_to_max_level();
+    const actualCost = Math.min(levelUpAmount.value, expToMax);
+
+    // 如果实际消耗小于选择的（通常是因为达到了上限），更新选择值以反映真实消耗
+    // 但为了用户体验，我们直接消耗实际值，并在 UI 上可能给予反馈
+    // 扣除实际消耗
+    save.things.remove("EXP", actualCost);
+    nowCharacter.value.level_up(actualCost);
     // 使用类型断言解决类型不匹配问题
     save.characters.update(nowCharacter.value as Character);
+
+    // 升级后如果满级了，关闭窗口
+    if (nowCharacter.value.level >= Character.MAX_LEVEL) {
+        showUpCharacter.value = false;
+        ElMessage.success('角色已升至满级！');
+    } else {
+        ElMessage.success(`升级成功！消耗 ${actualCost} 经验`);
+    }
+
+    // 重置输入框（可选，或者设为0，或者设为剩余可升值）
+    levelUpAmount.value = 0;
 };
 
 // 方法：装备道具
@@ -221,6 +256,22 @@ const isSelected = (item: any) => {
 const levelUpExperience = computed(() => {
     if (!nowCharacter.value) return 0;
     return Math.ceil(nowCharacter.value.level_xp(nowCharacter.value.level) - nowCharacter.value.xp);
+});
+
+const predictedLevelInfo = computed(() => {
+    if (!nowCharacter.value) return { level: 0, xp: 0 };
+    return nowCharacter.value.simulate_level_up(levelUpAmount.value);
+});
+
+const maxNeedExp = computed(() => {
+    if (!nowCharacter.value) return 0;
+    return nowCharacter.value.get_exp_to_max_level();
+});
+
+const sliderMax = computed(() => {
+    const owned = save.things.get('EXP');
+    const needed = maxNeedExp.value;
+    return Math.min(owned, needed);
 });
 
 // 计算属性：判断是否有足够的经验值
@@ -306,7 +357,7 @@ const getItemIcon = (item: any) => {
                     <div class="lv-row">
                         <span class="lv-label">等级</span>
                         <span class="lv-value">{{ nowCharacter.level }}</span>
-                        <span class="lv-max">/ 80</span>
+                        <span class="lv-max">/ {{ Character.MAX_LEVEL }}</span>
                     </div>
                     <div class="exp-container">
                         <div class="exp-bar-bg">
@@ -315,7 +366,7 @@ const getItemIcon = (item: any) => {
                             </div>
                         </div>
                     </div>
-                    <SButton @click="showUpCharacter = true" class="up-btn">提升等级</SButton>
+                    <SButton @click="handleLevelUpClick" class="up-btn">提升等级</SButton>
                 </div>
             </div>
 
@@ -411,17 +462,18 @@ const getItemIcon = (item: any) => {
                                 <div v-for="item in nowCharacter.equipped_items" :key="item.id" class="relic-item">
                                     <div class="relic-card-inner">
                                         <div class="relic-top">
-                                            <div class="relic-icon-placeholder" :style="{ backgroundColor: getRarityColor(item.rarity) + '44', borderColor: getRarityColor(item.rarity) }">
+                                            <div class="relic-icon-placeholder"
+                                                :style="{ backgroundColor: getRarityColor(item.rarity) + '44', borderColor: getRarityColor(item.rarity) }">
                                                 <img :src="getItemIcon(item)" class="relic-icon" />
                                                 <span class="relic-lv">+{{ item.level }}</span>
                                             </div>
                                             <div class="relic-main-info">
                                                 <div class="relic-name" :style="{ color: getRarityColor(item.rarity) }">
                                                     {{
-                                                    item.name }}</div>
+                                                        item.name }}</div>
                                                 <div class="relic-main-stat" v-if="item.main_attribute">
                                                     {{ attributeTranslations[item.main_attribute.key] ||
-                                                    item.main_attribute.key
+                                                        item.main_attribute.key
                                                     }} +{{ item.main_attribute.value }}
                                                 </div>
                                             </div>
@@ -487,8 +539,13 @@ const getItemIcon = (item: any) => {
                     <span>当前拥有 EXP: </span>
                     <span class="highlight">{{ save.things.get('EXP') }}</span>
                 </div>
+                <div class="predict-lv-info">
+                    <span>预计等级: </span>
+                    <span class="highlight">Lv.{{ nowCharacter?.level }} <span class="arrow">→</span> Lv.{{
+                        predictedLevelInfo.level }}</span>
+                </div>
                 <div v-if="hasEnoughExperience" class="slider-box">
-                    <el-slider v-model="levelUpAmount" :min="1" :max="save.things.get('EXP')" show-input />
+                    <el-slider v-model="levelUpAmount" :min="0" :max="sliderMax" show-input />
                 </div>
                 <div v-else class="no-exp">你目前没有经验值储备</div>
                 <div class="dialog-actions">
@@ -595,7 +652,7 @@ const getItemIcon = (item: any) => {
                                 <div class="fodder-info">
                                     <span class="f-name" :style="{ color: getRarityColor(fodder.rarity) }">{{
                                         fodder.name
-                                        }}</span>
+                                    }}</span>
                                     <span class="f-lv">+{{ fodder.level }}</span>
                                 </div>
                                 <span class="f-xp">{{ getRelicXP(fodder) }} XP</span>
@@ -1110,6 +1167,17 @@ const getItemIcon = (item: any) => {
     text-align: center;
     color: #666;
     margin: 20px 0;
+}
+
+.predict-lv-info {
+    margin-top: 10px;
+    font-size: 1.1rem;
+    color: #48bb78;
+}
+
+.arrow {
+    margin: 0 5px;
+    color: #aaa;
 }
 
 .ill-dialog :deep(.el-dialog__header) {
