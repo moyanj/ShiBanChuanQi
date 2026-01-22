@@ -1,5 +1,5 @@
 import { IBattle, Skill, SkillType, BattleEvent, BattleEventHandler } from "../battle/types";
-import { Item } from "../item";
+import { Relic } from "../relic";
 
 export interface CharacterData {
     level: number;
@@ -10,7 +10,7 @@ export interface CharacterData {
     attr_bonus: AttrBonusType;
     favorability: number;
     active_effects: ActiveEffect[];
-    equipped_items: Item[];
+    equipped_relics: Relic[];
 }
 
 export interface ActiveEffect {
@@ -116,7 +116,7 @@ export abstract class Character {
         this.event_handlers.clear();
     }
     active_effects: ActiveEffect[];
-    equipped_items: Item[];
+    equipped_relics: Relic[];
 
     constructor() {
         this.name = "Test";
@@ -153,7 +153,7 @@ export abstract class Character {
             [CharacterType.Water]: 0.0
         }
         this.active_effects = [];
-        this.equipped_items = [];
+        this.equipped_relics = [];
 
         this.level_hp();
         this.level_def();
@@ -173,7 +173,7 @@ export abstract class Character {
                 value += (effect.type === 'buff' ? effect.value : -effect.value);
             }
         }
-        for (const item of this.equipped_items) {
+        for (const item of this.equipped_relics) {
             value += item.random_attributes?.['hp'] ?? 0;
             if (item.main_attribute?.key === 'hp') {
                 value += item.main_attribute.value;
@@ -189,7 +189,7 @@ export abstract class Character {
                 value += (effect.type === 'buff' ? effect.value : -effect.value);
             }
         }
-        for (const item of this.equipped_items) {
+        for (const item of this.equipped_relics) {
             value += item.random_attributes['atk'] ?? 0;
             if (item.main_attribute?.key === 'atk') {
                 value += item.main_attribute.value;
@@ -207,7 +207,7 @@ export abstract class Character {
                 value += (effect.type === 'buff' ? effect.value : -effect.value);
             }
         }
-        for (const item of this.equipped_items) {
+        for (const item of this.equipped_relics) {
             value += item.random_attributes['def_'] ?? 0;
             if (item.main_attribute?.key === 'def_') {
                 value += item.main_attribute.value;
@@ -223,7 +223,7 @@ export abstract class Character {
                 value += (effect.type === 'buff' ? effect.value : -effect.value);
             }
         }
-        for (const item of this.equipped_items) {
+        for (const item of this.equipped_relics) {
             value += item.random_attributes['speed'] ?? 0;
             if (item.main_attribute?.key === 'speed') {
                 value += item.main_attribute.value;
@@ -325,7 +325,7 @@ export abstract class Character {
             attr_bonus: this.attr_bonus,
             favorability: this.favorability,
             active_effects: this.active_effects,
-            equipped_items: this.equipped_items
+            equipped_relics: this.equipped_relics
         }
     }
 
@@ -339,7 +339,7 @@ export abstract class Character {
         this.attr_bonus = data.attr_bonus;
         this.favorability = data.favorability;
         this.active_effects = data.active_effects || [];
-        this.equipped_items = data.equipped_items || [];
+        this.equipped_relics = data.equipped_relics || (data as any).equipped_items || [];
         this.level_hp();
         this.level_def();
         this.level_atk();

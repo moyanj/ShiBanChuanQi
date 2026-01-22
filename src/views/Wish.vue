@@ -8,6 +8,7 @@ import { useSaveStore, useDataStore } from "../js/stores";
 import { MersenneTwister, icons } from "../js/utils";
 import icon_xinhuo from "../assets/things/XinHuo.png";
 import { characters, CharacterType } from "../js/character";
+import { ConsumableItems } from "../js/item";
 import { ref, computed } from "vue";
 
 const saveStore = useSaveStore();
@@ -78,27 +79,60 @@ function wish(n: number = 1) {
         saveStore.n_wish++;
         saveStore.wish_number++; // increment total pulls
         const randVal = random.random();
+        const p5base = f(saveStore.n_wish);
 
-        if (randVal <= f(saveStore.n_wish)) {
+        // 如果 randVal 在 [0, p5base] 范围内，触发 5 星奖励（角色或道具）
+        if (randVal <= p5base) {
             saveStore.n_wish = 0;
-            const wish_item_key = random.random_choice(wish_list);
-
-            const isNew = !saveStore.characters.is_in(wish_item_key);
-            const charObj = new characters[wish_item_key]();
-
-            if (isNew) {
-                saveStore.characters.add(charObj);
+            // 角色占 75%，道具占 25%
+            if (random.random() <= 0.75) {
+                const wish_item_key = random.random_choice(wish_list);
+                const isNew = !saveStore.characters.is_in(wish_item_key);
+                const charObj = new characters[wish_item_key]();
+                if (isNew) {
+                    saveStore.characters.add(charObj);
+                }
+                result.value.push({
+                    type: 'character',
+                    character: charObj,
+                    isNew: isNew,
+                    rarity: 5
+                });
+            } else {
+                const fiveStarItems = Object.values(ConsumableItems).filter(item => item.rarity === 5);
+                const item = random.random_choice(fiveStarItems);
+                saveStore.items[item.id] = (saveStore.items[item.id] || 0) + 1;
+                result.value.push({
+                    type: 'item',
+                    item: item,
+                    rarity: 5
+                });
             }
-
+        } else if (randVal <= p5base + 0.07) {
+            // 4-star Item (概率 7%)
+            const fourStarItems = Object.values(ConsumableItems).filter(item => item.rarity === 4);
+            const item = random.random_choice(fourStarItems);
+            saveStore.items[item.id] = (saveStore.items[item.id] || 0) + 1;
             result.value.push({
-                character: charObj,
-                isNew: isNew,
-                rarity: 5 // Visual rarity
+                type: 'item',
+                item: item,
+                rarity: 4
+            });
+        } else if (randVal <= p5base + 0.07 + 0.15) {
+            // 3-star Item (概率 15%)
+            const threeStarItems = Object.values(ConsumableItems).filter(item => item.rarity === 3);
+            const item = random.random_choice(threeStarItems);
+            saveStore.items[item.id] = (saveStore.items[item.id] || 0) + 1;
+            result.value.push({
+                type: 'item',
+                item: item,
+                rarity: 3
             });
         } else {
+            // 无奖励（或可以作为普通 3 星掉落处理）
             result.value.push({
-                character: null,
-                isNew: false,
+                type: 'item',
+                item: { name: '无名词条', rarity: 3 },
                 rarity: 3
             });
         }
@@ -215,10 +249,10 @@ const getAvatar = (char: any) => {
                     <el-scrollbar max-height="75vh" class="result-scroll">
                         <div class="result-grid" :class="{ 'single-item': result.length === 1 }">
                             <div v-for="(item, index) in result" :key="index" class="result-card"
-                                :class="[item.character ? 'rarity-5' : 'rarity-3']"
+                                :class="['rarity-' + item.rarity]"
                                 :style="{ '--delay': index * 0.05 + 's' }">
 
-                                <template v-if="item.character">
+                                <template v-if="item.type === 'character'">
                                     <div class="card-inner">
                                         <div class="char-ill-wrap">
                                             <el-image :src="getIllustration(item.character)" fit="cover"
@@ -236,14 +270,19 @@ const getAvatar = (char: any) => {
                                             <span class="name">{{ item.character.name }}</span>
                                         </div>
                                         <div v-if="item.isNew" class="new-tag">NEW</div>
-                                        <div class="rarity-stars">★★★★★</div>
+                                        <div class="rarity-stars">{{ '★'.repeat(item.rarity) }}</div>
                                     </div>
                                 </template>
-                                <template v-else>
-                                    <div class="card-inner trash">
-                                        <div class="trash-icon">✦</div>
-                                        <span class="trash-name">无名词条</span>
-                                        <div class="rarity-stars">★★★</div>
+                                <template v-else-if="item.type === 'item'">
+                                    <div class="card-inner item-card">
+                                        <div class="item-icon-wrap">
+                                            <div class="item-icon">✦</div>
+                                            <!-- <el-image :src="item.item.icon" class="item-icon-img" /> -->
+                                        </div>
+                                        <div class="char-meta">
+                                            <span class="name">{{ item.item.name }}</span>
+                                        </div>
+                                        <div class="rarity-stars">{{ '★'.repeat(item.rarity) }}</div>
                                     </div>
                                 </template>
                             </div>

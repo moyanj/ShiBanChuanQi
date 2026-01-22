@@ -22,7 +22,7 @@ import { useSaveStore } from '../js/stores';
 import { get_character_by_dump, icons } from '../js/utils';
 import { ref, watch, computed } from 'vue';
 import SButton from '../components/sbutton.vue';
-import { Item, upgradeRelic, getRelicXP, getUpgradeCost, MAX_LEVEL } from '../js/item';
+import { Relic, upgradeRelic, getRelicXP, getUpgradeCost, MAX_LEVEL } from '../js/relic';
 
 const save = useSaveStore();
 
@@ -33,13 +33,13 @@ const showIll = ref(false);
 const activeTab = ref('stats'); // 新增：控制右侧面板标签页
 const levelUpAmount = ref(0); // 经验值数量
 const currentIllustration = ref(''); // 立绘路径
-const showEquipItemDialog = ref(false); // 控制装备道具对话框显示
-const selectedItemToEquip = ref<Item | null>(null); // 选中的要装备的道具
+const showEquipRelicDialog = ref(false); // 控制装备道具对话框显示
+const selectedRelicToEquip = ref<Relic | null>(null); // 选中的要装备的道具
 
 // 强化相关
 const showEnhanceDialog = ref(false);
-const enhancingItem = ref<Item | null>(null);
-const selectedFodders = ref<Item[]>([]);
+const enhancingRelic = ref<Relic | null>(null);
+const selectedFodders = ref<Relic[]>([]);
 const enhancePreviewXP = ref(0); // 预览增加的经验
 
 // 将类型定义明确
@@ -63,24 +63,24 @@ const characterList = computed(() => {
 const nowCharacter = ref<Character | null>(characterList.value.length > 0 ? get_character_by_dump(characterList.value[0]) : null);
 
 // 可供装备的道具列表
-const availableItems = computed(() => {
-    return save.items.getAll().filter(item => !item.equipped);
+const availableRelics = computed(() => {
+    return save.relics.getAll().filter(item => !item.equipped);
 });
 
 // 可作为强化素材的道具列表 (不包括自己、已装备的、锁定的(未实现))
 const availableFodders = computed(() => {
-    if (!enhancingItem.value) return [];
-    return save.items.getAll().filter(item =>
-        item.id !== enhancingItem.value?.id &&
+    if (!enhancingRelic.value) return [];
+    return save.relics.getAll().filter(item =>
+        item.id !== enhancingRelic.value?.id &&
         !item.equipped
     ).sort((a, b) => (a.rarity || 0) - (b.rarity || 0)); // Sort by rarity ascending
 });
 
-const isFodderSelected = (item: Item) => {
+const isFodderSelected = (item: Relic) => {
     return selectedFodders.value.some(f => f.id === item.id);
 };
 
-const toggleFodder = (item: Item) => {
+const toggleFodder = (item: Relic) => {
     const idx = selectedFodders.value.findIndex(f => f.id === item.id);
     if (idx >= 0) {
         selectedFodders.value.splice(idx, 1);
@@ -94,9 +94,9 @@ const totalFodderXP = computed(() => {
 });
 
 const enhanceResultPreview = computed(() => {
-    if (!enhancingItem.value) return null;
+    if (!enhancingRelic.value) return null;
 
-    const current = enhancingItem.value;
+    const current = enhancingRelic.value;
     const addedXP = totalFodderXP.value;
 
     // Simulate level up
@@ -117,19 +117,19 @@ const enhanceResultPreview = computed(() => {
     };
 });
 
-const openEnhanceDialog = (item: Item) => {
-    enhancingItem.value = item;
+const openEnhanceDialog = (item: Relic) => {
+    enhancingRelic.value = item;
     selectedFodders.value = [];
     showEnhanceDialog.value = true;
 };
 
 const confirmEnhance = () => {
-    if (!enhancingItem.value || selectedFodders.value.length === 0) return;
+    if (!enhancingRelic.value || selectedFodders.value.length === 0) return;
 
-    const success = upgradeRelic(enhancingItem.value, selectedFodders.value);
+    const success = upgradeRelic(enhancingRelic.value, selectedFodders.value);
     if (success) {
         // Remove fodders
-        selectedFodders.value.forEach(f => save.items.remove(f.id));
+        selectedFodders.value.forEach(f => save.relics.remove(f.id));
 
         // Force update character stats
         if (nowCharacter.value) {
@@ -215,33 +215,33 @@ const levelUp = () => {
 };
 
 // 方法：装备道具
-const equipItem = () => {
-    if (!nowCharacter.value || !selectedItemToEquip.value) return;
+const equipRelic = () => {
+    if (!nowCharacter.value || !selectedRelicToEquip.value) return;
 
     // 标记道具为已装备
-    selectedItemToEquip.value.equipped = true;
-    save.items.update(selectedItemToEquip.value);
+    selectedRelicToEquip.value.equipped = true;
+    save.relics.update(selectedRelicToEquip.value);
 
     // 将道具添加到角色的装备列表中
-    nowCharacter.value.equipped_items.push(selectedItemToEquip.value);
+    nowCharacter.value.equipped_relics.push(selectedRelicToEquip.value);
 
     // 使用类型断言解决类型不匹配问题
     save.characters.update(nowCharacter.value as Character);
-    showEquipItemDialog.value = false;
-    selectedItemToEquip.value = null; // 重置选中道具
+    showEquipRelicDialog.value = false;
+    selectedRelicToEquip.value = null; // 重置选中道具
 };
 
 // 方法：卸下道具
-const unequipItem = (item: Item) => {
+const unequipRelic = (item: Relic) => {
     if (!nowCharacter.value) return;
 
     // 标记道具为未装备
     item.equipped = false;
-    save.items.update(item);
+    save.relics.update(item);
 
-    const index = nowCharacter.value.equipped_items.findIndex(i => i.id === item.id);
+    const index = nowCharacter.value.equipped_relics.findIndex(i => i.id === item.id);
     if (index !== -1) {
-        nowCharacter.value.equipped_items.splice(index, 1);
+        nowCharacter.value.equipped_relics.splice(index, 1);
         // 使用类型断言解决类型不匹配问题
         save.characters.update(nowCharacter.value as Character);
     }
@@ -288,7 +288,7 @@ const attributeTranslations: { [key: string]: string } = {
 };
 
 // 格式化道具标签，使其在选择时显示属性
-const formatItemLabel = (item: Item) => {
+const formatRelicLabel = (item: Relic) => {
     const rarityStr = item.rarity ? `${item.rarity}★` : '';
     const levelStr = `+${item.level}`;
     let mainStr = "";
@@ -317,7 +317,7 @@ const getRarityColor = (rarity: number = 1) => {
     }
 };
 
-const getItemIcon = (item: any) => {
+const getRelicIcon = (item: any) => {
     return item.icon || icons.empty;
 };
 </script>
@@ -459,12 +459,12 @@ const getItemIcon = (item: any) => {
                     <div class="relic-scroll">
                         <el-scrollbar>
                             <div class="relic-grid">
-                                <div v-for="item in nowCharacter.equipped_items" :key="item.id" class="relic-item">
+                                <div v-for="item in nowCharacter.equipped_relics" :key="item.id" class="relic-item">
                                     <div class="relic-card-inner">
                                         <div class="relic-top">
                                             <div class="relic-icon-placeholder"
                                                 :style="{ backgroundColor: getRarityColor(item.rarity) + '44', borderColor: getRarityColor(item.rarity) }">
-                                                <img :src="getItemIcon(item)" class="relic-icon" />
+                                                <img :src="getRelicIcon(item)" class="relic-icon" />
                                                 <span class="relic-lv">+{{ item.level }}</span>
                                             </div>
                                             <div class="relic-main-info">
@@ -485,13 +485,13 @@ const getItemIcon = (item: any) => {
                                         </div>
                                         <div class="relic-btns">
                                             <SButton @click="openEnhanceDialog(item)" text size="small">强化</SButton>
-                                            <SButton @click="unequipItem(item)" text size="small">卸下</SButton>
+                                            <SButton @click="unequipRelic(item)" text size="small">卸下</SButton>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div class="add-relic-card" @click="showEquipItemDialog = true"
-                                    v-if="nowCharacter.equipped_items.length < 6">
+                                <div class="add-relic-card" @click="showEquipRelicDialog = true"
+                                    v-if="nowCharacter.equipped_relics.length < 6">
                                     <div class="add-inner">
                                         <span class="add-plus">+</span>
                                         <span class="add-text">装备圣遗物</span>
@@ -569,70 +569,70 @@ const getItemIcon = (item: any) => {
         </el-dialog>
 
         <!-- 装备道具弹窗 -->
-        <el-dialog v-model="showEquipItemDialog" title="装备圣遗物" width="500px">
+        <el-dialog v-model="showEquipRelicDialog" title="装备圣遗物" width="500px">
             <div class="equip-dialog-content">
-                <el-form v-if="availableItems.length > 0">
+                <el-form v-if="availableRelics.length > 0">
                     <el-form-item label="选择圣遗物">
-                        <el-select v-model="selectedItemToEquip" placeholder="请选择" value-key="id" style="width: 100%">
-                            <el-option v-for="item in availableItems" :key="item.id" :label="formatItemLabel(item)"
+                        <el-select v-model="selectedRelicToEquip" placeholder="请选择" value-key="id" style="width: 100%">
+                            <el-option v-for="item in availableRelics" :key="item.id" :label="formatRelicLabel(item)"
                                 :value="item" />
                         </el-select>
                     </el-form-item>
-                    <div v-if="selectedItemToEquip" class="equip-preview">
-                        <div class="preview-title" :style="{ color: getRarityColor(selectedItemToEquip.rarity) }">
-                            {{ selectedItemToEquip.name }} ({{ selectedItemToEquip.rarity || 1 }}★)
+                    <div v-if="selectedRelicToEquip" class="equip-preview">
+                        <div class="preview-title" :style="{ color: getRarityColor(selectedRelicToEquip.rarity) }">
+                            {{ selectedRelicToEquip.name }} ({{ selectedRelicToEquip.rarity || 1 }}★)
                         </div>
-                        <div class="preview-main" v-if="selectedItemToEquip.main_attribute">
-                            主属性: {{ attributeTranslations[selectedItemToEquip.main_attribute.key] }} +{{
-                                selectedItemToEquip.main_attribute.value }}
+                        <div class="preview-main" v-if="selectedRelicToEquip.main_attribute">
+                            主属性: {{ attributeTranslations[selectedRelicToEquip.main_attribute.key] }} +{{
+                                selectedRelicToEquip.main_attribute.value }}
                         </div>
                         <div class="preview-subs">
-                            <div v-for="(v, k) in selectedItemToEquip.random_attributes" :key="k">
+                            <div v-for="(v, k) in selectedRelicToEquip.random_attributes" :key="k">
                                 {{ attributeTranslations[k] || k }}: +{{ v }}
                             </div>
                         </div>
                     </div>
                     <div class="dialog-actions" style="margin-top: 20px">
-                        <SButton type="primary" @click="equipItem" :disabled="!selectedItemToEquip" style="width: 100%">
+                        <SButton type="primary" @click="equipRelic" :disabled="!selectedRelicToEquip" style="width: 100%">
                             确定装备
                         </SButton>
                     </div>
                 </el-form>
-                <div v-else class="empty-items">背包中没有多余的圣遗物</div>
+                <div v-else class="empty-relics">背包中没有多余的圣遗物</div>
             </div>
         </el-dialog>
 
         <!-- 强化弹窗 -->
         <el-dialog v-model="showEnhanceDialog" title="圣遗物强化" width="800px">
-            <div v-if="enhancingItem" class="enhance-layout">
+            <div v-if="enhancingRelic" class="enhance-layout">
                 <div class="enhance-left">
                     <h3>目标详情</h3>
-                    <div class="target-card" :style="{ borderColor: getRarityColor(enhancingItem.rarity) }">
-                        <div class="target-name" :style="{ color: getRarityColor(enhancingItem.rarity) }">
-                            {{ enhancingItem.name }} +{{ enhancingItem.level }}
+                    <div class="target-card" :style="{ borderColor: getRarityColor(enhancingRelic.rarity) }">
+                        <div class="target-name" :style="{ color: getRarityColor(enhancingRelic.rarity) }">
+                            {{ enhancingRelic.name }} +{{ enhancingRelic.level }}
                         </div>
                         <div class="target-exp">
-                            XP: {{ enhancingItem.exp }} / {{ getUpgradeCost(enhancingItem.rarity, enhancingItem.level)
+                            XP: {{ enhancingRelic.exp }} / {{ getUpgradeCost(enhancingRelic.rarity, enhancingRelic.level)
                             }}
                         </div>
-                        <div class="target-main" v-if="enhancingItem.main_attribute">
-                            {{ attributeTranslations[enhancingItem.main_attribute.key] }} +{{
-                                enhancingItem.main_attribute.value
+                        <div class="target-main" v-if="enhancingRelic.main_attribute">
+                            {{ attributeTranslations[enhancingRelic.main_attribute.key] }} +{{
+                                enhancingRelic.main_attribute.value
                             }}
                         </div>
                         <div class="target-subs">
-                            <div v-for="(v, k) in enhancingItem.random_attributes" :key="k">
+                            <div v-for="(v, k) in enhancingRelic.random_attributes" :key="k">
                                 {{ attributeTranslations[k] || k }}: +{{ v }}
                             </div>
                         </div>
                     </div>
 
-                    <div v-if="enhanceResultPreview && enhanceResultPreview.level > enhancingItem.level"
+                    <div v-if="enhanceResultPreview && enhanceResultPreview.level > enhancingRelic.level"
                         class="preview-success">
                         <h4>强化预览</h4>
-                        <p>等级: {{ enhancingItem.level }} → {{ enhanceResultPreview.level }}</p>
+                        <p>等级: {{ enhancingRelic.level }} → {{ enhanceResultPreview.level }}</p>
                         <p class="tip">主属性将显著提升</p>
-                        <p v-if="enhanceResultPreview.level % 4 === 0 || Math.floor(enhanceResultPreview.level / 4) > Math.floor(enhancingItem.level / 4)"
+                        <p v-if="enhanceResultPreview.level % 4 === 0 || Math.floor(enhanceResultPreview.level / 4) > Math.floor(enhancingRelic.level / 4)"
                             class="tip highlight">
                             将获得新的副词条提升
                         </p>
@@ -722,7 +722,7 @@ const getItemIcon = (item: any) => {
 
 .char-nav-inner {
     display: flex;
-    align-items: center;
+    align-relics: center;
     gap: 12px;
 }
 
@@ -759,12 +759,12 @@ const getItemIcon = (item: any) => {
 .char-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-relics: flex-start;
 }
 
 .char-title {
     display: flex;
-    align-items: center;
+    align-relics: center;
     gap: 20px;
 }
 
@@ -840,7 +840,7 @@ const getItemIcon = (item: any) => {
     flex: 1;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-relics: center;
     margin: 20px 0;
 }
 
@@ -853,7 +853,7 @@ const getItemIcon = (item: any) => {
 .no-portrait {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-relics: center;
     opacity: 0.3;
 }
 
@@ -947,7 +947,7 @@ const getItemIcon = (item: any) => {
 
 .skill-head {
     display: flex;
-    align-items: center;
+    align-relics: center;
     gap: 10px;
     margin-bottom: 10px;
 }
@@ -1011,7 +1011,7 @@ const getItemIcon = (item: any) => {
     border-radius: 8px;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-relics: center;
     position: relative;
     overflow: hidden;
 }
@@ -1081,7 +1081,7 @@ const getItemIcon = (item: any) => {
 .add-inner {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-relics: center;
     gap: 10px;
     color: #666;
 }
@@ -1096,7 +1096,7 @@ const getItemIcon = (item: any) => {
     flex: 1;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-relics: center;
     justify-content: center;
     opacity: 0.5;
 }
@@ -1196,7 +1196,7 @@ const getItemIcon = (item: any) => {
     height: 100%;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-relics: center;
 }
 
 .full-ill {
@@ -1292,7 +1292,7 @@ const getItemIcon = (item: any) => {
 .fodder-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-relics: center;
     margin-bottom: 15px;
 }
 
@@ -1304,7 +1304,7 @@ const getItemIcon = (item: any) => {
 .fodder-item {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-relics: center;
     padding: 12px 15px;
     margin-bottom: 8px;
     background: rgba(255, 255, 255, 0.03);

@@ -1,7 +1,7 @@
 import { useDataStore, useSaveStore, useFightStore } from "./stores";
 import { ElMessageBox } from 'element-plus'
 import { ThingList } from "./things";
-import { generateRandomItem } from "./item";
+import { generateRandomRelic } from "./relic";
 import { characters } from "./character";
 
 function cmd_handler(value) {
@@ -36,7 +36,7 @@ function cmd_handler(value) {
             if (cmds[2]) item_rarity = parseInt(cmds[2]);
 
             for (let i = 0; i < item_count; i++) {
-                saveStore.items.add(generateRandomItem(item_rarity));
+                saveStore.relics.add(generateRandomRelic(item_rarity));
             }
             alert(`已添加 ${item_count} 个圣遗物${item_rarity ? ` (${item_rarity}★)` : ''}`);
             break;

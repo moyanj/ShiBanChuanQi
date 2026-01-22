@@ -1,7 +1,8 @@
 import { Character, teamSynergyConfig } from "../character";
-import { useFightStore } from '../stores';
+import { useFightStore, useSaveStore } from '../stores';
 import { Skill, SkillType, IBattle, BattleEvent, BattleEventHandler } from "./types";
 import { BattleCharacters } from "./participants";
+import { ConsumableItem } from "../item";
 
 export class Battle implements IBattle {
     enemy: BattleCharacters;
@@ -190,6 +191,44 @@ export class Battle implements IBattle {
         this.onAfterCharacterAction();
         this.emit(BattleEvent.AFTER_ACTION, attacker_character);
         main_target_character.onAfterBeingAttacked();
+        return total_value_dealt;
+    }
+
+    execute_item(target_party: 'enemy' | 'our', target_character_name: string, item: ConsumableItem, attacker_character: Character): number {
+        this.log(`${attacker_character.name} 使用了道具 ${item.name}！`);
+        
+        const saveStore = useSaveStore();
+        if (saveStore.items[item.id] > 0) {
+            saveStore.items[item.id]--;
+        } else {
+            this.log(`道具 ${item.name} 数量不足！`);
+            return 0;
+        }
+
+        const skill = item.effect;
+        const target_battle_characters = target_party === 'enemy' ? this.enemy : this.our;
+        let total_value_dealt = 0;
+
+        // 处理群体技能
+        if (skill.targetScope === 'all_allies' || skill.targetScope === 'all_enemies') {
+            const target_characters_in_scope = skill.targetScope === 'all_allies' ? this.our.get_alive_characters() : this.enemy.get_alive_characters();
+            for (const chara of target_characters_in_scope) {
+                const value = target_battle_characters.apply_effect(chara.inside_name, skill, attacker_character);
+                total_value_dealt += value;
+                this.log_skill_effect(skill, attacker_character, chara, value);
+            }
+        } else { // 单体目标
+            const main_target_character = target_battle_characters.characters[target_character_name];
+            if (!main_target_character || main_target_character.hp <= 0) {
+                this.log(`无法对目标 ${target_character_name} 使用道具。`);
+                return 0;
+            }
+            total_value_dealt = target_battle_characters.apply_effect(target_character_name, skill, attacker_character);
+            this.log_skill_effect(skill, attacker_character, main_target_character, total_value_dealt);
+        }
+
+        this.onAfterCharacterAction();
+        this.emit(BattleEvent.AFTER_ACTION, attacker_character);
         return total_value_dealt;
     }
 

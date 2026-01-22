@@ -4,7 +4,8 @@ import { ElDialog, ElForm, ElFormItem, ElSlider, ElTabs, ElTabPane, ElScrollbar,
 import sbutton from '../components/sbutton.vue';
 import { useSaveStore } from '../js/stores';
 import { ThingList } from '../js/things';
-import { Item } from '../js/item';
+import { Relic } from '../js/relic';
+import { ConsumableItem, ConsumableItems } from '../js/item';
 import { useMagicKeys } from '@vueuse/core';
 import { icons } from '../js/utils';
 import icon_xinhuo from '../assets/things/XinHuo.png';
@@ -31,18 +32,22 @@ const delete_args = ref({
     arg: null
 });
 const activeTab = ref('things'); // 默认激活物品标签页
-const selectedItem = ref<any>(null); // 当前选中的物品或圣遗物
+const selectedItem = ref<any>(null); // 当前选中的物品、圣遗物或道具
 
 const keys = useMagicKeys();
 
 watch(keys["ArrowLeft"], () => {
     if (activeTab.value === 'items') {
+        activeTab.value = 'relics';
+    } else if (activeTab.value === 'relics') {
         activeTab.value = 'things';
     }
 });
 
 watch(keys["ArrowRight"], () => {
     if (activeTab.value === 'things') {
+        activeTab.value = 'relics';
+    } else if (activeTab.value === 'relics') {
         activeTab.value = 'items';
     }
 });
@@ -67,11 +72,18 @@ function get_things_data() {
     return data;
 }
 
-const allItems = ref<Item[]>([]);
+const allRelics = ref<Relic[]>([]);
+const allItems = ref<{ item: ConsumableItem, count: number }[]>([]);
 const thingsData = ref(get_things_data());
 
 function update_items_data() {
-    allItems.value = save.items.getAll();
+    allRelics.value = save.relics.getAll();
+    allItems.value = Object.entries(save.items)
+        .filter(([id, count]) => (count as number) > 0)
+        .map(([id, count]) => ({
+            item: ConsumableItems[id],
+            count: count as number
+        }));
 }
 
 onMounted(() => {
@@ -83,6 +95,10 @@ onMounted(() => {
 
 watch(save.things, () => {
     thingsData.value = get_things_data();
+});
+
+watch(save.relics, () => {
+    update_items_data();
 });
 
 watch(save.items, () => {
@@ -98,6 +114,8 @@ const selectItem = (item: any) => {
 watch(activeTab, (newTab) => {
     if (newTab === 'things') {
         selectedItem.value = thingsData.value[0] || null;
+    } else if (newTab === 'relics') {
+        selectedItem.value = allRelics.value[0] || null;
     } else {
         selectedItem.value = allItems.value[0] || null;
     }
@@ -131,7 +149,9 @@ const getRarityColor = (rarity: number = 1) => {
 };
 
 const isSelected = (item: any) => {
-    return selectedItem.value && selectedItem.value.id === item.id;
+    const id = item.id || item.item?.id;
+    const selectedId = selectedItem.value?.id || selectedItem.value?.item?.id;
+    return selectedId && selectedId === id;
 };
 
 </script>
@@ -148,8 +168,11 @@ const isSelected = (item: any) => {
                 <div class="nav-item" :class="{ 'active': activeTab === 'things' }" @click="activeTab = 'things'">
                     <span>基础材料</span>
                 </div>
-                <div class="nav-item" :class="{ 'active': activeTab === 'items' }" @click="activeTab = 'items'">
+                <div class="nav-item" :class="{ 'active': activeTab === 'relics' }" @click="activeTab = 'relics'">
                     <span>圣遗物箱</span>
+                </div>
+                <div class="nav-item" :class="{ 'active': activeTab === 'items' }" @click="activeTab = 'items'">
+                    <span>战斗道具</span>
                 </div>
             </div>
         </div>
@@ -157,7 +180,7 @@ const isSelected = (item: any) => {
         <!-- 主展示区：网格列表 -->
         <div class="main-content">
             <div class="content-header">
-                <h1>{{ activeTab === 'things' ? '材料' : '圣遗物' }}</h1>
+                <h1>{{ activeTab === 'things' ? '材料' : (activeTab === 'relics' ? '圣遗物' : '道具') }}</h1>
                 <div class="header-line"></div>
             </div>
 
@@ -178,8 +201,8 @@ const isSelected = (item: any) => {
                         </div>
                     </template>
 
-                    <template v-else>
-                        <div v-for="item in allItems" :key="item.id" class="grid-item relic"
+                    <template v-else-if="activeTab === 'relics'">
+                        <div v-for="item in allRelics" :key="item.id" class="grid-item relic"
                             :class="{ 'selected': isSelected(item) }" @click="selectItem(item)">
                             <div class="item-icon-box"
                                 :style="{ borderColor: getRarityColor(item.rarity), backgroundColor: getRarityColor(item.rarity) + '22' }">
@@ -188,9 +211,26 @@ const isSelected = (item: any) => {
                             </div>
                             <div class="item-name" :style="{ color: getRarityColor(item.rarity) }">{{ item.name }}</div>
                         </div>
-                        <div v-if="allItems.length === 0" class="empty-hint">
+                        <div v-if="allRelics.length === 0" class="empty-hint">
                             <img :src="icons.empty" />
                             <p>暂时没有圣遗物</p>
+                        </div>
+                    </template>
+
+                    <template v-else>
+                        <div v-for="itemEntry in allItems" :key="itemEntry.item.id" class="grid-item item"
+                            :class="{ 'selected': isSelected(itemEntry.item) }" @click="selectItem(itemEntry)">
+                            <div class="item-icon-box"
+                                :style="{ borderColor: getRarityColor(itemEntry.item.rarity), backgroundColor: getRarityColor(itemEntry.item.rarity) + '22' }">
+                                <div class="grid-icon">✦</div>
+                                <span class="item-count">x{{ itemEntry.count }}</span>
+                            </div>
+                            <div class="item-name" :style="{ color: getRarityColor(itemEntry.item.rarity) }">{{
+                                itemEntry.item.name }}</div>
+                        </div>
+                        <div v-if="allItems.length === 0" class="empty-hint">
+                            <img :src="icons.empty" />
+                            <p>暂时没有道具</p>
                         </div>
                     </template>
                 </div>
@@ -208,20 +248,23 @@ const isSelected = (item: any) => {
                         }">
                             <img :src="getItemIcon(selectedItem)" class="large-icon" />
                         </div>
-                        <h2 :style="{ color: selectedItem.isThing ? '#fff' : getRarityColor(selectedItem.rarity) }">
-                            {{ selectedItem.name }}
+                        <h2 :style="{ color: selectedItem.isThing ? '#fff' : getRarityColor(selectedItem.rarity || selectedItem.item?.rarity) }">
+                            {{ selectedItem.name || selectedItem.item?.name }}
                         </h2>
-                        <div v-if="!selectedItem.isThing" class="detail-rarity">
+                        <div v-if="activeTab === 'relics'" class="detail-rarity">
                             {{ selectedItem.rarity }}★ 圣遗物
+                        </div>
+                        <div v-else-if="activeTab === 'items'" class="detail-rarity">
+                            {{ selectedItem.item?.rarity }}★ 道具
                         </div>
                         <div v-else class="detail-rarity">材料</div>
                     </div>
 
                     <div class="detail-body">
                         <div class="section-title">描述</div>
-                        <p class="detail-desc">{{ selectedItem.desc }}</p>
+                        <p class="detail-desc">{{ selectedItem.desc || selectedItem.item?.description }}</p>
 
-                        <template v-if="!selectedItem.isThing">
+                        <template v-if="activeTab === 'relics'">
                             <div class="section-title">主属性</div>
                             <div class="main-stat" v-if="selectedItem.main_attribute">
                                 <span class="stat-key">{{ attributeTranslations[selectedItem.main_attribute.key] ||
@@ -242,6 +285,11 @@ const isSelected = (item: any) => {
                             </div>
                         </template>
 
+                        <template v-else-if="activeTab === 'items'">
+                            <div class="section-title">持有数量</div>
+                            <div class="count-display">{{ selectedItem.count }}</div>
+                        </template>
+
                         <template v-else>
                             <div class="section-title">持有数量</div>
                             <div class="count-display">{{ selectedItem.count }}</div>
@@ -252,7 +300,8 @@ const isSelected = (item: any) => {
                         <sbutton v-if="selectedItem.isThing" :disabled="selectedItem.count <= 0"
                             @click="delete_args.arg = selectedItem; deleteDialog_show = true" style="width: 100%">丢弃物品
                         </sbutton>
-                        <p v-else class="footer-tip">圣遗物管理请前往角色界面</p>
+                        <p v-else-if="activeTab === 'relics'" class="footer-tip">圣遗物管理请前往角色界面</p>
+                        <p v-else class="footer-tip">道具可在战斗中使用</p>
                     </div>
                 </div>
             </el-scrollbar>

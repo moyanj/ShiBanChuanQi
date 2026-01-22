@@ -5,13 +5,13 @@ import { Character, characters } from '../character';
 import { get_character_by_dump, MersenneTwister } from '../utils';
 import { ElMessage } from 'element-plus';
 import { ThingList } from '../things';
-import { generateRandomItem, Item } from '../item';
+import { generateRandomRelic, Relic } from '../relic';
 
 export interface BattleResult {
     win: boolean;
     exp: number;
     xinhuo: number;
-    items: Item[];
+    relics: Relic[];
 }
 
 export class BattleService {
@@ -37,7 +37,7 @@ export class BattleService {
             const charInstance = get_character_by_dump(c);
             charInstance.hp = charInstance.max_hp;
             charInstance.is_our = true;
-            charInstance.equipped_items = [...c.equipped_items];
+            charInstance.equipped_relics = [...c.equipped_relics];
             return charInstance;
         });
 
@@ -114,7 +114,7 @@ export class BattleService {
             win: isWin,
             exp: 0,
             xinhuo: 0,
-            items: [] as Item[]
+            relics: [] as Relic[]
         };
 
         if (isWin) {
@@ -130,12 +130,12 @@ export class BattleService {
                 if (saveChar) saveChar.favorability += 5;
             });
 
-            // 掉落道具
-            const numItems = this.random.randint(1, 3);
-            for (let i = 0; i < numItems; i++) {
-                const item = generateRandomItem();
-                this.save.items.add(item);
-                result.items.push(item);
+            // 掉落圣遗物
+            const numRelics = this.random.randint(1, 3);
+            for (let i = 0; i < numRelics; i++) {
+                const relic = generateRandomRelic();
+                this.save.relics.add(relic);
+                result.relics.push(relic);
             }
         } else {
             this.playAudio("battle_lose", 'audio/battle_lose.mp3');

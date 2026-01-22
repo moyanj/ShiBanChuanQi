@@ -10,7 +10,8 @@ import ActionOrder from '../components/ActionOrder.vue';
 import { Battle, Skill, BattleEvent } from '../js/battle';
 import { BattleService, BattleResult } from '../js/battle/service';
 import { Character, CharacterType } from '../js/character';
-import { Item } from '../js/item';
+import { Relic } from '../js/relic';
+import { ConsumableItem, ConsumableItems } from '../js/item';
 
 const attributeTranslations: { [key: string]: string } = {
     atk: '攻击',
@@ -88,7 +89,7 @@ var show_settlement_dialog = ref(false);
 var battle_result = ref("");
 var battle_exp_reward = ref(0);
 var battle_xinhuo_reward = ref(0);
-var dropped_items = ref<Item[]>([]);
+var dropped_relics = ref<Relic[]>([]);
 
 const enemy_avatar = random.randint(1, 100);
 
@@ -238,7 +239,7 @@ const startBattle = () => {
         battle_result.value = result.win ? 'win' : 'lose';
         battle_exp_reward.value = result.exp;
         battle_xinhuo_reward.value = result.xinhuo;
-        dropped_items.value = result.items;
+        dropped_relics.value = result.relics;
         show_settlement_dialog.value = true;
     };
 
@@ -348,6 +349,49 @@ const selectTargetCharacter = (target_party: 'enemy' | 'our', character: Charact
     } else {
         ElMessage.warning("请先选择一个我方行动角色。");
     }
+};
+
+const owned_items = computed(() => {
+    return Object.entries(save.items)
+        .filter(([id, count]) => (count as number) > 0)
+        .map(([id, count]) => ({
+            ...ConsumableItems[id],
+            count: count as number
+        }));
+});
+
+const show_item_selection = ref(false);
+
+const playerUseItem = async (item: any) => {
+    if (!battle.value || !selected_our_character.value || !selected_target_character.value) {
+        ElMessage.error("请选择行动角色和目标。");
+        return;
+    }
+
+    const attacker = selected_our_character.value;
+    const { type: target_party_type, character: target } = selected_target_character.value;
+
+    const dealt_value = battle.value.execute_item(
+        target_party_type,
+        target.inside_name,
+        item,
+        attacker as Character
+    );
+
+    if (dealt_value === 0 && save.items[item.id] <= 0) {
+        return;
+    }
+
+    if (!("battle" in APM.objs)) {
+        APM.add("battle", 'audio/fight.mp3');
+    }
+    APM.play("battle");
+
+    battle.value.our.reset_atb(attacker.inside_name);
+
+    fightStore.selected_our_character = null;
+    fightStore.selected_target_character = null;
+    show_item_selection.value = false;
 };
 
 // 玩家执行攻击
@@ -613,6 +657,13 @@ onUnmounted(() => {
                             </div>
                             <span class="node-label">爆发</span>
                         </div>
+
+                        <div class="skill-node" @click="show_item_selection = true">
+                            <div class="node-circle">
+                                <img :src="icons.menu" class="item-icon" />
+                            </div>
+                            <span class="node-label">道具</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -648,16 +699,16 @@ onUnmounted(() => {
                     <h3>获得奖励：</h3>
                     <p>经验值: {{ battle_exp_reward }}</p>
                     <p v-if="battle_result === 'win'">星火: {{ battle_xinhuo_reward }}</p>
-                    <div v-if="battle_result === 'win' && dropped_items.length > 0">
-                        <p>道具：</p>
+                    <div v-if="battle_result === 'win' && dropped_relics.length > 0">
+                        <p>圣遗物：</p>
                         <ul style="list-style: none; padding: 0;">
-                            <li v-for="item in dropped_items" :key="item.id" style="margin-bottom: 5px;">
-                                <span :style="{ color: getRarityColor(item.rarity) }">{{ item.name }} ({{
-                                    item.rarity || 1 }}★)</span>
-                                <span v-if="item.main_attribute"
+                            <li v-for="relic in dropped_relics" :key="relic.id" style="margin-bottom: 5px;">
+                                <span :style="{ color: getRarityColor(relic.rarity) }">{{ relic.name }} ({{
+                                    relic.rarity || 1 }}★)</span>
+                                <span v-if="relic.main_attribute"
                                     style="font-size: 0.8em; color: #E6A23C; margin-left: 8px;">
-                                    {{ attributeTranslations[item.main_attribute.key] || item.main_attribute.key }}
-                                    +{{ item.main_attribute.value }}
+                                    {{ attributeTranslations[relic.main_attribute.key] || relic.main_attribute.key }}
+                                    +{{ relic.main_attribute.value }}
                                 </span>
                             </li>
                         </ul>
@@ -665,6 +716,22 @@ onUnmounted(() => {
                 </div>
 
                 <sbutton type="primary" @click="data.page_type = 'main'" style="margin-top: 20px;">返回主页</sbutton>
+            </div>
+        </el-dialog>
+
+        <!-- 道具选择界面 -->
+        <el-dialog v-model="show_item_selection" title="选择道具" width="600px">
+            <div class="item-selection-list">
+                <div v-if="owned_items.length === 0" class="empty-items">背包中没有可用的战斗道具</div>
+                <div v-else class="item-grid">
+                    <div v-for="item in owned_items" :key="item.id" class="item-card-mini" @click="playerUseItem(item)">
+                        <div class="item-info">
+                            <span class="item-name" :style="{ color: getRarityColor(item.rarity) }">{{ item.name }}</span>
+                            <span class="item-count">x{{ item.count }}</span>
+                        </div>
+                        <div class="item-desc">{{ item.description }}</div>
+                    </div>
+                </div>
             </div>
         </el-dialog>
     </div>
@@ -1357,5 +1424,54 @@ onUnmounted(() => {
         transform: translateX(100px);
         opacity: 0;
     }
+}
+
+.item-selection-list {
+    padding: 20px;
+}
+
+.item-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.item-card-mini {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.item-card-mini:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: #f7d358;
+}
+
+.item-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.item-name {
+    font-weight: bold;
+}
+
+.item-count {
+    color: #888;
+}
+
+.item-desc {
+    font-size: 12px;
+    color: #aaa;
+}
+
+.empty-items {
+    text-align: center;
+    color: #666;
+    padding: 40px;
 }
 </style>
