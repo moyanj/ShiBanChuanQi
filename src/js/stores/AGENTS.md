@@ -1,22 +1,33 @@
-# PROJECT KNOWLEDGE BASE: src/js/stores
+# 项目知识库：src/js/stores
 
-**Generated:** 2026-01-21 21:00
-**Branch:** main
+**生成时间：** 2026-01-22
+**提交：** 332e8c2
+**分支：** main
 
-## OVERVIEW
-This directory contains all Pinia stores, serving as the central state management hub for the application. It cleanly separates persistent game state (e.g., player progress) from transient, session-specific state (e.g., active combat data).
+## 概述
+集中式状态管理中心，包含 4 个 Pinia stores，分离持久化玩家数据与临时会话状态。
 
-## STRUCTURE
-The state is modularized into four distinct stores:
-
-| Store File | Store Name | Purpose | State Type |
+## 结构
+| Store 文件 | Store 名称 | 用途 | 持久性 |
 |---|---|---|---|
-| `save.ts` | `useSaveStore` | **Persistent Player Data**: Tracks all user progress, characters, inventory, and gacha-related counters. This acts as the master "save file". | Persistent |
-| `data.ts` | `useDataStore` | **Game Definitions**: Holds static game data, such as character definitions, items, and other configuration loaded at runtime. | Static |
-| `fight.ts` | `useFightStore` | **Transient Combat State**: Manages all data for a single battle instance, including participants, turn order, and temporary status effects. | Transient |
-| `chat.ts` | `useChatStore` | **In-Game Messages**: Handles dialogue, system notifications, and combat logs displayed to the user. | Transient |
+| `save.ts` | `useSaveStore` | 玩家进度、角色、物品、抽卡计数器 | 持久化 |
+| `data.ts` | `useDataStore` | 游戏定义、静态配置、运行时加载数据 | 静态 (加载时重置) |
+| `fight.ts` | `useFightStore` | 单次战斗实例：参与者、回合顺序、状态效果 | 临时 (加载时重置) |
+| `chat.ts` | `useChatStore` | 对话、系统通知、战斗日志 | 临时 (无持久化) |
 
-## CONVENTIONS
-- **Persistence**: State persistence is handled automatically by a Pinia plugin. Stores that need to be saved across sessions are marked with the `persist: true` option.
-- **Synchronized Stores**: The `save` store is the primary persistent store, automatically saving all player progress to `localStorage`.
-- **Transient by Design**: The `fight` and `data` stores are intentionally non-persistent. They are reset on application load to ensure that temporary states (like a battle in progress) do not bleed between sessions.
+## 快速定位
+| 任务 | 位置 | 说明 |
+|------|----------|-------|
+| **持久化配置** | `index.ts` | localStorage 持久化 Pinia 插件 |
+| **全局音频** | `index.ts` | APM AudioPlayer 实例 (单一事实来源) |
+| **聊天历史** | `chat.ts` | 使用 `lib/ai.ts` 中的 `HistoryManager` |
+| **随机名生成** | `save.ts` | 导入 `lib/name.ts` 中的 `randomName` |
+
+## 约定
+- **持久化插件**：自定义 Pinia 插件处理带有 `persist: true` 的 store 的自动 localStorage 保存
+- **临时设计**：`fight` 和 `data` store 故意在加载时重置以防止会话状态泄漏
+- **无全局注册**：类型按 store 定义，按需导入
+- **直接 store 使用**：组件通过 composition API 直接访问 store（`useSaveStore()`），无包装层
+
+## 注意
+- 无全局错误处理 - 失败传播到 Vue 错误处理器

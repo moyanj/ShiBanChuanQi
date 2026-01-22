@@ -1,25 +1,38 @@
-# Combat Engine: src/js/battle
+# 战斗引擎：src/js/battle
 
-## OVERVIEW
-This directory contains the core logic for the turn-based combat system. It operates on an Active Time Battle (ATB) model, where characters act once their ATB gauge is full. The engine is stateful but decoupled from the UI, communicating key events as they occur.
+**生成时间：** 2026-01-22
+**提交：** 332e8c2
+**分支：** main
 
-## STRUCTURE
+## 概述
+事件驱动的 ATB（Active Time Battle）战斗引擎 - 角色在 ATB 计量条满时行动。通过事件发射与 UI 解耦。
 
-- **`engine.ts` (`Battle` class)**: The heart of the combat system. Manages the state of a single battle instance, including turn order, skill execution, and win/loss conditions. It functions as a self-contained state machine.
+## 结构
+- **`engine.ts`**（`Battle` 类）：回合顺序、技能执行、胜负状态的状态机
+- **`service.ts`**（`BattleService` 类）：游戏循环（`setInterval`）、战斗生命周期、战后结算
+- **`participants.ts`**（`BattleCharacters` 类）：队伍容器（玩家/敌人）、团队 HP、ATB 更新、目标选择
+- **`types.ts`**：核心接口（`Skill`、`IBattle`、`BattleEvent`）和枚举（`SkillType`、`BattleEvent`）
 
-- **`service.ts` (`BattleService` class)**: The bridge between the UI/stores and the battle engine. It handles battle setup (creating characters, enemies), manages the game loop (`setInterval`), and processes post-battle settlement (rewards, state reset).
-
-- **`participants.ts` (`BattleCharacters` class)**: A container for a team of characters (either player or enemy). It manages team-wide state and actions, like total HP, group ATB updates, and targeting logic. The `Battle` engine uses two instances of this class.
-
-## WHERE TO LOOK
-
-| Task | Location | Notes |
+## 快速定位
+| 任务 | 位置 | 说明 |
 |------|----------|-------|
-| **Core Turn Logic** | `engine.ts` | Look in `next_turn()` and `get_now_character()` |
-| **Skill Execution** | `engine.ts` | `execute_skill()` handles damage, healing, and effects. |
-| **Battle Lifecycle** | `service.ts` | `startBattle()`, `runLoop()`, `handleSettlement()` |
-| **Team Management**| `participants.ts`| Methods for managing a collection of characters. |
-| **Data Types** | `types.ts` | Interfaces for `Skill`, `IBattle`, `BattleEvent`.|
+| **回合逻辑** | `engine.ts` | `next_turn()`、`get_now_character()` |
+| **技能执行** | `engine.ts` | `execute_skill()` 处理伤害、治疗、效果 |
+| **战斗生命周期** | `service.ts` | `startBattle()`、`runLoop()`、`handleSettlement()` |
+| **队伍管理**| `participants.ts`| 聚合 HP、群体动作 |
+| **事件系统** | `engine.ts` | 简单发射器：`on`、`off`、`emit` |
 
-## CONVENTIONS
-The combat engine is event-driven. The `Battle` class in `engine.ts` implements a simple event emitter (`on`, `off`, `emit`). This allows other parts of the system (like character-specific passive skills or future UI components) to react to battle events (`BATTLE_START`, `TURN_END`, `CHARACTER_DEATH`, etc.) without being tightly coupled to the engine's internal logic.
+## 事件驱动架构
+`Battle` 类实现了自定义事件发射器，允许被动技能和 UI 在不紧耦合的情况下响应：
+- `BATTLE_START` - 战斗初始化
+- `TURN_END` - 角色完成动作
+- `CHARACTER_DEATH` - 单位死亡
+- `BATTLE_END` - 胜利/失败
+
+## 约定
+- **ATB 基础**：角色 ATB 达到 100 时行动，然后计量条重置
+- **双队伍**：引擎使用两个 `BattleCharacters` 实例（玩家/敌人）
+- **无 UI 耦合**：UI 监听 battle store，引擎触发事件产生副作用
+
+## 注意
+- UI 集成通过 `useFightStore` Pinia store 实现，该 store 包装战斗状态
