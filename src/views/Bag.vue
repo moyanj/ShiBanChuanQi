@@ -4,7 +4,7 @@ import { ElDialog, ElForm, ElFormItem, ElSlider, ElTabs, ElTabPane, ElScrollbar,
 import sbutton from '../components/sbutton.vue';
 import { useSaveStore } from '../js/stores';
 import { ThingList } from '../js/things';
-import { Relic } from '../js/relic';
+import { Relic, itemNames } from '../js/relic';
 import { ConsumableItem, ConsumableItems } from '../js/item';
 import { useMagicKeys } from '@vueuse/core';
 import { icons } from '../js/utils';
@@ -16,12 +16,16 @@ const save = useSaveStore();
 const materialIcons: Record<string, string> = {
     'XinHuo': icon_xinhuo,
     'EXP': icon_exp,
-
 };
 
 const getItemIcon = (item: any) => {
+    console.log(item);
     if (item.isThing) {
         return materialIcons[item.id] || icons.empty;
+    } else if (item.inside_name) {
+        if (itemNames.includes(item.inside_name)) {
+            return `/relic/${item.inside_name}.png`;
+        }
     }
     return item.icon || icons.empty;
 };
@@ -248,7 +252,8 @@ const isSelected = (item: any) => {
                         }">
                             <img :src="getItemIcon(selectedItem)" class="large-icon" />
                         </div>
-                        <h2 :style="{ color: selectedItem.isThing ? '#fff' : getRarityColor(selectedItem.rarity || selectedItem.item?.rarity) }">
+                        <h2
+                            :style="{ color: selectedItem.isThing ? '#fff' : getRarityColor(selectedItem.rarity || selectedItem.item?.rarity) }">
                             {{ selectedItem.name || selectedItem.item?.name }}
                         </h2>
                         <div v-if="activeTab === 'relics'" class="detail-rarity">

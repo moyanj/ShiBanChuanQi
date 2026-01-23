@@ -46,14 +46,14 @@ export const MAX_LEVEL = 20;
 export function getUpgradeCost(rarity: number, currentLevel: number): number {
     const base = LEVEL_UP_EXP_BASE[rarity as keyof typeof LEVEL_UP_EXP_BASE] || 100;
     // 简单的线性增长或指数增长
-    return base + (currentLevel * base * 0.1); 
+    return base + (currentLevel * base * 0.1);
 }
 
 // 获取道具作为狗粮提供的经验
 export function getRelicXP(item: Relic): number {
     const rarity = item.rarity || 1; // Fallback to 1 if missing
     const level = item.level || 0;   // Fallback to 0 if missing
-    const base = (LEVEL_UP_EXP_BASE[rarity as keyof typeof LEVEL_UP_EXP_BASE] || 100) * 3; 
+    const base = (LEVEL_UP_EXP_BASE[rarity as keyof typeof LEVEL_UP_EXP_BASE] || 100) * 3;
     // 加上它已经吃掉的经验的一定比例 (比如80%)
     return Math.floor(base + (level * base * 0.5));
 }
@@ -66,37 +66,37 @@ export function upgradeRelic(target: Relic, fodders: Relic[]): boolean {
     for (const fodder of fodders) {
         totalXP += getRelicXP(fodder);
     }
-    
+
     target.exp += totalXP;
-    
+
     // Level up loop
     let cost = getUpgradeCost(target.rarity, target.level);
     while (target.exp >= cost && target.level < MAX_LEVEL) {
         target.exp -= cost;
         target.level++;
-        
+
         // 1. Upgrade Main Stat
         // Simple scaling: +20% of base per level? Or pre-defined curve.
         // Let's assume linear growth for now: +10% of current value (compounding) or flat.
         // Flat is safer.
         const growthRate = 0.1; // 10% growth per level
         target.main_attribute.value = Math.floor(target.main_attribute.value * (1 + growthRate));
-        
+
         // 2. Sub-stat unlock/upgrade at +4, +8, +12, +16, +20
         if (target.level % 4 === 0) {
             const maxSubs = 4; // Hard cap at 4 subs
             const currentSubKeys = Object.keys(target.random_attributes) as AttributeType[];
-            
+
             if (currentSubKeys.length < maxSubs) {
                 // Unlock new sub-stat
                 const attributes: AttributeType[] = ["hp", "atk", "def_", "speed"];
                 const available = attributes.filter(a => a !== target.main_attribute.key && !currentSubKeys.includes(a));
-                
+
                 if (available.length > 0) {
                     const newKey = rng.random_choice(available) as AttributeType;
                     // Initial value
                     let val = 0;
-                    switch(newKey) {
+                    switch (newKey) {
                         case 'hp': val = rng.randint(10, 30) * target.rarity; break;
                         case 'atk': val = rng.randint(2, 8) * target.rarity; break;
                         case 'def_': val = rng.randint(2, 8) * target.rarity; break;
@@ -110,26 +110,50 @@ export function upgradeRelic(target: Relic, fodders: Relic[]): boolean {
                 // Upgrade existing sub-stat
                 const keyToUpgrade = rng.random_choice(currentSubKeys) as AttributeType;
                 if (keyToUpgrade) {
-                     // Upgrade amount similar to initial roll
+                    // Upgrade amount similar to initial roll
                     let val = 0;
-                    switch(keyToUpgrade) {
+                    switch (keyToUpgrade) {
                         case 'hp': val = rng.randint(10, 30) * target.rarity; break;
                         case 'atk': val = rng.randint(2, 8) * target.rarity; break;
                         case 'def_': val = rng.randint(2, 8) * target.rarity; break;
                         case 'speed': val = rng.randint(1, 3) * target.rarity; break;
                     }
                     if (target.random_attributes[keyToUpgrade] !== undefined) {
-                         target.random_attributes[keyToUpgrade]! += val;
+                        target.random_attributes[keyToUpgrade]! += val;
                     }
                 }
             }
         }
-        
+
         cost = getUpgradeCost(target.rarity, target.level);
     }
-    
+
     return true;
 }
+
+export const itemNames = [
+    "DSM王朝的记忆",
+    "繁星最后的余光",
+    "日记中的言语",
+    "纸上的异世界",
+    "破空的镜子一角",
+    "古战场对世界的哀鸣",
+    "望风的笼中鸟",
+    "继承者的遗产",
+    "刚翻开的夏书",
+    "宇宙般永恒的孤独",
+    "仿若无人之地",
+    "坠入亚特兰蒂斯",
+    "捕风的异乡人",
+    "无尽冬日的温暖",
+    "被风所打的记忆",
+    "梦境中的花园",
+    "流浪者的归宿",
+    "星辰大海的邀约",
+    "遗忘之地的呼唤",
+    "穿越次元的信使",
+    "时光尽头的誓言",
+];
 
 /**
  * 生成一个随机道具
@@ -137,32 +161,10 @@ export function upgradeRelic(target: Relic, fodders: Relic[]): boolean {
  * @returns {Relic} 生成的道具
  */
 export function generateRandomRelic(forcedRarity?: number): Relic {
-    const itemNames = [
-        "DSM王朝的记忆",
-        "繁星最后的余光",
-        "日记中的言语",
-        "纸上的异世界",
-        "破空的镜子一角",
-        "古战场对世界的哀鸣",
-        "望风的笼中鸟",
-        "继承者的遗产",
-        "刚翻开的夏书",
-        "宇宙般永恒的孤独",
-        "仿若无人之地",
-        "坠入亚特兰蒂斯",
-        "捕风的异乡人",
-        "无尽冬日的温暖",
-        "被风所打的记忆",
-        "梦境中的花园",
-        "流浪者的归宿",
-        "星辰大海的邀约",
-        "遗忘之地的呼唤",
-        "穿越次元的信使",
-        "时光尽头的誓言",
-    ];
+
 
     const randomName = rng.random_choice(itemNames); // 随机选择一个名字
-    
+
     // 1. 确定稀有度 (权重: 1*: 20%, 2*: 30%, 3*: 30%, 4*: 15%, 5*: 5%)
     // 如果有强制稀有度，则直接使用
     let rarity = 1;
@@ -175,7 +177,7 @@ export function generateRandomRelic(forcedRarity?: number): Relic {
         else if (roll > 0.50) rarity = 3;
         else if (roll > 0.20) rarity = 2;
     }
-    
+
     // 2. 确定主属性
     const attributes: AttributeType[] = ["hp", "atk", "def_", "speed"];
     const mainAttrKey = rng.random_choice(attributes) as AttributeType;
@@ -183,7 +185,7 @@ export function generateRandomRelic(forcedRarity?: number): Relic {
         // Fallback in case of RNG issues
         return generateRandomRelic();
     }
-    
+
     // 主属性数值基于稀有度
     let mainAttrValue = 0;
     const multipliers = {
@@ -192,7 +194,7 @@ export function generateRandomRelic(forcedRarity?: number): Relic {
         def_: 10,
         speed: 2
     };
-    
+
     // Base value + random variation
     const baseMult = multipliers[mainAttrKey];
     mainAttrValue = Math.floor(baseMult * rarity * rng.randfloat(0.8, 1.2));
@@ -208,7 +210,7 @@ export function generateRandomRelic(forcedRarity?: number): Relic {
     let minSubs = Math.max(0, rarity - 2);
     let maxSubs = Math.min(4, rarity);
     if (rarity === 5) { minSubs = 3; maxSubs = 4; }
-    
+
     const numRandomAttributes = rng.randint(minSubs, maxSubs);
 
     const selectedAttributes: {
@@ -220,7 +222,7 @@ export function generateRandomRelic(forcedRarity?: number): Relic {
 
     // 副属性池 (排除主属性?) - 原神里主属性不会出现在副属性中，这里我们仿照
     const subPool = attributes.filter(a => a !== mainAttrKey);
-    
+
     // 随机选择属性并赋值
     // 为了防止死循环（虽然池子够大），这里简单处理
     // Fisher-Yates shuffle simplified
@@ -228,23 +230,23 @@ export function generateRandomRelic(forcedRarity?: number): Relic {
         const j = Math.floor(rng.random() * (i + 1));
         [subPool[i], subPool[j]] = [subPool[j], subPool[i]];
     }
-    
+
     for (let i = 0; i < Math.min(numRandomAttributes, subPool.length); i++) {
         const attributeName = subPool[i];
         let value = 0;
         // 副属性数值大约是主属性的 20-40%
         switch (attributeName) {
             case "hp":
-                value = rng.randint(10, 30) * rarity; 
+                value = rng.randint(10, 30) * rarity;
                 break;
             case "atk":
-                value = rng.randint(2, 8) * rarity; 
+                value = rng.randint(2, 8) * rarity;
                 break;
             case "def_":
                 value = rng.randint(2, 8) * rarity;
                 break;
             case "speed":
-                value = rng.randint(1, 3) * rarity; 
+                value = rng.randint(1, 3) * rarity;
                 break;
         }
         if (value > 0) {
@@ -343,17 +345,17 @@ export class RelicManager {
         data.forEach((item) => {
             // Migration for old items without main_attribute or rarity
             if (!item.main_attribute || !item.main_attribute.key || isNaN(item.main_attribute.value)) {
-                 // Convert one random attribute to main, or generate one
-                 const attrs = Object.keys(item.random_attributes || {}) as AttributeType[];
-                 if (attrs.length > 0) {
-                     const key = attrs[0];
-                     const val = item.random_attributes[key]!;
-                     item.main_attribute = { key: key, value: val || 100 };
-                     delete item.random_attributes[key];
-                 } else {
-                     // No attributes? give generic
-                     item.main_attribute = { key: 'hp', value: 100 };
-                 }
+                // Convert one random attribute to main, or generate one
+                const attrs = Object.keys(item.random_attributes || {}) as AttributeType[];
+                if (attrs.length > 0) {
+                    const key = attrs[0];
+                    const val = item.random_attributes[key]!;
+                    item.main_attribute = { key: key, value: val || 100 };
+                    delete item.random_attributes[key];
+                } else {
+                    // No attributes? give generic
+                    item.main_attribute = { key: 'hp', value: 100 };
+                }
             }
             if (!item.rarity) {
                 item.rarity = 1;
