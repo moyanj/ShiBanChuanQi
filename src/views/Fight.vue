@@ -232,7 +232,10 @@ const isCharacterSelected = (character: any) => {
 };
 
 
-// 战斗开始逻辑
+const backToMain = () => {
+    APM.stopAll();
+    data.page_type = 'main';
+};
 const startBattle = () => {
     battleService.onSettlement = (result: BattleResult) => {
         battle_ended.value = true;
@@ -453,9 +456,7 @@ onMounted(() => {
 
 onUnmounted(() => {
     battleService.stopLoop();
-    APM.stop("battle_music");
-    APM.stop("battle_win");
-    APM.stop("battle_lose");
+    APM.stopAll();
     APM.play("background_music");
     // 重置store状态
     fightStore.$reset();
@@ -469,7 +470,7 @@ onUnmounted(() => {
         <div v-if="show_character_selection" class="char-selection-page">
             <div class="bg-overlay"></div>
 
-            <sbutton @click="data.page_type = 'main'" class="back-btn-unified" text>
+            <sbutton @click="backToMain" class="back-btn-unified" text>
                 <img :src="icons.left" />
                 <span>返回</span>
             </sbutton>
@@ -678,7 +679,7 @@ onUnmounted(() => {
                             stroke-width="2" d="M18 6L6 18M6 6l12 12" />
                     </svg>
                 </sbutton>
-                <sbutton @click="data.page_type = 'main'">退出战斗</sbutton>
+                <sbutton @click="backToMain">退出战斗</sbutton>
                 <sbutton @click="toggleAI">{{ fightStore.ai ? '切换手动模式' : '切换AI模式' }}</sbutton>
                 <br>
                 <h3 v-if="battle_ended">战斗已结束</h3>
@@ -716,7 +717,7 @@ onUnmounted(() => {
                     </div>
                 </div>
 
-                <sbutton type="primary" @click="data.page_type = 'main'" style="margin-top: 20px;">返回主页</sbutton>
+                <sbutton type="primary" @click="backToMain" style="margin-top: 20px;">返回主页</sbutton>
             </div>
         </el-dialog>
 

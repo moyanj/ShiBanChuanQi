@@ -76,13 +76,13 @@ export class BattleService {
             const needsDelay = nowChar && (nowChar.type === 'enemy' || battle.ai_mode);
 
             this.isProcessing = true;
-            
+
             if (needsDelay) {
                 await new Promise(resolve => setTimeout(resolve, 800));
             }
 
             const isEnded = await battle.next_turn();
-            
+
             if (needsDelay && !isEnded) {
                 await new Promise(resolve => setTimeout(resolve, 600));
             }
