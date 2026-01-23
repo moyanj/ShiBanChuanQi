@@ -61,19 +61,17 @@ const triggerScreenShake = () => {
 
 const spawnDamageNumber = (name: string, val: number, type: 'damage' | 'heal', party: 'our' | 'enemy') => {
     const id = nextDamageId++;
-    // 根据阵营决定大致位置
-    const baseX = party === 'enemy' ? 50 : 50; // 水平居中偏移
-    const baseY = party === 'enemy' ? 30 : 70; // 敌人偏上，我方偏下
 
-    const x = (Math.random() - 0.5) * 100;
-    const y = (Math.random() - 0.5) * 50;
+    // 随机微调位置
+    const x = (Math.random() - 0.5) * 40;
+    const y = (Math.random() - 0.5) * 20;
 
     damageNumbers.value.push({
         id,
         val: Math.round(val),
         type,
-        x: x,
-        y: baseY + (y / 10), // y 是百分比
+        x,
+        y,
         name
     });
     setTimeout(() => {
@@ -547,37 +545,49 @@ onUnmounted(() => {
             <!-- 场景层 -->
             <div class="battle-scene">
                 <div class="enemies-row">
-                    <fightCard v-for="char in battle.enemy.get_alive_characters()" :key="char.inside_name"
-                        :character="char"
-                        :is_active="current_active_character?.type === 'enemy' && current_active_character.character.inside_name === char.inside_name"
-                        :is_enemy="true" :is_hit="hitCharacters[char.inside_name]"
-                        :is_selected="selected_target_character?.type === 'enemy' && selected_target_character.character.inside_name === char.inside_name"
-                        @click="selectTargetCharacter('enemy', char)">
-                    </fightCard>
+                    <div v-for="char in battle.enemy.characters" :key="char.inside_name" class="card-container">
+                        <fightCard :character="char"
+                            :is_active="current_active_character?.type === 'enemy' && current_active_character.character.inside_name === char.inside_name"
+                            :is_enemy="true" :is_hit="hitCharacters[char.inside_name]"
+                            :is_selected="selected_target_character?.type === 'enemy' && selected_target_character.character.inside_name === char.inside_name"
+                            @click="selectTargetCharacter('enemy', char)">
+                        </fightCard>
+                        <div class="damage-container">
+                            <transition-group name="float-up">
+                                <div v-for="d in damageNumbers.filter(n => n.name === char.inside_name)" :key="d.id"
+                                    class="floating-number" :class="d.type"
+                                    :style="{ left: `calc(50% + ${d.x}px)`, top: `calc(20% + ${d.y}px)` }">
+                                    {{ d.type === 'heal' ? '+' : '-' }}{{ d.val }}
+                                </div>
+                            </transition-group>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="allies-row">
-                    <fightCard v-for="char in battle.our.get_alive_characters()" :key="char.inside_name"
-                        :character="char"
-                        :is_active="current_active_character?.type === 'our' && current_active_character.character.inside_name === char.inside_name"
-                        :atb_value="battle.our.atb[char.inside_name]" :is_enemy="false"
-                        :is_hit="hitCharacters[char.inside_name]"
-                        :is_selected="selected_our_character?.inside_name === char.inside_name || (selected_target_character?.type === 'our' && selected_target_character.character.inside_name === char.inside_name)"
-                        @click="fightStore.selected_our_character ? selectTargetCharacter('our', char) : selectOurCharacter(char)">
-                    </fightCard>
+                    <div v-for="char in battle.our.characters" :key="char.inside_name" class="card-container">
+                        <fightCard :character="char"
+                            :is_active="current_active_character?.type === 'our' && current_active_character.character.inside_name === char.inside_name"
+                            :atb_value="battle.our.atb[char.inside_name]" :is_enemy="false"
+                            :is_hit="hitCharacters[char.inside_name]"
+                            :is_selected="selected_our_character?.inside_name === char.inside_name || (selected_target_character?.type === 'our' && selected_target_character.character.inside_name === char.inside_name)"
+                            @click="fightStore.selected_our_character ? selectTargetCharacter('our', char) : selectOurCharacter(char)">
+                        </fightCard>
+                        <div class="damage-container">
+                            <transition-group name="float-up">
+                                <div v-for="d in damageNumbers.filter(n => n.name === char.inside_name)" :key="d.id"
+                                    class="floating-number" :class="d.type"
+                                    :style="{ left: `calc(50% + ${d.x}px)`, top: `calc(20% + ${d.y}px)` }">
+                                    {{ d.type === 'heal' ? '+' : '-' }}{{ d.val }}
+                                </div>
+                            </transition-group>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <!-- 特效层 -->
             <div class="fx-layer">
-                <!-- 伤害/治疗数字 -->
-                <transition-group name="float-up">
-                    <div v-for="d in damageNumbers" :key="d.id" class="floating-number" :class="d.type"
-                        :style="{ left: `calc(50% + ${d.x}px)`, top: `${d.y}%` }">
-                        {{ d.type === 'heal' ? '+' : '-' }}{{ d.val }}
-                    </div>
-                </transition-group>
-
                 <!-- 技能大招特写名 -->
                 <transition name="skill-flash">
                     <div v-if="flashingSkillName" class="skill-name-flash">
@@ -1026,6 +1036,7 @@ onUnmounted(() => {
 
 .enemies-row {
     display: flex;
+    justify-content: center;
     gap: 40px;
     margin-bottom: 8vh;
     transform: scale(0.9) translateY(-20px);
@@ -1033,6 +1044,7 @@ onUnmounted(() => {
 
 .allies-row {
     display: flex;
+    justify-content: center;
     gap: 50px;
     transform: scale(1.1) translateY(20px);
 }
@@ -1328,6 +1340,22 @@ onUnmounted(() => {
     z-index: 100;
 }
 
+.card-container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+}
+
+.damage-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 10;
+}
+
 .floating-number {
     position: absolute;
     font-size: 3rem;
@@ -1335,7 +1363,6 @@ onUnmounted(() => {
     text-shadow: 0 0 10px rgba(0, 0, 0, 0.8), 2px 2px 0 #000;
     pointer-events: none;
     z-index: 110;
-    transform: translate(-50%, -50%);
 }
 
 .floating-number.damage {
@@ -1352,17 +1379,17 @@ onUnmounted(() => {
 
 @keyframes float-up-fade {
     0% {
-        transform: translateY(0) scale(0.5);
+        transform: translate(-50%, 0) scale(0.5);
         opacity: 0;
     }
 
     20% {
-        transform: translateY(-40px) scale(1.2);
+        transform: translate(-50%, -20px) scale(1.2);
         opacity: 1;
     }
 
     100% {
-        transform: translateY(-120px) scale(1);
+        transform: translate(-50%, -60px) scale(1);
         opacity: 0;
     }
 }

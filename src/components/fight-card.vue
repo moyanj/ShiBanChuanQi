@@ -97,7 +97,6 @@ const cardClass = computed(() => {
 
 .is-dead {
     filter: grayscale(1) opacity(0.5);
-    transform: translateY(20px) rotateX(45deg);
     transition: all 1s ease;
 }
 
