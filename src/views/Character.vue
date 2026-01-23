@@ -12,13 +12,12 @@ import {
     ElTabPane,
     ElMessage
 } from 'element-plus';
-import { CharacterType, Character } from '../js/character';
+import { c2e, Character } from '../js/character';
 import { APM, useSaveStore } from '../js/stores';
 import { get_character_by_dump, icons } from '../js/utils';
 import { ref, watch, computed, onUnmounted } from 'vue';
 import SButton from '../components/sbutton.vue';
 import { Relic, upgradeRelic, getRelicXP, getUpgradeCost, MAX_LEVEL } from '../js/relic';
-import { on } from 'events';
 
 const save = useSaveStore();
 
@@ -36,18 +35,6 @@ const selectedRelicToEquip = ref<Relic | null>(null); // 选中的要装备的�
 const showEnhanceDialog = ref(false);
 const enhancingRelic = ref<Relic | null>(null);
 const selectedFodders = ref<Relic[]>([]);
-const enhancePreviewXP = ref(0); // 预览增加的经验
-
-// 将类型定义明确
-const c2e: { [key in CharacterType]: string } = {
-    [CharacterType.Fire]: icons.element.fire,
-    [CharacterType.Grass]: icons.element.grass,
-    [CharacterType.LiangZi]: icons.element.liangzi,
-    [CharacterType.Nihility]: icons.element.nihility,
-    [CharacterType.Physics]: icons.element.physics,
-    [CharacterType.Thunder]: icons.element.thunder,
-    [CharacterType.Water]: icons.element.water,
-};
 
 // 使用计算属性来处理角色列表
 const characterList = computed(() => {
@@ -659,7 +646,7 @@ onUnmounted(() => {
                                 <div class="fodder-info">
                                     <span class="f-name" :style="{ color: getRarityColor(fodder.rarity) }">{{
                                         fodder.name
-                                    }}</span>
+                                        }}</span>
                                     <span class="f-lv">+{{ fodder.level }}</span>
                                 </div>
                                 <span class="f-xp">{{ getRelicXP(fodder) }} XP</span>

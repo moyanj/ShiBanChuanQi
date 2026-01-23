@@ -9,7 +9,7 @@ import fightCard from '../components/fight-card.vue';
 import ActionOrder from '../components/ActionOrder.vue';
 import { Skill, BattleEvent } from '../js/battle';
 import { BattleService, BattleResult } from '../js/battle/service';
-import { Character, CharacterType } from '../js/character';
+import { Character, c2e } from '../js/character';
 import { Relic } from '../js/relic';
 import { ConsumableItems } from '../js/item';
 
@@ -165,16 +165,6 @@ const selected_our_character = computed(() => fightStore.selected_our_character)
 const selected_target_character = computed(() => fightStore.selected_target_character);
 const battle_log = computed(() => battle.value?.battle_log || []);
 
-// 角色类型到元素图标的映射
-const c2e = {
-    [CharacterType.Fire]: icons.element.fire,
-    [CharacterType.Grass]: icons.element.grass,
-    [CharacterType.LiangZi]: icons.element.liangzi,
-    [CharacterType.Nihility]: icons.element.nihility,
-    [CharacterType.Physics]: icons.element.physics,
-    [CharacterType.Thunder]: icons.element.thunder,
-    [CharacterType.Water]: icons.element.water,
-};
 
 onKeyStroke("Escape", (e) => {
     e.preventDefault();

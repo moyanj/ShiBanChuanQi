@@ -7,7 +7,7 @@ import 'video.js/dist/video-js.css';
 import { useSaveStore, useDataStore } from "../js/stores";
 import { rng, icons } from "../js/utils";
 import icon_xinhuo from "../assets/things/XinHuo.png";
-import { characters, CharacterType } from "../js/character";
+import { characters, c2e } from "../js/character";
 import { ConsumableItems } from "../js/item";
 import { ref } from "vue";
 import wish_bg from "../assets/bg/wish.jpg";
@@ -28,16 +28,6 @@ const result = ref<any[]>([]);
 const count_XinHuo = ref(saveStore.things.get("XinHuo"));
 
 const wish_list = Object.keys(characters);
-
-const c2e: { [key in CharacterType]: string } = {
-    [CharacterType.Fire]: icons.element.fire,
-    [CharacterType.Grass]: icons.element.grass,
-    [CharacterType.LiangZi]: icons.element.liangzi,
-    [CharacterType.Nihility]: icons.element.nihility,
-    [CharacterType.Physics]: icons.element.physics,
-    [CharacterType.Thunder]: icons.element.thunder,
-    [CharacterType.Water]: icons.element.water,
-};
 
 function f(x: number): number {
     const H = Math.min(0.0001 + (Math.exp(x / 35) / 175), 1);

@@ -1,5 +1,6 @@
 import { IBattle, Skill, SkillType, BattleEvent, BattleEventHandler } from "../battle/types";
 import { Relic } from "../relic";
+import { icons } from "../utils";
 
 export interface CharacterData {
     level: number;
@@ -49,6 +50,17 @@ export enum CharacterType {
     Nihility = "虚无",
     Physics = "物理",
 }
+
+// 将类型定义明确
+export const c2e: { [key in CharacterType]: string } = {
+    [CharacterType.Fire]: icons.element.fire,
+    [CharacterType.Grass]: icons.element.grass,
+    [CharacterType.LiangZi]: icons.element.liangzi,
+    [CharacterType.Nihility]: icons.element.nihility,
+    [CharacterType.Physics]: icons.element.physics,
+    [CharacterType.Thunder]: icons.element.thunder,
+    [CharacterType.Water]: icons.element.water,
+};
 
 export abstract class Character {
     name: string;
@@ -275,12 +287,12 @@ export abstract class Character {
             current_xp -= this.level_xp(current_level);
             current_level += 1;
         }
-        
+
         if (current_level >= Character.MAX_LEVEL) {
-             current_level = Character.MAX_LEVEL;
-             current_xp = 0;
+            current_level = Character.MAX_LEVEL;
+            current_xp = 0;
         }
-        
+
         return { level: current_level, xp: current_xp };
     }
 

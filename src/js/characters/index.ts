@@ -40,3 +40,4 @@ export const characters: Record<string, any> = {
     "YanCui": CharacterClasses.YanCui,
     "NiuWenJin": CharacterClasses.NiuWenJin
 };
+
