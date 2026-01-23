@@ -196,6 +196,11 @@ watch(battle, (newBattle) => {
         });
 
         newBattle.on(BattleEvent.SKILL_EXECUTE, (data: any) => {
+            if (!("battle" in APM.objs)) {
+                APM.add("battle", 'audio/fight.mp3');
+            }
+            APM.play("battle");
+
             flashingSkillName.value = data.skill.name;
             setTimeout(() => {
                 if (flashingSkillName.value === data.skill.name) {
@@ -381,11 +386,6 @@ const playerUseItem = async (item: any) => {
         attacker as Character
     );
 
-    if (!("battle" in APM.objs)) {
-        APM.add("battle", 'audio/fight.mp3');
-    }
-    APM.play("battle");
-
     // 道具使用不重置 ATB，视为不计入回合的自由动作
     // battle.value.our.reset_atb(attacker.inside_name);
 
@@ -434,11 +434,6 @@ const playerAttack = async (attack_type: 'general' | 'skill' | 'super_skill') =>
     if (skill_to_execute.cost > 0 && dealt_value === 0 && battle.value.battle_points < skill_to_execute.cost) {
         return; // 等待玩家重新选择
     }
-
-    if (!("battle" in APM.objs)) {
-        APM.add("battle", 'audio/fight.mp3');
-    }
-    APM.play("battle");
 
     battle.value.our.reset_atb(attacker.inside_name);
 
