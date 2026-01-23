@@ -122,14 +122,17 @@ html {
     height: 100vh;
     position: relative;
     background-color: #0c0c0e;
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    box-sizing: border-box;
 }
 
 /* 固定 UI 层 */
 .ui-fixed-layer {
     position: fixed;
     top: 0;
-    left: 0;
-    right: 0;
+    left: env(safe-area-inset-left);
+    right: env(safe-area-inset-right);
     bottom: 0;
     pointer-events: none;
     z-index: 2000;
