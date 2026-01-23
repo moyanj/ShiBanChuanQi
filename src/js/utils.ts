@@ -46,15 +46,6 @@ export const icons = {
     },
 };
 
-export const audios: object = {
-    background: "audio/background/main.mp3",
-    click: "audio/click.mp3",
-    // 主题曲1
-    theme1: "audio/theme/HerosQuest.mp3",
-    // 主题曲2
-    theme2: "audio/theme/HerosQuest2.mp3",
-};
-
 interface UserAgentInfo {
     ie?: string;
     edge?: string;
@@ -107,22 +98,22 @@ export function getExplore(): string {
 
     // Determine the browser based on the detected version
     if (userAgentInfo.ie) {
-        return `IE ${userAgentInfo.ie}`;
+        return `Internet Explorer ${userAgentInfo.ie}`;
     }
     if (userAgentInfo.edge) {
-        return `Edge ${userAgentInfo.edge}`;
+        return `Microsoft Edge ${userAgentInfo.edge}`;
     }
     if (userAgentInfo.firefox) {
-        return `Firefox ${userAgentInfo.firefox}`;
+        return `Mozilla Firefox ${userAgentInfo.firefox}`;
     }
     if (userAgentInfo.chrome) {
-        return `Chrome ${userAgentInfo.chrome}`;
+        return `Google Chrome ${userAgentInfo.chrome}`;
     }
     if (userAgentInfo.opera) {
-        return `Opera ${userAgentInfo.opera}`;
+        return ` Opera ${userAgentInfo.opera}`;
     }
     if (userAgentInfo.safari) {
-        return `Safari ${userAgentInfo.safari}`;
+        return `Apple Safari ${userAgentInfo.safari}`;
     }
 
     return "Unknown Browser";

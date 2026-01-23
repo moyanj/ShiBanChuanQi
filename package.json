@@ -17,7 +17,6 @@
     "howler": "^2.2.4",
     "lodash-es": "^4.17.22",
     "pinia": "^2.3.1",
-    "pinia-plugin-persistedstate": "^4.7.1",
     "uuid": "^13.0.0",
     "video.js": "^8.23.4",
     "vue": "^3.5.27"

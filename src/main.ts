@@ -1,6 +1,5 @@
 import { createApp } from 'vue';
 import { createPinia, Pinia } from 'pinia';
-import { createPersistedState } from 'pinia-plugin-persistedstate';
 
 //import 'element-plus/dist/index.css';
 import 'element-plus/theme-chalk/dark/css-vars.css';
@@ -11,12 +10,9 @@ import ElementPlus from 'element-plus'
 import zhCn from 'element-plus/es/locale/lang/zh-cn'
 
 
-
-
 const app = createApp(App);
 const p: Pinia = createPinia();
 
-p.use(createPersistedState());
 
 app.use(p);
 app.use(ElementPlus, {
