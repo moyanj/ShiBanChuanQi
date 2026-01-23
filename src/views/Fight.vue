@@ -454,10 +454,13 @@ onMounted(() => {
 onUnmounted(() => {
     battleService.stopLoop();
     APM.stop("battle_music");
+    APM.stop("battle_win");
+    APM.stop("battle_lose");
     APM.play("background_music");
     // 重置store状态
     fightStore.$reset();
 });
+
 </script>
 
 <template>
@@ -724,7 +727,8 @@ onUnmounted(() => {
                 <div v-else class="item-grid">
                     <div v-for="item in owned_items" :key="item.id" class="item-card-mini" @click="playerUseItem(item)">
                         <div class="item-info">
-                            <span class="item-name" :style="{ color: getRarityColor(item.rarity) }">{{ item.name }}</span>
+                            <span class="item-name" :style="{ color: getRarityColor(item.rarity) }">{{ item.name
+                                }}</span>
                             <span class="item-count">x{{ item.count }}</span>
                         </div>
                         <div class="item-desc">{{ item.description }}</div>
@@ -1562,7 +1566,7 @@ onUnmounted(() => {
         overflow: hidden;
         text-overflow: ellipsis;
     }
-    
+
     .slot-remove {
         top: 2px;
         right: 2px;
@@ -1570,7 +1574,7 @@ onUnmounted(() => {
         height: 20px;
         line-height: 18px;
         text-align: center;
-        background: rgba(0,0,0,0.5);
+        background: rgba(0, 0, 0, 0.5);
         border-radius: 50%;
     }
 
@@ -1648,7 +1652,7 @@ onUnmounted(() => {
         text-align: left;
         white-space: normal;
     }
-    
+
     .slot-remove {
         top: 2px;
         right: 5px;
@@ -1670,7 +1674,7 @@ onUnmounted(() => {
     .selection-footer {
         margin-top: 10px;
     }
-    
+
     .btn-group sbutton {
         font-size: 0.9rem;
         padding: 8px 0;
@@ -1684,11 +1688,11 @@ onUnmounted(() => {
     .char-img-box {
         height: 140px;
     }
-    
+
     .char-info-bar {
         padding: 8px;
     }
-    
+
     .char-info-bar .name {
         font-size: 0.85rem;
     }
