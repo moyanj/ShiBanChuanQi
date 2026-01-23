@@ -10,6 +10,7 @@ import icon_xinhuo from "../assets/things/XinHuo.png";
 import { characters, CharacterType } from "../js/character";
 import { ConsumableItems } from "../js/item";
 import { ref, computed } from "vue";
+import wish_bg from "../assets/bg/wish.jpg";
 
 const saveStore = useSaveStore();
 const dataStore = useDataStore();
@@ -161,9 +162,7 @@ const getAvatar = (char: any) => {
 </script>
 
 <template>
-    <div class="wish-container">
-        <!-- Background Layer -->
-        <div class="wish-bg"></div>
+    <div class="wish-container" :style="{ backgroundImage: `url(${wish_bg})` }">
 
         <!-- Header: Currency and Stats -->
         <div class="wish-header">
@@ -249,8 +248,7 @@ const getAvatar = (char: any) => {
                     <el-scrollbar max-height="75vh" class="result-scroll">
                         <div class="result-grid" :class="{ 'single-item': result.length === 1 }">
                             <div v-for="(item, index) in result" :key="index" class="result-card"
-                                :class="['rarity-' + item.rarity]"
-                                :style="{ '--delay': index * 0.05 + 's' }">
+                                :class="['rarity-' + item.rarity]" :style="{ '--delay': index * 0.05 + 's' }">
 
                                 <template v-if="item.type === 'character'">
                                     <div class="card-inner">
@@ -306,295 +304,8 @@ const getAvatar = (char: any) => {
     overflow: hidden;
     color: white;
     font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
-    background-color: #0c0c0e;
-}
-
-.wish-bg {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: url('../assets/bg/wish.jpg');
     background-size: cover;
     background-position: center;
-    filter: brightness(0.4) blur(2px);
-    z-index: -1;
-}
-
-/* Header */
-.wish-header {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    padding: 30px 50px;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    box-sizing: border-box;
-    pointer-events: none;
-}
-
-.currency-display {
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(15px);
-    border-radius: 4px;
-    padding: 10px 25px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    pointer-events: auto;
-}
-
-.currency-item {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.currency-icon {
-    width: 32px;
-    height: 32px;
-    filter: drop-shadow(0 0 8px rgba(247, 211, 88, 0.4));
-}
-
-.currency-info {
-    display: flex;
-    flex-direction: column;
-}
-
-.currency-value {
-    font-size: 24px;
-    font-weight: 900;
-    color: #f7d358;
-}
-
-.currency-label {
-    font-size: 10px;
-    color: rgba(255, 255, 255, 0.5);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.wish-stats {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    text-align: right;
-}
-
-.stat-item {
-    background: rgba(0, 0, 0, 0.4);
-    padding: 5px 15px;
-    border-radius: 2px;
-    border-right: 4px solid #f7d358;
-}
-
-.stat-item .label {
-    font-size: 12px;
-    color: rgba(255, 255, 255, 0.5);
-    margin-right: 15px;
-}
-
-.stat-item .value {
-    font-weight: 900;
-    color: #fff;
-}
-
-/* Main Content */
-.wish-main {
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.banner-box {
-    text-align: center;
-}
-
-.banner-title {
-    font-size: 100px;
-    font-weight: 900;
-    margin: 0;
-    letter-spacing: 15px;
-    background: linear-gradient(to bottom, #fff 0%, #f7d358 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 0 30px rgba(247, 211, 88, 0.2));
-}
-
-.banner-subtitle {
-    font-size: 24px;
-    color: rgba(255, 255, 255, 0.7);
-    margin: 10px 0 30px;
-    letter-spacing: 4px;
-    font-weight: 300;
-}
-
-.banner-decorative {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 30px;
-}
-
-.banner-decorative .line {
-    width: 150px;
-    height: 1px;
-    background: linear-gradient(to right, transparent, rgba(255,255,255,0.5), transparent);
-}
-
-.banner-decorative .diamond {
-    color: #f7d358;
-    font-size: 24px;
-}
-
-/* Footer */
-.wish-footer {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    padding: 60px;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 40px;
-    background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%);
-}
-
-.btn-group {
-    display: flex;
-    gap: 50px;
-}
-
-.draw-button {
-    width: 320px;
-    height: 80px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
-}
-
-.draw-button:active {
-    transform: scale(0.96);
-}
-
-.draw-button.single {
-    background: #ececec;
-    color: #000;
-}
-
-.draw-button.multi {
-    background: #f7d358;
-    color: #000;
-    box-shadow: 0 0 20px rgba(247, 211, 88, 0.3);
-}
-
-.draw-button .text {
-    font-size: 22px;
-    font-weight: 900;
-    letter-spacing: 2px;
-}
-
-.draw-button .cost {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 16px;
-    font-weight: bold;
-    margin-top: 2px;
-    opacity: 0.7;
-}
-
-.draw-button .cost img {
-    width: 20px;
-    height: 20px;
-}
-
-/* Result Card */
-.result-card {
-    position: relative;
-    height: 450px;
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 4px;
-    overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    opacity: 0;
-    transform: translateY(30px);
-    animation: cardAppear 0.5s cubic-bezier(0.215, 0.610, 0.355, 1.000) forwards;
-    animation-delay: var(--delay);
-}
-
-.rarity-5 {
-    border: 1px solid #f7d358;
-    box-shadow: 0 0 30px rgba(247, 211, 88, 0.15);
-}
-
-.rarity-5 .char-meta {
-    background: linear-gradient(to top, rgba(247, 211, 88, 0.2) 0%, rgba(0, 0, 0, 0.9) 100%);
-}
-
-.new-tag {
-    position: absolute;
-    top: 15px;
-    left: 15px;
-    background: #f7d358;
-    color: #000;
-    padding: 2px 12px;
-    font-size: 12px;
-    font-weight: 900;
-    box-shadow: 0 0 15px rgba(247, 211, 88, 0.5);
-    z-index: 10;
-}
-
-.rarity-stars {
-    padding: 8px;
-    color: #f7d358;
-    font-size: 14px;
-    text-align: center;
-    background: rgba(0, 0, 0, 0.5);
-    letter-spacing: 2px;
-}
-
-.close-button {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #fff;
-    padding: 15px 60px;
-    border-radius: 0;
-    cursor: pointer;
-    transition: all 0.3s;
-    font-size: 16px;
-    font-weight: bold;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-}
-
-.close-button:hover {
-    background: #fff;
-    color: #000;
-}
-
-.wish-bg {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: url('../assets/bg/wish.jpg');
-    background-size: cover;
-    background-position: center;
-    filter: brightness(0.6) blur(2px);
-    z-index: -1;
 }
 
 /* Header */
