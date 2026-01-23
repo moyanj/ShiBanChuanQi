@@ -227,8 +227,6 @@ export class Battle implements IBattle {
             this.log_skill_effect(skill, attacker_character, main_target_character, total_value_dealt);
         }
 
-        this.onAfterCharacterAction();
-        this.emit(BattleEvent.AFTER_ACTION, attacker_character);
         return total_value_dealt;
     }
 

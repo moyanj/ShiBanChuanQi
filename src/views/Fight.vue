@@ -267,9 +267,9 @@ const toggleAI = () => {
 
 // 预判技能是否可以作用于指定目标
 const canSkillTarget = (target_party: 'enemy' | 'our') => {
-    // 如果没有选择技能类型，则默认可以作用于敌方，不能作用于己方
+    // 如果没有选择技能类型，则允许选择任何目标（可能是为了使用道具）
     if (!current_selected_skill_type.value) {
-        return target_party === 'enemy';
+        return true;
     }
 
     // 获取当前行动角色
@@ -378,19 +378,17 @@ const playerUseItem = async (item: any) => {
         attacker as Character
     );
 
-    if (dealt_value === 0 && save.items[item.id] <= 0) {
-        return;
-    }
-
     if (!("battle" in APM.objs)) {
         APM.add("battle", 'audio/fight.mp3');
     }
     APM.play("battle");
 
-    battle.value.our.reset_atb(attacker.inside_name);
+    // 道具使用不重置 ATB，视为不计入回合的自由动作
+    // battle.value.our.reset_atb(attacker.inside_name);
 
-    fightStore.selected_our_character = null;
-    fightStore.selected_target_character = null;
+    // 不重置已选择的角色，方便连续使用或后续执行技能
+    // fightStore.selected_our_character = null;
+    // fightStore.selected_target_character = null;
     show_item_selection.value = false;
 };
 
