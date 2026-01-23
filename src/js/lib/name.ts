@@ -1,15 +1,4 @@
-function randomNum(minNum: number, maxNum?: number): number {
-    switch (arguments.length) {
-        case 1:
-            // 如果只传入一个参数，生成一个 1 到 minNum 之间的随机数
-            return minNum > 0 ? Math.floor(Math.random() * minNum + 1) : 0;
-        case 2:
-            // 如果传入两个参数，生成一个 minNum 到 maxNum 之间的随机数
-            return Math.floor(Math.random() * (maxNum - minNum + 1) + minNum);
-        default:
-            return 0;  // 如果传入的参数不是 1 或 2 个，返回 0
-    }
-}
+import { rng } from "../utils";
 
 
 export class RandomName {
@@ -684,10 +673,10 @@ export class RandomName {
     }
 
     private getNickHeader(): string {
-        return this.nickHeader[randomNum(0, this.nickHeader.length - 1)];
+        return this.nickHeader[rng.random_choice(this.nickHeader)];
     }
     private getNickFoot(): string {
-        return this.nickFoot[randomNum(0, this.nickFoot.length - 1)];
+        return this.nickFoot[rng.random_choice(this.nickFoot)];
     }
 
     public getNickName(): string {

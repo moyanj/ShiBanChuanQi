@@ -20,8 +20,8 @@ const displayOrder = computed(() => {
 
 <template>
     <div class="action-order-rail">
-        <div v-for="(item, index) in displayOrder" :key="`${item.character.inside_name}-${index}`" 
-             class="order-node" :class="[item.type, { 'is-active': index === 0 }]">
+        <div v-for="(item, index) in displayOrder" :key="`${item.character.inside_name}-${index}`" class="order-node"
+            :class="[item.type, { 'is-active': index === 0 }]">
             <div class="node-body">
                 <img :src="`illustrations/${item.character.inside_name}.jpg`" class="node-avatar" />
                 <div class="node-border"></div>
@@ -37,7 +37,7 @@ const displayOrder = computed(() => {
     flex-direction: column;
     gap: 12px;
     padding: 30px 20px;
-    background: linear-gradient(90deg, rgba(0,0,0,0.6) 0%, transparent 100%);
+    background: linear-gradient(90deg, rgba(0, 0, 0, 0.6) 0%, transparent 100%);
     height: fit-content;
     pointer-events: none;
 }
@@ -67,12 +67,20 @@ const displayOrder = computed(() => {
 
 .node-border {
     position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    border: 2px solid rgba(255,255,255,0.2);
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border: 2px solid rgba(255, 255, 255, 0.2);
 }
 
-.our .node-border { border-color: rgba(72, 187, 120, 0.6); }
-.enemy .node-border { border-color: rgba(245, 108, 108, 0.6); }
+.our .node-border {
+    border-color: rgba(72, 187, 120, 0.6);
+}
+
+.enemy .node-border {
+    border-color: rgba(245, 108, 108, 0.6);
+}
 
 .is-active {
     width: 54px;
@@ -101,7 +109,7 @@ const displayOrder = computed(() => {
     font-weight: 900;
     color: #fff;
     text-shadow: 0 1px 3px #000;
-    background: rgba(0,0,0,0.4);
+    background: rgba(0, 0, 0, 0.4);
     padding: 1px 4px;
     border-radius: 2px;
 }

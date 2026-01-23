@@ -5,6 +5,7 @@ import { CharacterManager } from '../character';
 import { randomName } from '../lib/name';
 import { useChatStore } from './chat';
 import { SaveService } from '../SaveService';
+import { rng } from '../utils';
 
 export interface SaveStoreState {
     user_name: string;
@@ -22,7 +23,7 @@ let saveTimeout: any = null;
 export const useSaveStore = defineStore('save', {
     state: (): SaveStoreState => ({
         user_name: randomName.getNickName(), // 玩家名字
-        user_avatar: 'avatars/1.png', // 玩家头像
+        user_avatar: `avatars/${rng.randint(1, 100)}.png`, // 玩家头像
         things: new ThingsManager(), // 物品
         relics: new RelicManager(), // 圣遗物管理器
         items: {}, // 道具管理器

@@ -1,17 +1,17 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 import { onKeyStroke } from '@vueuse/core';
-import { ElImage, ElAvatar, ElScrollbar, ElMessage, ElDialog } from 'element-plus';
+import { ElScrollbar, ElMessage, ElDialog } from 'element-plus';
 import { useDataStore, useSaveStore, useFightStore, APM } from '../js/stores';
 import { get_character_by_dump, icons, MersenneTwister } from '../js/utils';
 import sbutton from '../components/sbutton.vue';
 import fightCard from '../components/fight-card.vue';
 import ActionOrder from '../components/ActionOrder.vue';
-import { Battle, Skill, BattleEvent } from '../js/battle';
+import { Skill, BattleEvent } from '../js/battle';
 import { BattleService, BattleResult } from '../js/battle/service';
 import { Character, CharacterType } from '../js/character';
 import { Relic } from '../js/relic';
-import { ConsumableItem, ConsumableItems } from '../js/item';
+import { ConsumableItems } from '../js/item';
 
 const attributeTranslations: { [key: string]: string } = {
     atk: '攻击',
@@ -738,7 +738,7 @@ onUnmounted(() => {
                     <div v-for="item in owned_items" :key="item.id" class="item-card-mini" @click="playerUseItem(item)">
                         <div class="item-info">
                             <span class="item-name" :style="{ color: getRarityColor(item.rarity) }">{{ item.name
-                                }}</span>
+                            }}</span>
                             <span class="item-count">x{{ item.count }}</span>
                         </div>
                         <div class="item-desc">{{ item.description }}</div>

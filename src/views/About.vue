@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ElRow, ElCol, ElScrollbar, ElCard } from 'element-plus'
+import { ElRow, ElCol, ElScrollbar } from 'element-plus'
 import { useDataStore, DataStoreState } from '../js/stores';
 import { getExplore } from '../js/utils';
 

@@ -1,4 +1,4 @@
-import { IBattle, Skill, SkillType } from "./battle/types";
+import { IBattle } from "./battle/types";
 import { BattleCharacters } from "./battle/participants";
 
 export * from './characters/base';

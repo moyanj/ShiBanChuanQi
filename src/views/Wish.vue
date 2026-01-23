@@ -1,15 +1,15 @@
 <script lang="ts" setup>
-import { ElRow, ElMessage, ElScrollbar, ElImage } from "element-plus";
+import { ElMessage, ElScrollbar, ElImage } from "element-plus";
 import sbutton from "../components/sbutton.vue";
 import svideo from "../components/svideo.vue";
 import 'video.js/dist/video-js.css';
 
 import { useSaveStore, useDataStore } from "../js/stores";
-import { MersenneTwister, icons } from "../js/utils";
+import { rng, icons } from "../js/utils";
 import icon_xinhuo from "../assets/things/XinHuo.png";
 import { characters, CharacterType } from "../js/character";
 import { ConsumableItems } from "../js/item";
-import { ref, computed } from "vue";
+import { ref } from "vue";
 import wish_bg from "../assets/bg/wish.jpg";
 
 const saveStore = useSaveStore();
@@ -27,7 +27,6 @@ const show_skip = ref(false);
 const result = ref<any[]>([]);
 const count_XinHuo = ref(saveStore.things.get("XinHuo"));
 
-const random = new MersenneTwister();
 const wish_list = Object.keys(characters);
 
 const c2e: { [key in CharacterType]: string } = {
@@ -79,15 +78,15 @@ function wish(n: number = 1) {
     for (let i = 1; i <= n; i++) {
         saveStore.n_wish++;
         saveStore.wish_number++; // increment total pulls
-        const randVal = random.random();
+        const randVal = rng.random();
         const p5base = f(saveStore.n_wish);
 
         // 如果 randVal 在 [0, p5base] 范围内，触发 5 星奖励（角色或道具）
         if (randVal <= p5base) {
             saveStore.n_wish = 0;
             // 角色占 75%，道具占 25%
-            if (random.random() <= 0.75) {
-                const wish_item_key = random.random_choice(wish_list);
+            if (rng.random() <= 0.75) {
+                const wish_item_key = rng.random_choice(wish_list);
                 const isNew = !saveStore.characters.is_in(wish_item_key);
                 const charObj = new characters[wish_item_key]();
                 if (isNew) {
@@ -101,7 +100,7 @@ function wish(n: number = 1) {
                 });
             } else {
                 const fiveStarItems = Object.values(ConsumableItems).filter(item => item.rarity === 5);
-                const item = random.random_choice(fiveStarItems);
+                const item = rng.random_choice(fiveStarItems);
                 saveStore.items[item.id] = (saveStore.items[item.id] || 0) + 1;
                 result.value.push({
                     type: 'item',
@@ -112,7 +111,7 @@ function wish(n: number = 1) {
         } else if (randVal <= p5base + 0.07) {
             // 4-star Item (概率 7%)
             const fourStarItems = Object.values(ConsumableItems).filter(item => item.rarity === 4);
-            const item = random.random_choice(fourStarItems);
+            const item = rng.random_choice(fourStarItems);
             saveStore.items[item.id] = (saveStore.items[item.id] || 0) + 1;
             result.value.push({
                 type: 'item',
@@ -122,7 +121,7 @@ function wish(n: number = 1) {
         } else if (randVal <= p5base + 0.07 + 0.15) {
             // 3-star Item (概率 15%)
             const threeStarItems = Object.values(ConsumableItems).filter(item => item.rarity === 3);
-            const item = random.random_choice(threeStarItems);
+            const item = rng.random_choice(threeStarItems);
             saveStore.items[item.id] = (saveStore.items[item.id] || 0) + 1;
             result.value.push({
                 type: 'item',

@@ -1,7 +1,5 @@
 import { v4 as uuidv4 } from "uuid"; // 用于生成唯一ID
-import { MersenneTwister } from "./utils";
-
-const rng = new MersenneTwister(); // 初始化随机数生成器
+import { rng } from "./utils";
 
 export type AttributeType = "hp" | "atk" | "def_" | "speed";
 

@@ -197,7 +197,7 @@ export class Battle implements IBattle {
     execute_item(target_party: 'enemy' | 'our', target_character_name: string, item: ConsumableItem, attacker_character: Character): number {
         this.emit(BattleEvent.SKILL_EXECUTE, { attacker: attacker_character, skill: item.effect, target_party, target_character_name });
         this.log(`${attacker_character.name} 使用了道具 ${item.name}！`);
-        
+
         const saveStore = useSaveStore();
         if (saveStore.items[item.id] > 0) {
             saveStore.items[item.id]--;

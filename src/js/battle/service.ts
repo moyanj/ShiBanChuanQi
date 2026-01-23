@@ -1,8 +1,7 @@
-import { ref, computed } from 'vue';
 import { useFightStore, useSaveStore, useDataStore, APM } from '../stores';
 import { Battle } from './engine';
 import { Character, characters } from '../character';
-import { get_character_by_dump, MersenneTwister } from '../utils';
+import { get_character_by_dump, rng } from '../utils';
 import { ElMessage } from 'element-plus';
 import { ThingList } from '../things';
 import { generateRandomRelic, Relic } from '../relic';
@@ -16,7 +15,6 @@ export interface BattleResult {
 
 export class BattleService {
     private interval: number | null = null;
-    private random = new MersenneTwister();
 
     public onSettlement?: (result: BattleResult) => void;
 
@@ -120,7 +118,7 @@ export class BattleService {
         if (isWin) {
             this.playAudio("battle_win", 'audio/battle_win.mp3');
             result.exp = this.fightStore.enemy.reduce((sum, char) => sum + Math.round(char.level_xp(char.level) / 5), 0);
-            result.xinhuo = this.random.randint(175, 840);
+            result.xinhuo = rng.randint(175, 840);
 
             // 下放奖励
             this.save.things.add(new (ThingList["EXP"] as any)(), result.exp);
@@ -131,7 +129,7 @@ export class BattleService {
             });
 
             // 掉落圣遗物
-            const numRelics = this.random.randint(1, 3);
+            const numRelics = rng.randint(1, 5);
             for (let i = 0; i < numRelics; i++) {
                 const relic = generateRandomRelic();
                 this.save.relics.add(relic);
@@ -164,9 +162,9 @@ export class BattleService {
 
         this.fightStore.enemy = [];
         for (let i = 0; i < 3; i++) {
-            const template = allGameCharacters[this.random.randint(0, allGameCharacters.length - 1)];
+            const template = allGameCharacters[rng.randint(0, allGameCharacters.length - 1)];
             const enemy = this.createWeakerEnemy(template);
-            enemy.level = Math.max(1, Math.floor(ourAvgLevel) + this.random.randint(-2, 1));
+            enemy.level = Math.max(1, Math.floor(ourAvgLevel) + rng.randint(-2, 1));
             enemy.level_hp();
             enemy.level_atk();
             enemy.level_def();
@@ -177,7 +175,7 @@ export class BattleService {
 
     private createWeakerEnemy(baseCharacter: Character): Character {
         const weakerEnemy = get_character_by_dump(baseCharacter);
-        weakerEnemy.level = Math.max(1, baseCharacter.level - this.random.randint(-1, 3));
+        weakerEnemy.level = Math.max(1, baseCharacter.level - rng.randint(-5, 3));
         weakerEnemy.level_hp();
         weakerEnemy.level_atk();
         weakerEnemy.level_def();

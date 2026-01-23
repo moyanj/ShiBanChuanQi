@@ -1,12 +1,7 @@
 <script setup lang="ts">
 import {
-    ElCard,
-    ElRow,
-    ElCol,
     ElScrollbar,
     ElImage,
-    ElDescriptions,
-    ElDescriptionsItem,
     ElDialog,
     ElForm,
     ElFormItem,
@@ -593,7 +588,8 @@ const getRelicIcon = (item: any) => {
                         </div>
                     </div>
                     <div class="dialog-actions" style="margin-top: 20px">
-                        <SButton type="primary" @click="equipRelic" :disabled="!selectedRelicToEquip" style="width: 100%">
+                        <SButton type="primary" @click="equipRelic" :disabled="!selectedRelicToEquip"
+                            style="width: 100%">
                             确定装备
                         </SButton>
                     </div>
@@ -612,7 +608,8 @@ const getRelicIcon = (item: any) => {
                             {{ enhancingRelic.name }} +{{ enhancingRelic.level }}
                         </div>
                         <div class="target-exp">
-                            XP: {{ enhancingRelic.exp }} / {{ getUpgradeCost(enhancingRelic.rarity, enhancingRelic.level)
+                            XP: {{ enhancingRelic.exp }} / {{ getUpgradeCost(enhancingRelic.rarity,
+                                enhancingRelic.level)
                             }}
                         </div>
                         <div class="target-main" v-if="enhancingRelic.main_attribute">
@@ -652,7 +649,7 @@ const getRelicIcon = (item: any) => {
                                 <div class="fodder-info">
                                     <span class="f-name" :style="{ color: getRarityColor(fodder.rarity) }">{{
                                         fodder.name
-                                    }}</span>
+                                        }}</span>
                                     <span class="f-lv">+{{ fodder.level }}</span>
                                 </div>
                                 <span class="f-xp">{{ getRelicXP(fodder) }} XP</span>

@@ -481,3 +481,5 @@ export function get_character_by_dump(dump: any): Character | null {
     selected_our_character.load(dump);
     return selected_our_character;
 }
+
+export const rng = new MersenneTwister();

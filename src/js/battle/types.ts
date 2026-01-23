@@ -47,7 +47,7 @@ export interface IBattle {
     onCharacterAction(): void;
     onAfterCharacterAction(): void;
     get_action_order(): any[];
-    
+
     on(event: BattleEvent, handler: BattleEventHandler): void;
     off(event: BattleEvent, handler: BattleEventHandler): void;
     emit(event: BattleEvent, data: any): void;

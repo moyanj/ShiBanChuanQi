@@ -2,8 +2,7 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useSaveStore, useDataStore } from '../js/stores';
 import { icons } from '../js/utils';
-import { ElImage, ElAvatar, ElMessage } from 'element-plus';
-import sbutton from '../components/sbutton.vue';
+import { ElAvatar, ElMessage } from 'element-plus';
 import placeholderImg from '../assets/placeholder/p300x400.png';
 import XinHuo from '../assets/things/XinHuo.png';
 
@@ -18,7 +17,6 @@ const showCharacter = ref(false);
 const initKanban = () => {
     // 获取玩家拥有的所有角色
     const myChars = save.characters.get_all();
-    console.log("My Characters:", myChars);
 
     if (myChars.length > 0) {
         // 随机选一个

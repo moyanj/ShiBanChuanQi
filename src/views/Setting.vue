@@ -2,13 +2,12 @@
 import { ref } from 'vue';
 import { ElScrollbar, ElMessageBox, ElMessage, ElDialog, ElForm, ElFormItem, ElInput, ElLoading } from 'element-plus';
 import { useSaveStore, useDataStore } from '../js/stores';
-import { /*SaveServer,*/ MersenneTwister } from '../js/utils';
+import { rng } from '../js/utils';
 import { randomName } from '../js/lib/name';
 import sbutton from '../components/sbutton.vue'
 import settingItem from '../components/setting-item.vue'
 
 const saveStore = useSaveStore();
-const random = new MersenneTwister()
 var show_upload_data = ref(false);
 var show_reg_data = ref(false);
 var show_load_data = ref(false);
@@ -119,7 +118,7 @@ function reset_username() {
 }
 
 function reset_avatar() {
-    saveStore.user_avatar = `avatars/${random.randint(1, 100)}.png`;;
+    saveStore.user_avatar = `avatars/${rng.randint(1, 100)}.png`;;
     ElMessage.success("修改完毕")
 }
 </script>
@@ -139,7 +138,8 @@ function reset_avatar() {
                 <div class="setting-list">
                     <settingItem label="存档管理">
                         <div class="btn-group">
-                            <sbutton type="primary" @click="saveStore.save().then(() => ElMessage.success('存档成功'))">保存游戏</sbutton>
+                            <sbutton type="primary" @click="saveStore.save().then(() => ElMessage.success('存档成功'))">保存游戏
+                            </sbutton>
                             <sbutton @click="saveStore.load().then(() => ElMessage.success('加载成功'))">手动读档</sbutton>
                         </div>
                     </settingItem>
@@ -239,7 +239,10 @@ function reset_avatar() {
 
 .bg-overlay {
     position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background: radial-gradient(circle at 70% 30%, rgba(45, 55, 72, 0.2) 0%, transparent 70%);
     pointer-events: none;
     z-index: 0;
@@ -319,6 +322,6 @@ function reset_avatar() {
 
 :deep(.el-dialog) {
     background: #1a1a1e;
-    border: 1px solid rgba(255,255,255,0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 </style>

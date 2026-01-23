@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, computed } from 'vue';
+import { computed } from 'vue';
 import { Character } from '../js/character';
 
 const props = defineProps({
@@ -57,29 +57,29 @@ const cardClass = computed(() => {
             <div class="active-indicator" v-if="is_active"></div>
             <div class="selected-indicator" v-if="is_selected"></div>
         </div>
-        
+
         <div class="card-hud">
             <div class="name-box">
                 <span class="name">{{ character.name }}</span>
             </div>
-            
+
             <div class="bars-box">
                 <!-- HP Bar -->
                 <div class="bar-container hp">
                     <div class="bar-fill" :style="{ width: hpPercentage }"></div>
                     <span class="bar-text">{{ Math.round(character.hp) }}</span>
                 </div>
-                
+
                 <!-- ATB Bar (Our characters only) -->
                 <div class="bar-container atb" v-if="!is_enemy">
                     <div class="bar-fill" :style="{ width: atbPercentage }"></div>
                 </div>
             </div>
-            
+
             <!-- Buffs/Debuffs (Simplified) -->
             <div class="effects-row" v-if="character.active_effects.length > 0">
-                <div v-for="effect in character.active_effects.slice(0, 4)" :key="effect.id" 
-                     class="effect-icon" :class="effect.type">
+                <div v-for="effect in character.active_effects.slice(0, 4)" :key="effect.id" class="effect-icon"
+                    :class="effect.type">
                 </div>
             </div>
         </div>
@@ -108,7 +108,7 @@ const cardClass = computed(() => {
     overflow: hidden;
     background: #1a1a1e;
     border: 2px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
 }
 
 .portrait-img {
@@ -128,14 +128,31 @@ const cardClass = computed(() => {
 }
 
 .is-hit {
-    animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+    animation: shake 0.4s cubic-bezier(.36, .07, .19, .97) both;
 }
 
 @keyframes shake {
-    10%, 90% { transform: translate3d(-1px, 0, 0); }
-    20%, 80% { transform: translate3d(2px, 0, 0); }
-    30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-    40%, 60% { transform: translate3d(4px, 0, 0); }
+
+    10%,
+    90% {
+        transform: translate3d(-1px, 0, 0);
+    }
+
+    20%,
+    80% {
+        transform: translate3d(2px, 0, 0);
+    }
+
+    30%,
+    50%,
+    70% {
+        transform: translate3d(-4px, 0, 0);
+    }
+
+    40%,
+    60% {
+        transform: translate3d(4px, 0, 0);
+    }
 }
 
 .is-selected .portrait-box {
@@ -145,7 +162,10 @@ const cardClass = computed(() => {
 
 .active-indicator {
     position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     border: 4px solid #f7d358;
     animation: pulse 2s infinite;
     pointer-events: none;
@@ -153,16 +173,27 @@ const cardClass = computed(() => {
 
 .selected-indicator {
     position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background: rgba(255, 71, 87, 0.1);
     border: 4px solid #ff4757;
     pointer-events: none;
 }
 
 @keyframes pulse {
-    0% { opacity: 0.5; }
-    50% { opacity: 1; }
-    100% { opacity: 0.5; }
+    0% {
+        opacity: 0.5;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0.5;
+    }
 }
 
 /* Card HUD */
@@ -173,7 +204,7 @@ const cardClass = computed(() => {
     width: 100%;
     padding: 10px;
     box-sizing: border-box;
-    background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%);
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, transparent 100%);
     z-index: 2;
 }
 
@@ -199,7 +230,7 @@ const cardClass = computed(() => {
     position: relative;
     width: 100%;
     height: 6px;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0, 0, 0, 0.5);
     border-radius: 3px;
     overflow: hidden;
 }
@@ -244,6 +275,11 @@ const cardClass = computed(() => {
     border-radius: 50%;
 }
 
-.effect-icon.buff { background: #48bb78; }
-.effect-icon.debuff { background: #f56c6c; }
+.effect-icon.buff {
+    background: #48bb78;
+}
+
+.effect-icon.debuff {
+    background: #f56c6c;
+}
 </style>
