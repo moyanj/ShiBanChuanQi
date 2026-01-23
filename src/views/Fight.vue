@@ -42,6 +42,7 @@ const hitCharacters = ref<Record<string, boolean>>({});
 const damageNumbers = ref<{ id: number, val: number, type: 'damage' | 'heal', x: number, y: number, name: string }[]>([]);
 const isScreenShaking = ref(false);
 const flashingSkillName = ref("");
+const flashingAttackerName = ref("");
 let nextDamageId = 0;
 
 const triggerHit = (charName: string) => {
@@ -202,9 +203,11 @@ watch(battle, (newBattle) => {
             APM.play("battle");
 
             flashingSkillName.value = data.skill.name;
+            flashingAttackerName.value = data.attacker.name;
             setTimeout(() => {
                 if (flashingSkillName.value === data.skill.name) {
                     flashingSkillName.value = "";
+                    flashingAttackerName.value = "";
                 }
             }, 1500);
         });
@@ -579,6 +582,7 @@ onUnmounted(() => {
                 <transition name="skill-flash">
                     <div v-if="flashingSkillName" class="skill-name-flash">
                         <div class="flash-bg"></div>
+                        <div class="attacker-name-hint">{{ flashingAttackerName }} 正在施放</div>
                         <div class="flash-text">{{ flashingSkillName }}</div>
                     </div>
                 </transition>
@@ -1370,9 +1374,20 @@ onUnmounted(() => {
     width: 100%;
     height: 120px;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     z-index: 120;
+}
+
+.attacker-name-hint {
+    font-size: 1.2rem;
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: bold;
+    letter-spacing: 4px;
+    margin-bottom: 5px;
+    text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    z-index: 1;
 }
 
 .flash-bg {
