@@ -23,10 +23,34 @@ function cmd_handler(value) {
             - add_exp [数量]: 添加经验值
             - add_money [数量]: 添加星火
             - set_level [等级]: 设置当前队伍首位角色的等级
+            - all: 获取所有角色和无限资源
             - reset: 重置所有数据
             - exit: 退出
             `;
             alert(helpMsg);
+            break;
+
+        case "all":
+            for (const charName in characters) {
+                if (Object.prototype.hasOwnProperty.call(characters, charName)) {
+                    const CharacterClass = characters[charName];
+                    const newChar = new CharacterClass();
+                    saveStore.characters.add(newChar);
+                }
+            }
+
+            for (const thingName in ThingList) {
+                if (Object.prototype.hasOwnProperty.call(ThingList, thingName)) {
+                    const ThingClass = ThingList[thingName];
+                    saveStore.things.add(new (ThingClass as any)(), 99999999);
+                }
+            }
+
+            for (let i = 0; i < 50; i++) {
+                saveStore.relics.add(generateRandomRelic(5));
+            }
+            
+            alert("已获取所有角色、无限资源及50个传说圣遗物！");
             break;
 
         case "add_item":

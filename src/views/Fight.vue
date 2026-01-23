@@ -1474,4 +1474,225 @@ onUnmounted(() => {
     color: #666;
     padding: 40px;
 }
+
+/* Responsive Styles */
+@media (max-width: 1024px) {
+    .selection-header {
+        padding: 30px 40px 10px;
+    }
+
+    .selection-main {
+        padding: 0 40px 30px;
+        gap: 20px;
+    }
+
+    .team-preview-pane {
+        width: 320px;
+        padding: 20px;
+    }
+}
+
+
+@media (max-width: 768px) {
+    .char-selection-page {
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .back-btn-unified {
+        top: 15px;
+        left: 15px;
+    }
+
+    .selection-header {
+        padding: 60px 20px 10px;
+    }
+
+    .selection-header h1 {
+        font-size: 2rem;
+    }
+
+    .team-limit {
+        font-size: 1rem;
+    }
+
+    .selection-main {
+        flex-direction: column;
+        height: auto;
+        padding: 0 20px 40px;
+        padding-bottom: calc(40px + env(safe-area-inset-bottom));
+    }
+
+    .available-pane {
+        height: 360px;
+        flex: none;
+    }
+
+    .team-preview-pane {
+        width: 100%;
+        padding: 20px;
+    }
+
+    .team-slots {
+        flex-direction: row;
+        gap: 10px;
+    }
+
+    .team-slot {
+        flex: 1;
+        height: 120px;
+        margin-bottom: 0;
+    }
+
+    .slot-inner.filled {
+        flex-direction: column;
+        justify-content: center;
+        gap: 5px;
+        padding: 5px;
+    }
+
+    .slot-inner img {
+        width: 45px;
+        height: 45px;
+    }
+
+    .slot-label {
+        font-size: 0.9rem;
+        width: 100%;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .slot-remove {
+        top: 2px;
+        right: 2px;
+        width: 20px;
+        height: 20px;
+        line-height: 18px;
+        text-align: center;
+        background: rgba(0,0,0,0.5);
+        border-radius: 50%;
+    }
+
+    .selection-footer {
+        margin-top: 20px;
+    }
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+    .char-selection-page {
+        overflow: hidden;
+    }
+
+    .selection-header {
+        padding: 10px 40px 5px;
+    }
+
+    .selection-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .team-limit {
+        font-size: 0.9rem;
+    }
+
+    .selection-main {
+        flex-direction: row;
+        height: calc(100vh - 70px);
+        padding: 0 40px 10px;
+        gap: 20px;
+        padding-bottom: 0;
+    }
+
+    .available-pane {
+        flex: 1;
+        height: 100%;
+    }
+
+    .team-preview-pane {
+        width: 280px;
+        padding: 15px;
+    }
+
+    .pane-title {
+        margin-bottom: 10px;
+        font-size: 0.8rem;
+    }
+
+    .team-slots {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .team-slot {
+        flex: none;
+        height: 55px;
+        margin-bottom: 0;
+    }
+
+    .slot-inner.filled {
+        flex-direction: row;
+        justify-content: flex-start;
+        padding: 4px;
+        gap: 10px;
+    }
+
+    .slot-inner img {
+        width: 40px;
+        height: 40px;
+    }
+
+    .slot-label {
+        font-size: 0.9rem;
+        width: auto;
+        text-align: left;
+        white-space: normal;
+    }
+    
+    .slot-remove {
+        top: 2px;
+        right: 5px;
+        font-size: 16px;
+        background: transparent;
+        width: auto;
+        height: auto;
+        line-height: normal;
+    }
+
+    .slot-inner.empty .plus {
+        font-size: 1.2rem;
+    }
+
+    .slot-inner.empty .txt {
+        font-size: 0.7rem;
+    }
+
+    .selection-footer {
+        margin-top: 10px;
+    }
+    
+    .btn-group sbutton {
+        font-size: 0.9rem;
+        padding: 8px 0;
+    }
+
+    .char-grid {
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        gap: 10px;
+    }
+
+    .char-img-box {
+        height: 140px;
+    }
+    
+    .char-info-bar {
+        padding: 8px;
+    }
+    
+    .char-info-bar .name {
+        font-size: 0.85rem;
+    }
+}
 </style>
