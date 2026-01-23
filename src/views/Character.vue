@@ -13,11 +13,12 @@ import {
     ElMessage
 } from 'element-plus';
 import { CharacterType, Character } from '../js/character';
-import { useSaveStore } from '../js/stores';
+import { APM, useSaveStore } from '../js/stores';
 import { get_character_by_dump, icons } from '../js/utils';
-import { ref, watch, computed } from 'vue';
+import { ref, watch, computed, onUnmounted } from 'vue';
 import SButton from '../components/sbutton.vue';
 import { Relic, upgradeRelic, getRelicXP, getUpgradeCost, MAX_LEVEL } from '../js/relic';
+import { on } from 'events';
 
 const save = useSaveStore();
 
@@ -207,6 +208,11 @@ const levelUp = () => {
 
     // 重置输入框（可选，或者设为0，或者设为剩余可升值）
     levelUpAmount.value = 0;
+
+    if (!("level_up" in APM.objs)) {
+        APM.add("level_up", 'audio/level_up.mp3');
+    }
+    APM.play("level_up");
 };
 
 // 方法：装备道具
@@ -315,6 +321,10 @@ const getRarityColor = (rarity: number = 1) => {
 const getRelicIcon = (item: any) => {
     return item.icon || icons.empty;
 };
+
+onUnmounted(() => {
+    APM.stop("level_up");
+});
 </script>
 
 <template>
@@ -649,7 +659,7 @@ const getRelicIcon = (item: any) => {
                                 <div class="fodder-info">
                                     <span class="f-name" :style="{ color: getRarityColor(fodder.rarity) }">{{
                                         fodder.name
-                                        }}</span>
+                                    }}</span>
                                     <span class="f-lv">+{{ fodder.level }}</span>
                                 </div>
                                 <span class="f-xp">{{ getRelicXP(fodder) }} XP</span>
@@ -719,7 +729,6 @@ const getRelicIcon = (item: any) => {
 
 .char-nav-inner {
     display: flex;
-    align-relics: center;
     gap: 12px;
 }
 
@@ -756,12 +765,11 @@ const getRelicIcon = (item: any) => {
 .char-header {
     display: flex;
     justify-content: space-between;
-    align-relics: flex-start;
 }
 
 .char-title {
     display: flex;
-    align-relics: center;
+
     gap: 20px;
 }
 
@@ -837,7 +845,7 @@ const getRelicIcon = (item: any) => {
     flex: 1;
     display: flex;
     justify-content: center;
-    align-relics: center;
+
     margin: 20px 0;
 }
 
@@ -850,7 +858,7 @@ const getRelicIcon = (item: any) => {
 .no-portrait {
     display: flex;
     flex-direction: column;
-    align-relics: center;
+
     opacity: 0.3;
 }
 
@@ -944,7 +952,7 @@ const getRelicIcon = (item: any) => {
 
 .skill-head {
     display: flex;
-    align-relics: center;
+
     gap: 10px;
     margin-bottom: 10px;
 }
@@ -1008,7 +1016,7 @@ const getRelicIcon = (item: any) => {
     border-radius: 8px;
     display: flex;
     justify-content: center;
-    align-relics: center;
+
     position: relative;
     overflow: hidden;
 }
@@ -1078,7 +1086,7 @@ const getRelicIcon = (item: any) => {
 .add-inner {
     display: flex;
     flex-direction: column;
-    align-relics: center;
+
     gap: 10px;
     color: #666;
 }
@@ -1093,7 +1101,7 @@ const getRelicIcon = (item: any) => {
     flex: 1;
     display: flex;
     flex-direction: column;
-    align-relics: center;
+
     justify-content: center;
     opacity: 0.5;
 }
@@ -1193,7 +1201,7 @@ const getRelicIcon = (item: any) => {
     height: 100%;
     display: flex;
     justify-content: center;
-    align-relics: center;
+
 }
 
 .full-ill {
@@ -1289,7 +1297,7 @@ const getRelicIcon = (item: any) => {
 .fodder-header {
     display: flex;
     justify-content: space-between;
-    align-relics: center;
+
     margin-bottom: 15px;
 }
 
@@ -1301,7 +1309,7 @@ const getRelicIcon = (item: any) => {
 .fodder-item {
     display: flex;
     justify-content: space-between;
-    align-relics: center;
+
     padding: 12px 15px;
     margin-bottom: 8px;
     background: rgba(255, 255, 255, 0.03);
