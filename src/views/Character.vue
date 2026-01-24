@@ -1337,4 +1337,84 @@ onUnmounted(() => {
 .enhance-footer {
     margin-top: 20px;
 }
+
+@media screen and (max-height: 500px) and (orientation: landscape) {
+    .display-name {
+        font-size: 1.8rem;
+    }
+
+    .display-desc {
+        font-size: 0.8rem;
+    }
+
+    .big-elem-icon {
+        width: 40px;
+        height: 40px;
+    }
+
+    .lv-row {
+        font-size: 1rem;
+    }
+
+    .lv-label, .lv-max {
+        font-size: 0.8rem;
+    }
+
+    .main-display {
+        padding: 20px;
+    }
+
+    .portrait-container {
+        margin: 10px 0;
+    }
+
+    .main-portrait {
+        height: 70vh;
+    }
+
+    .info-panel {
+        width: 300px;
+    }
+
+    .char-tabs :deep(.el-tabs__item) {
+        font-size: 0.9rem;
+        padding: 0 12px;
+    }
+
+    .stat-value {
+        font-size: 0.9rem;
+    }
+
+    .stat-label {
+        font-size: 0.8rem;
+    }
+
+    .skill-name {
+        font-size: 0.9rem;
+    }
+
+    .skill-desc {
+        font-size: 0.8rem;
+    }
+
+    .relic-name {
+        font-size: 0.9rem;
+    }
+
+    .relic-main-stat, .relic-sub-stats {
+        font-size: 0.75rem;
+    }
+
+    .char-name {
+        font-size: 0.9rem;
+    }
+
+    .char-lv {
+        font-size: 0.7rem;
+    }
+
+    .side-nav {
+        width: 160px;
+    }
+}
 </style>

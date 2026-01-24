@@ -1651,5 +1651,84 @@ onUnmounted(() => {
     .char-info-bar .name {
         font-size: 0.85rem;
     }
+
+    /* 战斗界面调整 */
+    .top-hud {
+        padding: 10px 20px;
+    }
+
+    .battle-status {
+        font-size: 1rem;
+    }
+
+    .turn-count {
+        font-size: 0.8rem;
+    }
+
+    .ai-btn {
+        font-size: 0.8rem;
+        padding: 3px 10px;
+    }
+
+    .action-order-sidebar {
+        top: 60px;
+    }
+
+    .log-overlay {
+        bottom: 20px;
+        left: 20px;
+        width: 240px;
+        padding: 10px;
+    }
+
+    .log-entry {
+        font-size: 0.7rem;
+    }
+
+    .bottom-controls {
+        bottom: 20px;
+        right: 20px;
+        gap: 10px;
+    }
+
+    .bp-container {
+        padding: 5px 12px;
+        gap: 10px;
+    }
+
+    .bp-val {
+        font-size: 0.9rem;
+    }
+
+    .node-circle {
+        width: 48px;
+        height: 48px;
+    }
+
+    .node-circle.skill {
+        width: 56px;
+        height: 56px;
+    }
+
+    .ult .node-circle {
+        width: 64px;
+        height: 64px;
+    }
+
+    .node-label {
+        font-size: 9px;
+    }
+
+    .floating-number {
+        font-size: 1.8rem;
+    }
+
+    .flash-text {
+        font-size: 2.2rem;
+    }
+
+    .attacker-name-hint {
+        font-size: 0.8rem;
+    }
 }
 </style>

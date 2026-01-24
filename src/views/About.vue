@@ -280,4 +280,75 @@ const zx_list = [
     color: #f7d358;
     font-weight: bold;
 }
+
+@media screen and (max-height: 500px) and (orientation: landscape) {
+    .credits-scroll {
+        padding: 30px 40px 60px 20px;
+    }
+
+    .brand-section {
+        padding-left: 40px;
+    }
+
+    #title {
+        font-size: 2.5rem;
+        letter-spacing: 2px;
+    }
+
+    .brand-line {
+        margin: 10px 0 20px;
+        height: 4px;
+        width: 60px;
+    }
+
+    .version-info {
+        font-size: 0.8rem;
+        line-height: 1.6;
+    }
+
+    .credit-group {
+        margin-bottom: 30px;
+    }
+
+    .credit-group h2 {
+        font-size: 1.2rem;
+        margin-bottom: 15px;
+    }
+
+    .credit-card {
+        padding: 15px;
+    }
+
+    .credit-card p {
+        font-size: 0.7rem;
+        margin: 5px 0;
+    }
+
+    .easter-egg {
+        font-size: 0.5rem;
+    }
+
+    .thanks-item {
+        font-size: 0.8rem;
+        padding: 5px 10px;
+    }
+
+    .thanks-footer {
+        font-size: 0.7rem;
+    }
+
+    .time-item {
+        gap: 15px;
+    }
+
+    .time-item .date {
+        font-size: 0.9rem;
+        width: 80px;
+    }
+
+    .final-signature {
+        margin-top: 40px;
+        font-size: 0.9rem;
+    }
+}
 </style>

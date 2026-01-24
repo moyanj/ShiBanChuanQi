@@ -673,4 +673,110 @@ const isSelected = (item: any) => {
     gap: 15px;
     margin-top: 30px;
 }
+
+@media screen and (max-height: 500px) and (orientation: landscape) {
+    .side-nav {
+        width: 150px;
+        padding: 20px 0;
+    }
+
+    .side-title {
+        font-size: 1rem;
+        padding: 0 15px;
+        margin-bottom: 20px;
+    }
+
+    .nav-item {
+        padding: 10px 15px;
+        font-size: 0.9rem;
+    }
+
+    .main-content {
+        padding: 20px;
+    }
+
+    .content-header h1 {
+        font-size: 1.5rem;
+        margin-bottom: 5px;
+    }
+
+    .header-line {
+        margin-bottom: 15px;
+        height: 3px;
+    }
+
+    .item-grid {
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        gap: 10px;
+        padding-bottom: 20px;
+    }
+
+    .grid-item {
+        padding: 8px;
+    }
+
+    .item-icon-box {
+        width: 60px;
+        height: 60px;
+        border-radius: 8px;
+    }
+
+    .item-name {
+        font-size: 0.75rem;
+    }
+
+    .detail-panel {
+        width: 280px;
+    }
+
+    .detail-inner {
+        padding: 20px 15px;
+    }
+
+    .detail-header {
+        margin-bottom: 20px;
+    }
+
+    .detail-icon-large {
+        width: 80px;
+        height: 80px;
+        margin-bottom: 10px;
+        border-radius: 12px;
+    }
+
+    .detail-header h2 {
+        font-size: 1.2rem;
+        margin-bottom: 5px;
+    }
+
+    .detail-rarity {
+        font-size: 0.75rem;
+    }
+
+    .detail-desc {
+        font-size: 0.8rem;
+        padding: 10px;
+        margin-bottom: 20px;
+    }
+
+    .section-title {
+        font-size: 0.75rem;
+        margin-bottom: 8px;
+    }
+
+    .main-stat, .sub-stat-item {
+        padding: 8px 10px;
+        margin-bottom: 6px;
+        font-size: 0.8rem;
+    }
+
+    .count-display {
+        font-size: 1.5rem;
+        margin-bottom: 15px;
+    }
+
+    .detail-footer {
+        margin-top: 30px;
+    }
+}
 </style>

@@ -324,4 +324,39 @@ function reset_avatar() {
     background: #1a1a1e;
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
+
+@media screen and (max-height: 500px) and (orientation: landscape) {
+    .setting-page {
+        padding: 20px 40px;
+    }
+
+    .content-header h1 {
+        font-size: 1.1rem;
+        margin-bottom: 5px;
+    }
+
+    .header-line {
+        margin-bottom: 20px;
+        height: 3px;
+    }
+
+    .setting-list {
+        padding-bottom: 40px;
+    }
+
+    .current-user {
+        font-size: 0.7rem;
+        margin-bottom: 10px;
+    }
+
+    .btn-group {
+        gap: 10px;
+        margin: 10px 0;
+    }
+
+    .danger-desc {
+        font-size: 0.5rem;
+        margin-bottom: 10px;
+    }
+}
 </style>
