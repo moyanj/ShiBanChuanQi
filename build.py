@@ -10,14 +10,12 @@ import hashlib
 try:
     import requests
     import tqdm
-    import bsdiff4
 except ImportError:
     import pip
 
     pip.main(["install", "requests", "tqdm", "bsdiff4"])
     import requests
     import tqdm
-    import bsdiff4
 
 
 @dataclass
@@ -356,6 +354,8 @@ class HtmlBuiler:
         self.args = args
 
     def make_diff(self):
+        import bsdiff4
+
         print("Making diff...")
         os.makedirs("build/diff", exist_ok=True)
         old_file = []

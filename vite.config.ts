@@ -40,7 +40,8 @@ export default defineConfig({
               version: version,
               timestamp: Date.now(),
               time: new Date().toLocaleString("zh-CN", { timeZone: "Asia/Shanghai" }),
-              type: 'vite'
+              type: 'vite',
+
             }
             this.emitFile({
               type: 'asset',

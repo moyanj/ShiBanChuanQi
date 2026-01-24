@@ -98,4 +98,12 @@ export class CharacterManager {
     }
 }
 
+export function get_character_by_dump(dump: any): Character | null {
+    const CharacterConstructor = characters[dump.inside_name];
+    if (!CharacterConstructor) return null;
+    const selected_our_character = new CharacterConstructor();
+    selected_our_character.load(dump);
+    return selected_our_character;
+}
+
 export { characters } from './characters';

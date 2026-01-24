@@ -12,9 +12,9 @@ import {
     ElTabPane,
     ElMessage
 } from 'element-plus';
-import { c2e, Character } from '../js/character';
+import { c2e, Character, get_character_by_dump } from '../js/character';
 import { APM, useSaveStore } from '../js/stores';
-import { get_character_by_dump, icons } from '../js/utils';
+import { icons } from '../js/utils';
 import { ref, watch, computed, onUnmounted } from 'vue';
 import SButton from '../components/sbutton.vue';
 import { Relic, upgradeRelic, getRelicXP, getUpgradeCost, MAX_LEVEL } from '../js/relic';

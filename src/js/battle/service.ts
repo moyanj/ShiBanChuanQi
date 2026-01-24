@@ -1,7 +1,7 @@
 import { useFightStore, useSaveStore, useDataStore, APM } from '../stores';
 import { Battle } from './engine';
-import { Character, characters } from '../character';
-import { get_character_by_dump, rng } from '../utils';
+import { Character, characters, get_character_by_dump } from '../character';
+import { rng } from '../utils';
 import { ElMessage } from 'element-plus';
 import { ThingList } from '../things';
 import { generateRandomRelic, Relic } from '../relic';

@@ -20,7 +20,7 @@ import icon_element_liangzi from "../assets/icon/element-liangzi.png";
 import icon_element_nihility from "../assets/icon/element-nihility.png";
 
 import { Howl } from "howler";
-import { Character, characters } from "./character";
+
 export const icons = {
     left: icon_left,
     character: icon_character,
@@ -403,35 +403,6 @@ export function isLandscape() {
 }
 
 /*
-export class SaveServer {
-    baseUrl: string;
-    constructor() {
-        this.baseUrl = "https://sbcq-server.onrender.com";
-        // this.baseUrl = "http://127.0.0.1:5000"
-    }
-
-    public upload(
-        user: string,
-        pwd: string,
-        data: any,
-        gt: object
-    ): Promise<any> {
-        return this.request(
-            "POST",
-            "/upload",
-            { user: user, pwd: pwd, data: data },
-            gt
-        );
-    }
-
-    public download(user: string, pwd: string): Promise<any> {
-        return this.request("GET", `/download?user=${user}&pwd=${pwd}`);
-    }
-
-    public register(user: string, pwd: string, gt: object): Promise<any> {
-        return this.request("POST", "/reg", { user: user, pwd: pwd }, gt);
-    }
-
     public remove(user: string, pwd: string, gt: object): Promise<any> {
         return this.request("POST", "/remove", { user: user, pwd: pwd }, gt);
     }
@@ -464,13 +435,5 @@ export class SaveServer {
     }
 }
 */
-
-export function get_character_by_dump(dump: any): Character | null {
-    const CharacterConstructor = characters[dump.inside_name];
-    if (!CharacterConstructor) return null;
-    const selected_our_character = new CharacterConstructor();
-    selected_our_character.load(dump);
-    return selected_our_character;
-}
 
 export const rng = new MersenneTwister();
