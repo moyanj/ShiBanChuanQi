@@ -24,7 +24,6 @@ const save = useSaveStore();
 // Ref 定义
 const showInfo = ref(false);
 const showUpCharacter = ref(false);
-const showIll = ref(false);
 const activeTab = ref('stats'); // 新增：控制右侧面板标签页
 const levelUpAmount = ref(0); // 经验值数量
 const currentIllustration = ref(''); // 立绘路径
@@ -376,9 +375,6 @@ onUnmounted(() => {
                 </transition>
             </div>
 
-            <div class="bottom-actions">
-                <SButton @click="showIll = true" text>查看全身立绘</SButton>
-            </div>
         </div>
 
         <!-- 右侧信息面板 -->
@@ -548,18 +544,6 @@ onUnmounted(() => {
             </div>
         </el-dialog>
 
-        <!-- 角色立绘弹窗 -->
-        <el-dialog v-model="showIll" title="角色立绘" fullscreen class="ill-dialog">
-            <div class="full-ill-container">
-                <el-image :src="currentIllustration" fit="contain" class="full-ill">
-                    <template #error>
-                        <h4 align="center">该角色暂无立绘</h4>
-                    </template>
-                </el-image>
-                <div class="close-ill" @click="showIll = false">退出预览</div>
-            </div>
-        </el-dialog>
-
         <!-- 装备道具弹窗 -->
         <el-dialog v-model="showEquipRelicDialog" title="装备圣遗物" width="500px">
             <div class="equip-dialog-content">
@@ -646,7 +630,7 @@ onUnmounted(() => {
                                 <div class="fodder-info">
                                     <span class="f-name" :style="{ color: getRarityColor(fodder.rarity) }">{{
                                         fodder.name
-                                        }}</span>
+                                    }}</span>
                                     <span class="f-lv">+{{ fodder.level }}</span>
                                 </div>
                                 <span class="f-xp">{{ getRelicXP(fodder) }} XP</span>
@@ -1356,7 +1340,8 @@ onUnmounted(() => {
         font-size: 1rem;
     }
 
-    .lv-label, .lv-max {
+    .lv-label,
+    .lv-max {
         font-size: 0.8rem;
     }
 
@@ -1381,11 +1366,16 @@ onUnmounted(() => {
         padding: 0 12px;
     }
 
-    .stat-value {
-        font-size: 0.9rem;
+    .stats-list {
+        gap: 10px;
     }
 
     .stat-label {
+        color: #aaa;
+        font-size: 0.8rem;
+    }
+
+    .stat-value {
         font-size: 0.8rem;
     }
 
@@ -1401,7 +1391,8 @@ onUnmounted(() => {
         font-size: 0.9rem;
     }
 
-    .relic-main-stat, .relic-sub-stats {
+    .relic-main-stat,
+    .relic-sub-stats {
         font-size: 0.75rem;
     }
 
