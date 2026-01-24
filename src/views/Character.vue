@@ -320,7 +320,7 @@ onUnmounted(() => {
         <div class="bg-overlay"></div>
 
         <!-- 左侧角色列表 -->
-        <div class="side-nav">
+        <div class="side-nav" v-if="characterList.length > 0">
             <el-scrollbar>
                 <div v-for="item in characterList" :key="item.inside_name" class="char-nav-item"
                     :class="{ 'active': isSelected(item) }" @click="changeCharacter(item)">
@@ -1088,7 +1088,7 @@ onUnmounted(() => {
     flex: 1;
     display: flex;
     flex-direction: column;
-
+    align-items: center;
     justify-content: center;
     opacity: 0.5;
 }
