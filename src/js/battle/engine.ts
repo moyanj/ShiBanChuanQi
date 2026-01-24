@@ -1,6 +1,6 @@
 import { Character, teamSynergyConfig } from "../character";
 import { useFightStore, useSaveStore } from '../stores';
-import { Skill, SkillType, IBattle, BattleEvent, BattleEventHandler } from "./types";
+import { Skill, SkillType, IBattle, BattleEvent, BattleEventHandler, BattleEventData } from "./types";
 import { BattleCharacters } from "./participants";
 import { ConsumableItem } from "../item";
 
@@ -14,7 +14,7 @@ export class Battle implements IBattle {
     battle_points: number;
     fightStore: ReturnType<typeof useFightStore>;
 
-    private eventHandlers: Map<BattleEvent, Set<BattleEventHandler>> = new Map();
+    private eventHandlers: Map<BattleEvent, Set<BattleEventHandler<any>>> = new Map();
 
     constructor(enemy_characters: Character[], our_characters: Character[]) {
         this.enemy = new BattleCharacters(enemy_characters);
@@ -34,18 +34,18 @@ export class Battle implements IBattle {
         this.check_team_synergy();
     }
 
-    on(event: BattleEvent, handler: BattleEventHandler): void {
+    on<T extends BattleEvent>(event: T, handler: BattleEventHandler<T>): void {
         if (!this.eventHandlers.has(event)) {
             this.eventHandlers.set(event, new Set());
         }
         this.eventHandlers.get(event)!.add(handler);
     }
 
-    off(event: BattleEvent, handler: BattleEventHandler): void {
+    off<T extends BattleEvent>(event: T, handler: BattleEventHandler<T>): void {
         this.eventHandlers.get(event)?.delete(handler);
     }
 
-    emit(event: BattleEvent, data: any): void {
+    emit<T extends BattleEvent>(event: T, data: BattleEventData[T]): void {
         this.eventHandlers.get(event)?.forEach(handler => handler(data));
     }
 

@@ -9,10 +9,13 @@ import fightCard from '../components/fight-card.vue';
 import ActionOrder from '../components/ActionOrder.vue';
 import { Skill, BattleEvent } from '../js/battle';
 import { BattleService, BattleResult } from '../js/battle/service';
+import { battleController } from '../js/battle/controller';
 import { Character, c2e, get_character_by_dump } from '../js/character';
 import { Relic } from '../js/relic';
 import { ConsumableItems } from '../js/item';
 
+const controller = battleController;
+const { isScreenShaking, damageNumbers, flashingSkillName, flashingAttackerName, hitCharacters } = controller;
 const attributeTranslations: { [key: string]: string } = {
     atk: '攻击',
     def_: '防御',
@@ -37,48 +40,6 @@ const random = new MersenneTwister();
 
 const battleService = new BattleService(fightStore, save, data);
 
-// 动画与特效状态
-const hitCharacters = ref<Record<string, boolean>>({});
-const damageNumbers = ref<{ id: number, val: number, type: 'damage' | 'heal', x: number, y: number, name: string }[]>([]);
-const isScreenShaking = ref(false);
-const flashingSkillName = ref("");
-const flashingAttackerName = ref("");
-let nextDamageId = 0;
-
-const triggerHit = (charName: string) => {
-    hitCharacters.value[charName] = true;
-    setTimeout(() => {
-        hitCharacters.value[charName] = false;
-    }, 400);
-};
-
-const triggerScreenShake = () => {
-    isScreenShaking.value = true;
-    setTimeout(() => {
-        isScreenShaking.value = false;
-    }, 500);
-};
-
-const spawnDamageNumber = (name: string, val: number, type: 'damage' | 'heal', party: 'our' | 'enemy') => {
-    const id = nextDamageId++;
-
-    // 随机微调位置
-    const x = (Math.random() - 0.5) * 40;
-    const y = (Math.random() - 0.5) * 20;
-
-    damageNumbers.value.push({
-        id,
-        val: Math.round(val),
-        type,
-        x,
-        y,
-        name
-    });
-    setTimeout(() => {
-        damageNumbers.value = damageNumbers.value.filter(d => d.id !== id);
-    }, 1000);
-};
-
 var show_manager = ref(false);
 var battle_ended = ref(false);
 var show_character_selection = ref(true);
@@ -96,12 +57,12 @@ const enemy_avatar = random.randint(1, 100);
 const battle = computed(() => fightStore.battle_instance);
 
 // 当前行动角色，用于判断是否轮到我方玩家操作
-const current_active_character = computed(() => battle.value?.get_now_character());
+const current_active_character = computed(() => controller.getNowCharacter());
 
 // 行动序列
 const actionOrder = computed(() => {
     if (!battle.value) return [];
-    return battle.value.get_action_order();
+    return controller.getActionOrder();
 });
 
 // 当前行动角色名
@@ -134,12 +95,12 @@ const autoSelectActiveCharacter = () => {
             fightStore.selected_target_character = null;
 
             // 自动选择第一个敌方角色作为目标
-            const firstEnemy = battle.value?.enemy.get_alive_characters()[0];
+            const firstEnemy = controller.getAliveEnemies()[0];
             if (firstEnemy) {
                 fightStore.selected_target_character = { type: 'enemy', character: firstEnemy };
-                battle.value?.log(`轮到 ${activeChar.character.name} 行动，已自动为你选择目标。`);
+                controller.log(`轮到 ${activeChar.character.name} 行动，已自动为你选择目标。`);
             } else {
-                battle.value?.log(`轮到 ${activeChar.character.name} 行动。`);
+                controller.log(`轮到 ${activeChar.character.name} 行动。`);
             }
         }
     }
@@ -170,40 +131,6 @@ onKeyStroke("Escape", (e) => {
     e.preventDefault();
     show_manager.value = !show_manager.value;
 });
-
-// 监听战斗实例，注册特效监听
-watch(battle, (newBattle) => {
-    if (newBattle) {
-        newBattle.on(BattleEvent.AFTER_DAMAGE, (data: any) => {
-            triggerHit(data.character_name);
-            spawnDamageNumber(data.character_name, data.damage, 'damage', data.target_party);
-            if (data.damage > 0) triggerScreenShake();
-        });
-
-        newBattle.on(BattleEvent.AFTER_HEAL, (data: any) => {
-            spawnDamageNumber(data.character_name, data.amount, 'heal', data.target_party);
-        });
-
-        newBattle.on(BattleEvent.SKILL_EXECUTE, (data: any) => {
-            if (!("battle" in APM.objs)) {
-                APM.add("battle", 'audio/fight.mp3');
-            }
-            APM.play("battle");
-
-            flashingSkillName.value = data.skill.name;
-            flashingAttackerName.value = data.attacker.name;
-            setTimeout(() => {
-                if (flashingSkillName.value === data.skill.name) {
-                    flashingSkillName.value = "";
-                    flashingAttackerName.value = "";
-                }
-            }, 1500);
-        });
-        newBattle.on(BattleEvent.TURN_END, (data: any) => {
-            console.log("TURN_END", data);
-        })
-    }
-}, { immediate: true });
 
 // 选择角色逻辑
 const toggleCharacterSelection = (character: any) => {
@@ -324,7 +251,7 @@ const selectOurCharacter = (character: Character) => {
     if (current_active_character.value?.type === 'our' && current_active_character.value.character.inside_name === character.inside_name) {
         fightStore.selected_our_character = character;
         fightStore.selected_target_character = null;
-        battle.value?.log(`你选择了 ${character.name} 行动。请选择攻击目标和技能。`);
+        controller.log(`你选择了 ${character.name} 行动。请选择攻击目标和技能。`);
     } else {
         ElMessage.warning("现在不是该角色行动。");
     }
@@ -344,7 +271,7 @@ const selectTargetCharacter = (target_party: 'enemy' | 'our', character: Charact
 
     if (fightStore.selected_our_character) {
         fightStore.selected_target_character = { type: target_party, character: character };
-        battle.value?.log(`你选择了 ${character.name} 作为目标。`);
+        controller.log(`你选择了 ${character.name} 作为目标。`);
     } else {
         ElMessage.warning("请先选择一个我方行动角色。");
     }
@@ -370,7 +297,7 @@ const playerUseItem = async (item: any) => {
     const attacker = selected_our_character.value;
     const { type: target_party_type, character: target } = selected_target_character.value;
 
-    const dealt_value = battle.value.execute_item(
+    const dealt_value = controller.executeItem(
         target_party_type,
         target.inside_name,
         item,
@@ -378,7 +305,7 @@ const playerUseItem = async (item: any) => {
     );
 
     // 道具使用不重置 ATB，视为不计入回合的自由动作
-    // battle.value.our.reset_atb(attacker.inside_name);
+    // controller.resetATB('our', attacker.inside_name);
 
     // 不重置已选择的角色，方便连续使用或后续执行技能
     // fightStore.selected_our_character = null;
@@ -414,7 +341,7 @@ const playerAttack = async (attack_type: 'general' | 'skill' | 'super_skill') =>
     if (!skill_to_execute) return;
 
     // 使用类型断言解决类型不匹配问题
-    const dealt_value = battle.value.execute_skill(
+    const dealt_value = controller.executeSkill(
         target_party_type,
         target.inside_name,
         skill_to_execute,
@@ -426,7 +353,7 @@ const playerAttack = async (attack_type: 'general' | 'skill' | 'super_skill') =>
         return; // 等待玩家重新选择
     }
 
-    battle.value.our.reset_atb(attacker.inside_name);
+    controller.resetATB('our', attacker.inside_name);
 
     fightStore.selected_our_character = null;
     fightStore.selected_target_character = null;

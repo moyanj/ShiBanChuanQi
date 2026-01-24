@@ -1,3 +1,6 @@
+import { Character } from "../character";
+export { Character };
+
 export enum SkillType {
     Damage = "伤害",
     Heal = "治疗",
@@ -36,7 +39,34 @@ export enum BattleEvent {
     SKILL_EXECUTE = "SKILL_EXECUTE",
 }
 
-export type BattleEventHandler = (data: any) => void;
+export interface BattleEventData {
+    [BattleEvent.BATTLE_START]: IBattle;
+    [BattleEvent.TURN_START]: Character;
+    [BattleEvent.TURN_END]: Character;
+    [BattleEvent.BEFORE_ACTION]: Character;
+    [BattleEvent.AFTER_ACTION]: Character;
+    [BattleEvent.BEFORE_DAMAGE]: Character;
+    [BattleEvent.AFTER_DAMAGE]: {
+        character_name: string;
+        damage: number;
+        target_party: 'our' | 'enemy';
+    };
+    [BattleEvent.BEFORE_HEAL]: Character;
+    [BattleEvent.AFTER_HEAL]: {
+        character_name: string;
+        amount: number;
+        target_party: 'our' | 'enemy';
+    };
+    [BattleEvent.CHARACTER_DEATH]: Character;
+    [BattleEvent.SKILL_EXECUTE]: {
+        attacker: Character;
+        skill: Skill;
+        target_party: 'enemy' | 'our';
+        target_character_name: string;
+    };
+}
+
+export type BattleEventHandler<T extends BattleEvent> = (data: BattleEventData[T]) => void;
 
 export interface IBattle {
     enemy: any;
@@ -48,7 +78,7 @@ export interface IBattle {
     onAfterCharacterAction(): void;
     get_action_order(): any[];
 
-    on(event: BattleEvent, handler: BattleEventHandler): void;
-    off(event: BattleEvent, handler: BattleEventHandler): void;
-    emit(event: BattleEvent, data: any): void;
+    on<T extends BattleEvent>(event: T, handler: BattleEventHandler<T>): void;
+    off<T extends BattleEvent>(event: T, handler: BattleEventHandler<T>): void;
+    emit<T extends BattleEvent>(event: T, data: BattleEventData[T]): void;
 }

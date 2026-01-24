@@ -100,7 +100,7 @@ export abstract class Character {
         }
     }
 
-    private event_handlers: Map<BattleEvent, BattleEventHandler> = new Map();
+    private event_handlers: Map<BattleEvent, BattleEventHandler<any>> = new Map();
 
     private register_battle_events() {
         if (!this._env) return;
@@ -114,7 +114,7 @@ export abstract class Character {
         ];
 
         events_to_listen.forEach(({ event, method }) => {
-            const handler = (data: any) => method.call(this, data);
+            const handler: BattleEventHandler<any> = (data: any) => method.call(this, data);
             this._env?.on(event, handler);
             this.event_handlers.set(event, handler);
         });

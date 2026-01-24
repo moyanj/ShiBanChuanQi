@@ -1,5 +1,6 @@
 import { useFightStore, useSaveStore, useDataStore, APM } from '../stores';
 import { Battle } from './engine';
+import { battleController } from './controller';
 import { Character, characters, get_character_by_dump } from '../character';
 import { rng } from '../utils';
 import { ElMessage } from 'element-plus';
@@ -43,11 +44,13 @@ export class BattleService {
         this.generateEnemyCharacters();
 
         // 创建战斗实例
-        this.fightStore.battle_instance = new Battle(
+        const battle = new Battle(
             this.fightStore.enemy as Character[],
             this.fightStore.our as Character[]
         );
+        this.fightStore.battle_instance = battle;
         this.fightStore.battle_instance.ai_mode = this.fightStore.ai;
+        battleController.init(battle);
 
         this.setupAudio();
         this.runLoop();
