@@ -2,8 +2,17 @@ import { IBattle } from "./battle/types";
 import { BattleCharacters } from "./battle/participants";
 
 export * from './characters/base';
-import { Character } from './characters/base';
-import { characters } from './characters';
+import { Character, type CharacterData } from './characters/base';
+import { characters, type CharacterConstructor } from './characters';
+
+const characterRegistry: Record<string, CharacterConstructor> = characters;
+type CharacterSnapshot = CharacterData & { inside_name: string };
+type CharacterSource = Pick<Character, 'inside_name' | 'dump'>;
+type CharacterDumpInput = CharacterSource | CharacterSnapshot;
+
+function isCharacterSource(dump: CharacterDumpInput): dump is CharacterSource {
+    return 'dump' in dump && typeof dump.dump === 'function';
+}
 
 export type TeamSynergy = {
     id: string;
@@ -75,7 +84,7 @@ export class CharacterManager {
         this.characters[c.inside_name] = c;
     }
 
-    dump(): any[] {
+    dump(): Array<{ inside_name: string; data: ReturnType<Character['dump']> }> {
         return Object.values(this.characters).map(c => {
             return {
                 inside_name: c.inside_name,
@@ -84,11 +93,11 @@ export class CharacterManager {
         });
     }
 
-    load(data: any[]): void {
+    load(data: Array<{ inside_name: string; data: ReturnType<Character['dump']> }> | null | undefined): void {
         this.characters = {};
         if (!data) return;
         data.forEach(item => {
-            const CharacterClass = characters[item.inside_name];
+            const CharacterClass = characterRegistry[item.inside_name];
             if (CharacterClass) {
                 const c = new CharacterClass();
                 c.load(item.data);
@@ -98,11 +107,11 @@ export class CharacterManager {
     }
 }
 
-export function get_character_by_dump(dump: any): Character | null {
-    const CharacterConstructor = characters[dump.inside_name];
+export function get_character_by_dump(dump: CharacterDumpInput): Character | null {
+    const CharacterConstructor: CharacterConstructor | undefined = characterRegistry[dump.inside_name];
     if (!CharacterConstructor) return null;
     const selected_our_character = new CharacterConstructor();
-    selected_our_character.load(dump);
+    selected_our_character.load(isCharacterSource(dump) ? dump.dump() : dump);
     return selected_our_character;
 }
 

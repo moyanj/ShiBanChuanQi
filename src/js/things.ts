@@ -7,11 +7,15 @@ export class Thing {
         this.name = "测试物品";
         this.desc = "这是一个测试物品”";
         this.inside_name = "thing";
+        this.icon = "";
     }
 }
 
+export type ThingConstructor = new () => Thing;
+type ThingInventory = Record<string, number>;
+
 export class ThingsManager {
-    things: Object;
+    things: ThingInventory;
     constructor(isInit: boolean = true) {
         this.things = {};
 
@@ -19,14 +23,14 @@ export class ThingsManager {
             this.add(new XinHuo(), 280000);
         }
     }
-    dump(): object {
+    dump(): ThingInventory {
         return this.things;
     }
-    load(data: object): void {
+    load(data: ThingInventory | null | undefined): void {
         this.things = data || {};
     }
     add(thing: Thing, n: number = 1): void {
-        let name: string = thing.inside_name;
+        const name: string = thing.inside_name;
         if (this.things[name] == undefined) {
             this.things[name] = 0;
         } else if (this.things[name] == null) {
@@ -42,7 +46,7 @@ export class ThingsManager {
         }
         return this.things[id];
     }
-    get_all(): object {
+    get_all(): ThingInventory {
         return this.things;
     }
     remove(id: string, n: number = 1): void {
@@ -71,9 +75,8 @@ export class EXP extends Thing {
     }
 }
 
-export const ThingList: object = {
+export const ThingList = {
     "XinHuo": XinHuo,
     "EXP": EXP
-}
-
+} satisfies Record<string, ThingConstructor>;
 

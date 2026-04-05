@@ -1,6 +1,9 @@
 import * as CharacterClasses from './definitions';
+import type { Character } from './base';
 
-export const characters: Record<string, any> = {
+export type CharacterConstructor = new () => Character;
+
+export const characters = {
     "Fairy": CharacterClasses.Fairy,
     "FanShiFu": CharacterClasses.FanShiFu,
     "ShuiLiFang": CharacterClasses.ShuiLiFang,
@@ -39,5 +42,4 @@ export const characters: Record<string, any> = {
     "RenJie": CharacterClasses.RenJie,
     "YanCui": CharacterClasses.YanCui,
     "NiuWenJin": CharacterClasses.NiuWenJin
-};
-
+} satisfies Record<string, CharacterConstructor>;

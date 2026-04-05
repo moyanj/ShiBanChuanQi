@@ -30,6 +30,10 @@ export interface ActiveEffect {
     onRemove?: (target: Character, battle: IBattle) => void;
 }
 
+type LegacyCharacterData = CharacterData & {
+    equipped_items?: Relic[];
+};
+
 
 export interface AttrBonusType {
     [CharacterType.Fire]: number;
@@ -182,7 +186,8 @@ export abstract class Character {
         let value = this.base_hp;
         for (const effect of this.active_effects) {
             if (effect.attribute === 'hp') {
-                value += (effect.type === 'buff' ? effect.value : -effect.value);
+                const effectValue = effect.value ?? 0;
+                value += effect.type === 'buff' ? effectValue : -effectValue;
             }
         }
         for (const item of this.equipped_relics) {
@@ -198,7 +203,8 @@ export abstract class Character {
         let value = this.base_atk;
         for (const effect of this.active_effects) {
             if (effect.attribute === 'atk') {
-                value += (effect.type === 'buff' ? effect.value : -effect.value);
+                const effectValue = effect.value ?? 0;
+                value += effect.type === 'buff' ? effectValue : -effectValue;
             }
         }
         for (const item of this.equipped_relics) {
@@ -216,7 +222,8 @@ export abstract class Character {
         let value = this.base_def_;
         for (const effect of this.active_effects) {
             if (effect.attribute === 'def_') {
-                value += (effect.type === 'buff' ? effect.value : -effect.value);
+                const effectValue = effect.value ?? 0;
+                value += effect.type === 'buff' ? effectValue : -effectValue;
             }
         }
         for (const item of this.equipped_relics) {
@@ -232,7 +239,8 @@ export abstract class Character {
         let value = this.base_speed;
         for (const effect of this.active_effects) {
             if (effect.attribute === 'speed') {
-                value += (effect.type === 'buff' ? effect.value : -effect.value);
+                const effectValue = effect.value ?? 0;
+                value += effect.type === 'buff' ? effectValue : -effectValue;
             }
         }
         for (const item of this.equipped_relics) {
@@ -342,6 +350,7 @@ export abstract class Character {
     }
 
     load(data: CharacterData): Character {
+        const legacyData: LegacyCharacterData = data;
         this.level = data.level;
         this.xp = data.xp;
         this.base_hp = data.base_hp;
@@ -351,7 +360,7 @@ export abstract class Character {
         this.attr_bonus = data.attr_bonus;
         this.favorability = data.favorability;
         this.active_effects = data.active_effects || [];
-        this.equipped_relics = data.equipped_relics || (data as any).equipped_items || [];
+        this.equipped_relics = data.equipped_relics || legacyData.equipped_items || [];
         this.level_hp();
         this.level_def();
         this.level_atk();
