@@ -125,6 +125,14 @@ const selected_our_character = computed(() => fightStore.selected_our_character)
 // 玩家选择的目标角色 (用于手动模式下，玩家选择攻击目标)
 const selected_target_character = computed(() => fightStore.selected_target_character);
 const battle_log = computed(() => battle.value?.battle_log || []);
+const activeManualCharacter = computed(() => {
+    const selectedCharacter = selected_our_character.value;
+    const activeCharacter = current_active_character.value;
+    if (!selectedCharacter || !activeCharacter || activeCharacter.type !== 'our' || fightStore.ai) {
+        return null;
+    }
+    return activeCharacter.character.inside_name === selectedCharacter.inside_name ? selectedCharacter : null;
+});
 
 
 onKeyStroke("Escape", (e) => {
@@ -141,7 +149,10 @@ const toggleCharacterSelection = (character: any) => {
         fightStore.selected_characters.splice(index, 1);
     } else {
         if (fightStore.selected_characters.length < 3) {
-            fightStore.selected_characters.push(get_character_by_dump(char));
+            const selectedCharacter = get_character_by_dump(char);
+            if (selectedCharacter) {
+                fightStore.selected_characters.push(selectedCharacter);
+            }
         } else {
             ElMessage.warning("最多只能选择三个角色！");
         }
@@ -559,8 +570,7 @@ onUnmounted(() => {
                     </div>
 
                     <!-- 圆形技能指令 -->
-                    <div class="skill-buttons"
-                        v-if="!fightStore.ai && current_active_character?.type === 'our' && current_active_character.character.inside_name === selected_our_character.inside_name">
+                    <div class="skill-buttons" v-if="activeManualCharacter">
                         <div class="skill-node" @click="playerAttack('general')">
                             <div class="node-circle">
                                 <img :src="icons.sword" />
@@ -570,13 +580,13 @@ onUnmounted(() => {
                         </div>
 
                         <div class="skill-node"
-                            :class="{ 'is-disabled': battle.battle_points < selected_our_character.getSkill().cost }"
+                            :class="{ 'is-disabled': battle.battle_points < activeManualCharacter.getSkill().cost }"
                             @click="playerAttack('skill')">
                             <div class="node-circle skill">
                                 <img :src="icons.sword" />
                             </div>
                             <span class="node-label">战技</span>
-                            <span class="node-cost">-{{ selected_our_character.getSkill().cost }}</span>
+                            <span class="node-cost">-{{ activeManualCharacter.getSkill().cost }}</span>
                         </div>
 
                         <div class="skill-node ult" @click="playerAttack('super_skill')">

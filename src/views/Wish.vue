@@ -9,6 +9,8 @@ import { rng, icons } from "../js/utils";
 import icon_xinhuo from "../assets/things/XinHuo.png";
 import { characters, c2e } from "../js/character";
 import { ConsumableItems } from "../js/item";
+import type { Character } from "../js/character";
+import type { ConsumableItem } from "../js/item";
 import { ref } from "vue";
 import wish_bg from "../assets/bg/wish.jpg";
 
@@ -20,14 +22,39 @@ const player_conf = {
     controls: false,
 };
 
-const player = ref();
+type VideoPlayerApi = {
+    play: () => void;
+    on: (event: string, callback: () => void) => void;
+    off: (event: string) => void;
+    duration: () => number;
+    currentTime: (time: number) => void;
+};
+
+type WishCharacterResult = {
+    type: 'character';
+    character: Character;
+    isNew: boolean;
+    rarity: number;
+};
+
+type WishItemResult = {
+    type: 'item';
+    item: Pick<ConsumableItem, 'name' | 'rarity' | 'description' | 'id' | 'icon'>;
+    rarity: number;
+};
+
+type WishResult = WishCharacterResult | WishItemResult;
+
+const characterRegistry: Record<string, new () => Character> = characters;
+
+const player = ref<{ player: VideoPlayerApi } | null>(null);
 const show_ani = ref(false);
 const show_result = ref(false);
 const show_skip = ref(false);
-const result = ref<any[]>([]);
+const result = ref<WishResult[]>([]);
 const count_XinHuo = ref(saveStore.things.get("XinHuo"));
 
-const wish_list = Object.keys(characters);
+const wish_list = Object.keys(characterRegistry);
 
 function f(x: number): number {
     const H = Math.min(0.0001 + (Math.exp(x / 35) / 175), 1);
@@ -47,10 +74,10 @@ function run(n: number = 1) {
     }
 
     show_ani.value = true;
-    player.value.player.play();
+    player.value?.player.play();
     show_skip.value = true;
-    player.value.player.on("ended", () => {
-        player.value.player.off("ended");
+    player.value?.player.on("ended", () => {
+        player.value?.player.off("ended");
         show_ani.value = false;
         show_skip.value = false;
         wish(n);
@@ -77,8 +104,11 @@ function wish(n: number = 1) {
             // 角色占 75%，道具占 25%
             if (rng.random() <= 0.75) {
                 const wish_item_key = rng.random_choice(wish_list);
+                if (!wish_item_key) {
+                    continue;
+                }
                 const isNew = !saveStore.characters.is_in(wish_item_key);
-                const charObj = new characters[wish_item_key]();
+                const charObj = new characterRegistry[wish_item_key]();
                 if (isNew) {
                     saveStore.characters.add(charObj);
                 }
@@ -122,7 +152,13 @@ function wish(n: number = 1) {
             // 无奖励（或可以作为普通 3 星掉落处理）
             result.value.push({
                 type: 'item',
-                item: { name: '无名词条', rarity: 3 },
+                item: {
+                    id: 'UnknownEntry',
+                    name: '无名词条',
+                    rarity: 3,
+                    description: '这次祈愿没有获得可记录的奖励。',
+                    icon: ''
+                },
                 rarity: 3
             });
         }
@@ -131,21 +167,18 @@ function wish(n: number = 1) {
 }
 
 function skip() {
-    let end = player.value.player.duration();
-    player.value.player.currentTime(end);
+    const end = player.value?.player.duration();
+    if (end !== undefined) {
+        player.value?.player.currentTime(end);
+    }
 }
 
 function closeResult() {
     show_result.value = false;
 }
 
-const getIllustration = (char: any) => {
+const getIllustration = (char: { inside_name: string }) => {
     return `illustrations/${char.inside_name}.jpg`;
-};
-
-const getAvatar = (char: any) => {
-    // Basic fallback if needed, but we'll mostly use illustrations
-    return icons.character;
 };
 
 </script>
