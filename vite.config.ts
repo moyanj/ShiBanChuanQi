@@ -1,11 +1,9 @@
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import { px2viewport } from '@mistjs/vite-plugin-px2viewport';
-import ElementPlus from 'unplugin-element-plus/vite'
+import ElementPlus from 'unplugin-element-plus/vite';
 
-
-// 从package.json获取版本号
-const version = require('./package.json').version;
+const version = process.env.npm_package_version ?? '0.0.0';
 
 // https://vitejs.dev/config/ 
 export default defineConfig({
@@ -20,13 +18,8 @@ export default defineConfig({
   ],
   css: {
     preprocessorOptions: {
-      scss: {
-        api: 'modern-compiler'
-      },
+      scss: {},
     }
-  },
-  esbuild: {
-    drop: ['debugger']
   },
   build: {
     outDir: 'html',
@@ -55,10 +48,19 @@ export default defineConfig({
         chunkFileNames: "assets/lib/[name]-[hash].js",
         entryFileNames: "assets/main-[hash].js",
         assetFileNames: "assets/[name]-[hash].[ext]",
-        manualChunks: {
-          "framework": ["vue", "element-plus", "pinia"],  // 框架
-          "utils": ["lodash-es", "crypto-js"],
-          "media": ["howler", "video.js"]
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('vue') || id.includes('element-plus') || id.includes('pinia')) {
+              return 'framework';
+            }
+            if (id.includes('lodash-es') || id.includes('crypto-js')) {
+              return 'utils';
+            }
+            if (id.includes('howler') || id.includes('video.js')) {
+              return 'media';
+            }
+          }
+          return undefined;
         }
       }
     }
