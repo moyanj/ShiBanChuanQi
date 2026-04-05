@@ -10,26 +10,26 @@
     "type-check": "vue-tsc --build"
   },
   "dependencies": {
-    "@mistjs/vite-plugin-px2viewport": "^0.0.13",
-    "@vueuse/core": "^11.3.0",
+    "@mistjs/vite-plugin-px2viewport": "^0.1.0",
+    "@vueuse/core": "^14.2.1",
     "crypto-js": "^4.2.0",
-    "element-plus": "^2.13.1",
+    "element-plus": "^2.13.6",
     "howler": "^2.2.4",
-    "lodash-es": "^4.17.22",
-    "pinia": "^2.3.1",
+    "lodash-es": "^4.18.1",
+    "pinia": "^3.0.4",
     "uuid": "^13.0.0",
-    "video.js": "^8.23.4",
-    "vue": "^3.5.27"
+    "video.js": "^8.23.7",
+    "vue": "^3.5.32"
   },
   "devDependencies": {
     "@types/crypto-js": "^4.2.2",
     "@types/howler": "^2.2.12",
-    "@types/node": "^22.19.7",
+    "@types/node": "^25.5.2",
     "@types/video.js": "^7.3.58",
-    "@vitejs/plugin-vue": "^5.2.4",
-    "typescript": "^5.9.3",
-    "unplugin-element-plus": "^0.10.0",
-    "vite": "^5.4.21",
-    "vue-tsc": "^2.2.12"
+    "@vitejs/plugin-vue": "^6.0.5",
+    "typescript": "^6.0.2",
+    "unplugin-element-plus": "^0.11.2",
+    "vite": "^8.0.3",
+    "vue-tsc": "^3.2.6"
   }
 }
