@@ -19,7 +19,9 @@ const keys = {  // base64 *2
     "cf_token": 'UW5SR2NqUmpOMUpPVXpoUE0wTkZibmRGUVd4NlpUVk5kRzFFWlVOUVJXdEVTbkJ0V0dwU1dBPT0='
 }
 
-const decode = (type) => {
+type EncodedKey = Exclude<keyof typeof keys, 'n'>;
+
+const decode = (type: EncodedKey) => {
     let decoded = keys[type];
     for (let i = 0; i < keys["n"]; i++) {
         decoded = atob(decoded)
@@ -96,7 +98,7 @@ export class HistoryManager {
 
 
 export class Qianfan {
-    private token: string;
+    private token: string | null = null;
     constructor() { }
 
     private async getAccessToken() {
@@ -106,7 +108,7 @@ export class Qianfan {
         const url = `https://proxy.moyanjdc.top/qianfan/oauth/2.0/token?grant_type=client_credentials&client_id=${decode("baidu_id")}&client_secret=${decode("baidu_secret")}`;
 
         let response = await fetch(url, { method: 'POST' })
-        let data = await response.json()
+        const data = await response.json() as { access_token: string };
         this.token = data.access_token
     }
 
@@ -126,11 +128,10 @@ export class Qianfan {
             body: body
         });
 
-        const data = await response.json();
+        const data = await response.json() as { result: string };
         return data.result
     }
 
 
 }
-
 

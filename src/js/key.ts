@@ -4,11 +4,20 @@ import { ThingList } from "./things";
 import { generateRandomRelic } from "./relic";
 import { characters } from "./character";
 
-function cmd_handler(value) {
-    value = value.value;
+interface PromptResult {
+    value: string;
+}
+
+const characterRegistry: Record<string, (new () => InstanceType<typeof characters.Fairy>)> = characters;
+const thingRegistry: Record<string, (new () => InstanceType<typeof ThingList.EXP>)> = ThingList;
+
+function cmd_handler(promptResult: PromptResult) {
+    const value = promptResult.value;
     const dataStore = useDataStore();
     const saveStore = useSaveStore();
     const fightStore = useFightStore();
+    const dataState = dataStore.$state as unknown as Record<string, unknown>;
+    const saveState = saveStore.$state as unknown as Record<string, unknown>;
 
     let cmds: Array<string> = value.split(" ");
     let cmd: string = cmds[0];
@@ -30,18 +39,18 @@ function cmd_handler(value) {
             break;
 
         case "all":
-            for (const charName in characters) {
-                if (Object.prototype.hasOwnProperty.call(characters, charName)) {
-                    const CharacterClass = characters[charName];
+            for (const charName in characterRegistry) {
+                if (Object.prototype.hasOwnProperty.call(characterRegistry, charName)) {
+                    const CharacterClass = characterRegistry[charName];
                     const newChar = new CharacterClass();
                     saveStore.characters.add(newChar);
                 }
             }
 
-            for (const thingName in ThingList) {
-                if (Object.prototype.hasOwnProperty.call(ThingList, thingName)) {
-                    const ThingClass = ThingList[thingName];
-                    saveStore.things.add(new (ThingClass as any)(), 99999999);
+            for (const thingName in thingRegistry) {
+                if (Object.prototype.hasOwnProperty.call(thingRegistry, thingName)) {
+                    const ThingClass = thingRegistry[thingName];
+                    saveStore.things.add(new ThingClass(), 99999999);
                 }
             }
 
@@ -70,8 +79,8 @@ function cmd_handler(value) {
                 alert("请输入角色内部名 (如 FanShiFu)");
                 break;
             }
-            if (characters[charName]) {
-                const newChar = new characters[charName]();
+            if (characterRegistry[charName]) {
+                const newChar = new characterRegistry[charName]();
                 saveStore.characters.add(newChar);
                 alert(`已添加角色: ${charName}`);
             } else {
@@ -81,13 +90,13 @@ function cmd_handler(value) {
 
         case "add_exp":
             const expAmt = parseInt(cmds[1]) || 1000;
-            saveStore.things.add(new (ThingList["EXP"] as any)(), expAmt);
+            saveStore.things.add(new ThingList.EXP(), expAmt);
             alert(`已添加 ${expAmt} 经验值`);
             break;
 
         case "add_money":
             const moneyAmt = parseInt(cmds[1]) || 1000;
-            saveStore.things.add(new (ThingList["XinHuo"] as any)(), moneyAmt);
+            saveStore.things.add(new ThingList.XinHuo(), moneyAmt);
             alert(`已添加 ${moneyAmt} 星火`);
             break;
 
@@ -117,27 +126,23 @@ function cmd_handler(value) {
 
         case "set_data":
             // 修改数据存储中的数据
-            dataStore.$patch({
-                [cmds[1]]: cmds[2]
-            });
+            dataState[cmds[1]] = cmds[2];
             break;
 
         case "get_data":
-            alert(dataStore[cmds[1]]);
+            alert(String(dataState[cmds[1]]));
             break;
 
         case "set_save":
-            saveStore.$patch({
-                [cmds[1]]: cmds[2]
-            });
+            saveState[cmds[1]] = cmds[2];
             break;
 
         case "get_save":
-            alert(saveStore[cmds[1]]);
+            alert(String(saveState[cmds[1]]));
             break;
 
         case "add_thing":
-            let thing = ThingList[cmds[1]];
+            const thing = thingRegistry[cmds[1]];
             if (thing == undefined) {
                 alert("物品不存在");
                 break;
@@ -180,8 +185,13 @@ function cmd_handler(value) {
             const input = document.createElement("input");
             input.type = "file";
             input.accept = "application/json";
-            input.onchange = (e: any) => {
-                const file = e.target.files[0];
+            input.onchange = (e: Event) => {
+                const target = e.target as HTMLInputElement | null;
+                const file = target?.files?.[0];
+                if (!file) {
+                    input.value = "";
+                    return;
+                }
                 const reader = new FileReader();
                 reader.onload = (event) => {
                     try {
@@ -193,8 +203,8 @@ function cmd_handler(value) {
                         alert("存档加载失败");
                     }
                     input.value = "";
-                    this.show();
-                    this.hide();
+                    dataStore.console_show = true;
+                    dataStore.console_show = false;
                 };
                 reader.readAsText(file);
             };

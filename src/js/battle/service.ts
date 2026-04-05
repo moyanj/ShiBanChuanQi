@@ -32,13 +32,17 @@ export class BattleService {
         }
 
         // 初始化我方角色实例
-        this.fightStore.our = this.fightStore.selected_characters.map(c => {
+        this.fightStore.our = this.fightStore.selected_characters.reduce<Character[]>((team, c) => {
             const charInstance = get_character_by_dump(c);
+            if (!charInstance) {
+                return team;
+            }
             charInstance.hp = charInstance.max_hp;
             charInstance.is_our = true;
             charInstance.equipped_relics = [...c.equipped_relics];
-            return charInstance;
-        });
+            team.push(charInstance);
+            return team;
+        }, []);
 
         // 生成敌方角色
         this.generateEnemyCharacters();
@@ -124,8 +128,8 @@ export class BattleService {
             result.xinhuo = rng.randint(175, 840);
 
             // 下放奖励
-            this.save.things.add(new (ThingList["EXP"] as any)(), result.exp);
-            this.save.things.add(new (ThingList["XinHuo"] as any)(), result.xinhuo);
+            this.save.things.add(new ThingList.EXP(), result.exp);
+            this.save.things.add(new ThingList.XinHuo(), result.xinhuo);
             this.fightStore.our.forEach(char => {
                 const saveChar = this.save.characters.get(char.inside_name);
                 if (saveChar) saveChar.favorability += 5;
@@ -141,12 +145,13 @@ export class BattleService {
         } else {
             this.playAudio("battle_lose", 'audio/battle_lose.mp3');
             result.exp = this.fightStore.enemy.reduce((sum, char) => sum + Math.round(char.level_xp(char.level) / 7), 0);
-            this.save.things.add(new (ThingList["EXP"] as any)(), result.exp);
+            this.save.things.add(new ThingList.EXP(), result.exp);
         }
 
         // 重置状态
         this.fightStore.our.forEach(char => {
-            get_character_by_dump(char).reset_status();
+            const restoredChar = get_character_by_dump(char);
+            restoredChar?.reset_status();
         });
 
         this.onSettlement?.(result);
@@ -178,6 +183,9 @@ export class BattleService {
 
     private createWeakerEnemy(baseCharacter: Character): Character {
         const weakerEnemy = get_character_by_dump(baseCharacter);
+        if (!weakerEnemy) {
+            throw new Error(`Unable to clone character: ${baseCharacter.inside_name}`);
+        }
         weakerEnemy.level = Math.max(1, baseCharacter.level - rng.randint(-5, 3));
         weakerEnemy.level_hp();
         weakerEnemy.level_atk();
