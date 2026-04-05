@@ -7,13 +7,17 @@
 </template>
 
 <script lang="ts">
+import { defineComponent, type PropType } from 'vue';
 import videojs from 'video.js';
 
-export default {
+type VideoPlayerInstance = ReturnType<typeof videojs>;
+type VideoPlayerOptions = Record<string, unknown>;
+
+export default defineComponent({
     name: 'VideoPlayer',
     props: {
         options: {
-            type: Object,
+            type: Object as PropType<VideoPlayerOptions>,
             default() {
                 return {};
             }
@@ -21,19 +25,24 @@ export default {
     },
     data() {
         return {
-            player: null
-        }
+            player: null as VideoPlayerInstance | null
+        };
     },
     mounted() {
-        this.player = videojs(this.$refs.videoPlayer, this.options, () => {
+        const videoElement = this.$refs.videoPlayer;
+        if (!(videoElement instanceof Element)) {
+            return;
+        }
+
+        this.player = videojs(videoElement, this.options, () => {
+            return undefined;
         });
     },
-    beforeDestroy() {
-        if (this.player) {
-            this.player.dispose();
-        }
+    beforeUnmount() {
+        this.player?.dispose();
+        this.player = null;
     }
-}
+});
 </script>
 
 <style scoped>
